@@ -28,8 +28,12 @@
         .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
         .tab-inactive:hover { color: #334155; }
 
-        /* Style Checkbox */
+        /* Style Checkbox & Radio */
+        .custom-radio { width: 1.15rem; height: 1.15rem; cursor: pointer; }
         .custom-checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; }
+        
+        /* Table Sticky Header */
+        thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -225,37 +229,46 @@
                                     </div>
                                 </div>
 
-                                <!-- Bagian Absensi Sorter -->
+                                <!-- Bagian Absensi Sorter (UPDATED) -->
                                 <div>
                                     <div class="flex justify-between items-end mb-3">
                                         <h4 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
                                             <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> Kehadiran Tim (MPP)
                                         </h4>
                                         <div class="text-right">
-                                            <span class="text-xs text-slate-500 uppercase">Total MPP (Hadir)</span>
+                                            <span class="text-xs text-slate-500 uppercase">Total MPP (Working)</span>
                                             <div id="display-total-mpp" class="text-2xl font-bold text-green-600 leading-none">0</div>
                                         </div>
                                     </div>
                                     
-                                    <div class="border border-slate-200 rounded-lg overflow-hidden">
-                                        <div class="max-h-64 overflow-y-auto">
+                                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-white">
+                                        <div class="max-h-80 overflow-y-auto">
                                             <table class="w-full text-sm text-left">
-                                                <thead class="bg-slate-100 text-slate-600 font-medium sticky top-0 z-10">
+                                                <thead class="bg-slate-100 text-slate-600 font-medium">
                                                     <tr>
-                                                        <th class="p-3 w-1/2">Nama Karyawan</th>
-                                                        <th class="p-3 text-center">Shift 1</th>
-                                                        <th class="p-3 text-center">Shift 2</th>
-                                                        <th class="p-3 text-center">Shift 3</th>
+                                                        <th class="p-3 w-1/3 min-w-[150px]">Nama Karyawan</th>
+                                                        <th class="p-3 text-center w-12 bg-blue-50">S1</th>
+                                                        <th class="p-3 text-center w-12 bg-blue-50">S2</th>
+                                                        <th class="p-3 text-center w-12 bg-blue-50">S3</th>
+                                                        <th class="p-3 text-center w-12 bg-yellow-50">I</th>
+                                                        <th class="p-3 text-center w-12 bg-red-50">S</th>
+                                                        <th class="p-3 text-center w-12 bg-red-100">A</th>
+                                                        <th class="p-3 w-1/4">Keterangan</th>
+                                                        <th class="p-3 w-8"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="sorter-attendance-list" class="divide-y divide-slate-100">
                                                     <!-- List Sorter Akan Digenerate Disini -->
-                                                    <tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Pilih HUB atau login untuk melihat daftar karyawan.</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
+                                        <div class="p-3 bg-slate-50 border-t border-slate-200">
+                                            <button type="button" onclick="addDwRow()" class="text-sm text-blue-600 font-medium flex items-center gap-2 hover:text-blue-800">
+                                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah DW Manual
+                                            </button>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-slate-400 mt-2">*Ceklis pada shift yang sesuai jika hadir.</p>
+                                    <p class="text-xs text-slate-400 mt-2">*Pilih satu status per nama (S1/S2/S3 = Shift, I=Ijin, S=Sakit, A=Alfa).</p>
                                 </div>
 
                                 <div class="flex items-center justify-end pt-4 gap-3 border-t border-slate-100">
@@ -654,7 +667,7 @@
         }
 
         // ==========================================
-        // REPORTS LOGIC
+        // REPORTS LOGIC (UPDATED WITH DW & NEW ATTENDANCE)
         // ==========================================
         
         document.querySelectorAll('.metric-input').forEach(input => {
@@ -668,18 +681,58 @@
             const j = Number(els.rptJne.value) || 0;
             els.rptTotalPaket.value = (g + s + sa + j).toLocaleString('id-ID');
 
-            const checks = document.querySelectorAll('.sorter-check:checked');
-            els.displayTotalMpp.textContent = checks.length;
+            // Count Checkboxes with value s1, s2, s3
+            // In radio buttons, checked items with values s1,s2,s3 count as MPP
+            let workingCount = 0;
+            const checkedRadios = document.querySelectorAll('.attendance-radio:checked');
+            checkedRadios.forEach(radio => {
+                if(['s1', 's2', 's3'].includes(radio.value)) {
+                    workingCount++;
+                }
+            });
+            
+            els.displayTotalMpp.textContent = workingCount;
         }
         window.calculateReportTotals = calculateReportTotals;
+
+        // Add DW Row
+        window.addDwRow = () => {
+            const uniqueId = 'dw_' + Date.now();
+            const row = document.createElement('tr');
+            row.className = 'border-b border-slate-50 hover:bg-slate-50';
+            row.innerHTML = `
+                <td class="p-3">
+                    <input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uniqueId}">
+                </td>
+                ${generateAttendanceColumns(uniqueId)}
+                <td class="p-3 text-center">
+                    <button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600">
+                        <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    </button>
+                </td>
+            `;
+            els.sorterAttendanceList.appendChild(row);
+            lucide.createIcons();
+        }
+
+        function generateAttendanceColumns(rowId) {
+            return `
+                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s1" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s2" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s3" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-yellow-50/30"><input type="radio" name="att_${rowId}" value="i" class="attendance-radio custom-radio accent-yellow-500" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-red-50/30"><input type="radio" name="att_${rowId}" value="s" class="attendance-radio custom-radio accent-red-500" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-red-100/30"><input type="radio" name="att_${rowId}" value="a" class="attendance-radio custom-radio accent-red-800" onclick="calculateReportTotals()"></td>
+                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-200 rounded text-xs att-remarks" placeholder="..."></td>
+            `;
+        }
 
         async function loadReportsView() {
             els.rptDate.valueAsDate = new Date();
             const hubCode = state.userData?.hub_code || 'UNKNOWN';
             els.rptHub.value = hubCode;
             
-            // Fetch All Employees in this HUB for Attendance
-            els.sorterAttendanceList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat daftar karyawan...</td></tr>';
+            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat daftar karyawan...</td></tr>';
             
             try {
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
@@ -693,37 +746,32 @@
                 const snap = await getDocs(qSorter);
                 
                 if (snap.empty) {
-                    els.sorterAttendanceList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Tidak ada karyawan terdaftar di HUB ini.</td></tr>';
+                    els.sorterAttendanceList.innerHTML = ''; // Start empty for DW
                 } else {
                     els.sorterAttendanceList.innerHTML = '';
                     snap.forEach(doc => {
                         const s = doc.data();
-                        // Jangan tampilkan admin di absensi
+                        // Jangan tampilkan admin
                         if(s.role === 'admin') return;
 
                         const row = document.createElement('tr');
                         row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                        // rowId used for radio grouping
+                        const rowId = doc.id;
+                        
                         row.innerHTML = `
-                            <td class="p-3 font-medium text-slate-700">
-                                ${s.name} 
-                                <span class="text-xs text-slate-400 font-normal">(${s.role})</span>
+                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">
+                                ${s.name} <span class="text-xs text-slate-400 font-normal">(${s.role})</span>
                             </td>
-                            <td class="p-3 text-center">
-                                <input type="checkbox" name="att_${doc.id}_s1" class="sorter-check custom-checkbox accent-blue-600" onclick="calculateReportTotals()" data-name="${s.name}" data-shift="1">
-                            </td>
-                            <td class="p-3 text-center">
-                                <input type="checkbox" name="att_${doc.id}_s2" class="sorter-check custom-checkbox accent-blue-600" onclick="calculateReportTotals()" data-name="${s.name}" data-shift="2">
-                            </td>
-                            <td class="p-3 text-center">
-                                <input type="checkbox" name="att_${doc.id}_s3" class="sorter-check custom-checkbox accent-blue-600" onclick="calculateReportTotals()" data-name="${s.name}" data-shift="3">
-                            </td>
+                            ${generateAttendanceColumns(rowId)}
+                            <td class="p-3"></td>
                         `;
                         els.sorterAttendanceList.appendChild(row);
                     });
                 }
             } catch (e) {
                 console.error("Load Employees Error", e);
-                els.sorterAttendanceList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">Gagal memuat karyawan.</td></tr>';
+                els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat karyawan.</td></tr>';
             }
 
             loadMyReports();
@@ -780,16 +828,41 @@
             els.rptMsg.classList.add('hidden');
 
             try {
+                // Collect Attendance Data
                 const attendanceDetails = [];
-                document.querySelectorAll('.sorter-check:checked').forEach(chk => {
-                    attendanceDetails.push({ name: chk.dataset.name, shift: chk.dataset.shift });
+                const rows = els.sorterAttendanceList.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    // Check if checked
+                    const checked = row.querySelector('.attendance-radio:checked');
+                    if(checked) {
+                        let name = '';
+                        const nameCell = row.querySelector('td[data-name]');
+                        if(nameCell) {
+                            name = nameCell.dataset.name; // From DB
+                        } else {
+                            const input = row.querySelector('.dw-name-input'); // From DW Input
+                            name = input ? input.value : 'Unknown';
+                        }
+                        
+                        // Remarks
+                        const remarks = row.querySelector('.att-remarks').value;
+
+                        attendanceDetails.push({ 
+                            name: name, 
+                            status: checked.value, // s1, s2, s3, i, s, a
+                            remarks: remarks
+                        });
+                    }
                 });
 
                 const gateway = Number(els.rptGateway.value) || 0;
                 const staging = Number(els.rptStaging.value) || 0;
                 const sap = Number(els.rptSap.value) || 0;
                 const jne = Number(els.rptJne.value) || 0;
-                const totalMpp = attendanceDetails.length;
+                
+                // Calculate Total MPP (Only working shifts)
+                const totalMpp = attendanceDetails.filter(a => ['s1','s2','s3'].includes(a.status)).length;
 
                 const reportData = {
                     date: els.rptDate.value,
@@ -812,9 +885,9 @@
                 els.rptGateway.value = ''; els.rptStaging.value = ''; els.rptSap.value = ''; els.rptJne.value = '';
                 els.rptTotalPaket.value = '0';
                 els.displayTotalMpp.textContent = '0';
-                document.querySelectorAll('.sorter-check').forEach(c => c.checked = false);
                 
-                loadMyReports();
+                // Refresh list to clear inputs
+                loadReportsView(); 
 
             } catch (err) {
                 els.rptMsg.textContent = "Gagal: " + err.message;
@@ -838,37 +911,29 @@
             els.btnLogin.innerHTML = `<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Memeriksa...`;
 
             try {
-                // 1. Cek Admin Hardcoded
                 if (nik.toLowerCase() === 'admin' && pass === 'admin123') {
                     updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
                     return; 
                 }
 
-                // 2. Pastikan Koneksi Database Aman (Anonymous)
                 if (!auth.currentUser) {
                     try {
-                        // Cek apakah di environment preview
                         if (typeof __initial_auth_token !== 'undefined') {
                             await signInWithCustomToken(auth, __initial_auth_token);
                         } else {
                             await signInAnonymously(auth);
                         }
-                    } catch(e) {
-                        console.error("Auth Init Failed:", e);
-                        // Lanjut saja, mungkin sudah auth sebelumnya
-                    }
+                    } catch(e) { console.error("Auth Init Failed:", e); }
                 }
                 
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                // Cek NIK dan Password
                 const q = query(usersRef, where("nik", "==", nik), where("password", "==", pass));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
                     const userDoc = querySnapshot.docs[0].data();
-                    // Cek apakah punya hak akses login
                     if (userDoc.can_login === true) {
-                        updateLocalState(userDoc.role, userDoc); // Role bisa 'leader' atau 'sorter'
+                        updateLocalState(userDoc.role, userDoc); 
                     } else {
                         throw new Error('Akun tidak memiliki akses login.');
                     }
@@ -887,8 +952,6 @@
 
         function updateLocalState(role, userData) {
             state.role = role === 'admin' ? 'admin' : (role === 'leader' ? 'leader' : 'leader'); 
-            // NOTE: Sorter yang login kita anggap role-nya setara 'leader' di UI dashboard agar bisa input, 
-            // tapi tombol pengaturan tetap sembunyi karena bukan 'admin'.
             state.userData = userData;
             localStorage.setItem('userRole', state.role);
             localStorage.setItem('userData', JSON.stringify(userData));
@@ -935,7 +998,6 @@
             if (!unsubscribeEmployees) {
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
                 unsubscribeEmployees = onSnapshot(usersRef, (snapshot) => {
-                    // Filter out admin
                     state.employees = snapshot.docs
                         .map(doc => ({ id: doc.id, ...doc.data() }))
                         .filter(u => u.role !== 'admin');
@@ -947,7 +1009,6 @@
         function populateHubDropdowns() {
             const options = `<option value="">Pilih HUB...</option>` + 
                 state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
-            
             if(els.userHub) els.userHub.innerHTML = options;
         }
 
@@ -1006,12 +1067,11 @@
                 hub_code: els.userHub.value, 
                 role: els.userRole.value,
                 can_login: els.userCanLogin.checked,
-                password: els.userPass.value.trim(), // Optional
+                password: els.userPass.value.trim(), 
                 created_at: new Date().toISOString()
             };
 
             try {
-                // Check NIK dupes if new user
                 if (!isEdit && state.employees.find(e => e.nik === userData.nik)) throw new Error('NIK sudah terdaftar!');
 
                 if (isEdit) {
@@ -1060,12 +1120,11 @@
         }
 
         window.editUser = (u) => {
-            // Check if object is passed correctly (sometimes issues with quotes in HTML)
             if(typeof u === 'string') u = JSON.parse(u);
             
             els.editUserId.value = u.id;
             els.userNik.value = u.nik;
-            els.userNik.disabled = true; // Prevent changing NIK
+            els.userNik.disabled = true; 
             els.userName.value = u.name;
             els.userHub.value = u.hub_code;
             els.userRole.value = u.role;
@@ -1074,12 +1133,10 @@
             
             togglePasswordInput();
             
-            // UI Update
             els.formUserTitle.textContent = 'Edit Data Karyawan';
             els.btnSaveUser.textContent = 'Update Data';
             els.btnCancelEdit.classList.remove('hidden');
             
-            // Scroll to form
             els.formAddUser.scrollIntoView({ behavior: 'smooth' });
         }
 

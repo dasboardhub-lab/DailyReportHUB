@@ -67,13 +67,17 @@
         button:active { transform: scale(0.97); }
 
         /* Tables */
-        .abs-cell { min-width: 36px; text-align: center; border-right: 1px solid #e2e8f0; font-size: 11px; }
+        .abs-cell { min-width: 38px; text-align: center; border-right: 1px solid #f1f5f9; font-size: 11px; vertical-align: middle; }
         .abs-header { position: sticky; top: 0; background: #f8fafc; z-index: 20; font-size: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .abs-name-col { position: sticky; left: 0; background: white; z-index: 30; border-right: 2px solid #e2e8f0; min-width: 140px; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
+        .abs-name-col { position: sticky; left: 0; background: white; z-index: 30; border-right: 2px solid #e2e8f0; min-width: 140px; max-width: 140px; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.05); }
         
         /* KPI Cards */
         .kpi-card { transition: transform 0.2s; }
         .kpi-card:hover { transform: translateY(-2px); }
+        .diff-badge { font-size: 10px; padding: 2px 6px; border-radius: 99px; font-weight: 600; display: inline-flex; items-center; gap: 2px; }
+        .diff-up { background: #dcfce7; color: #166534; }
+        .diff-down { background: #fee2e2; color: #991b1b; }
+        .diff-neutral { background: #f1f5f9; color: #64748b; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700">
@@ -595,13 +599,18 @@
         window.initDashboardFilters = () => {
             const d = new Date(); document.getElementById('dash-end-date').valueAsDate = d;
             d.setDate(d.getDate()-30); document.getElementById('dash-start-date').valueAsDate = d;
-            window.renderHubDropdownOptions(); window.loadDashboardData();
+            if(document.getElementById('hub-filter-dropdown').children.length === 0) window.renderHubDropdownOptions();
+            window.loadDashboardData();
         };
         window.resetDashboardFilters = window.initDashboardFilters;
 
         window.loadDashboardData = () => {
-            const s = new Date(document.getElementById('dash-start-date').value);
-            const e = new Date(document.getElementById('dash-end-date').value);
+            const sEl = document.getElementById('dash-start-date');
+            const eEl = document.getElementById('dash-end-date');
+            if(!sEl || !eEl) return;
+
+            const s = new Date(sEl.value);
+            const e = new Date(eEl.value);
             const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
             
             // Current Data
@@ -612,7 +621,7 @@
 
             // Previous Data (Comparison)
             const diffTime = Math.abs(e - s);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Fix duration calc
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
             const prevEnd = new Date(s); prevEnd.setDate(prevEnd.getDate() - 1);
             const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - diffDays);
             
@@ -650,11 +659,16 @@
                     const diff = val - prevVal;
                     const pct = prevVal === 0 ? 100 : Math.round((diff / prevVal) * 100);
                     const isUp = diff > 0;
-                    const colorClass = isUp ? 'text-emerald-500' : (diff < 0 ? 'text-rose-500' : 'text-slate-400');
+                    const colorClass = isUp ? 'text-emerald-600' : (diff < 0 ? 'text-rose-600' : 'text-slate-400');
+                    const bgClass = isUp ? 'bg-emerald-50' : (diff < 0 ? 'bg-rose-50' : 'bg-slate-50');
                     const icon = isUp ? '↑' : (diff < 0 ? '↓' : '-');
                     
                     if (diff === 0) diffEl.innerHTML = `<span class="text-[10px] text-slate-400">- 0%</span>`;
-                    else diffEl.innerHTML = `<span class="text-[10px] ${colorClass} font-semibold">${icon} ${Math.abs(pct)}%</span>`;
+                    else diffEl.innerHTML = `
+                        <div class="mt-2 flex flex-col items-start">
+                            <span class="text-[10px] font-bold ${colorClass}">${icon} ${isCost ? window.formatRupiah(Math.abs(diff)) : window.formatNumber(Math.abs(diff))}</span>
+                            <span class="text-[9px] ${colorClass} bg-white px-1.5 py-0.5 rounded-full border border-slate-100 shadow-sm">(${Math.abs(pct)}%)</span>
+                        </div>`;
                 }
             };
 
@@ -851,13 +865,46 @@
             html += `<thead class="abs-header sticky top-0 bg-slate-50 z-20 shadow-sm"><tr>
                         <th class="p-2 border bg-slate-50 text-left min-w-[150px] abs-name-col sticky left-0 z-30">Nama / HUB</th>`;
             dateRange.forEach(d => {
+                // Use local timezone formatting YYYY-MM-DD for consistency with report data
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                const dateKey = `${y}-${m}-${da}`; // Visual
+                
                 const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
                 html += `<th class="p-1 border bg-slate-50 abs-cell font-medium text-slate-500">${dStr}</th>`;
             });
             html += `<th class="p-1 border bg-slate-100 font-bold w-12 text-slate-700">Total</th></tr></thead><tbody>`;
 
             hubsToShow.forEach(h => {
-                let users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => {
+                // Merge Registered Users + Manual/Deleted Users found in reports for this hub
+                const visibleUsers = [...appData.users.filter(u => u.kode_hub === h)];
+                const registeredIds = new Set(visibleUsers.map(u => u.id));
+
+                // Find extra users in reports
+                reports.forEach(r => {
+                    if(r.hub !== h) return;
+                    if(r.attendance_data) {
+                        r.attendance_data.forEach(a => {
+                             if (!registeredIds.has(a.userId)) {
+                                 // Determine role based on ID format or data
+                                 let role = 'DW'; // default for manual
+                                 if (!a.userId.startsWith('manual_')) role = 'History'; // deleted user likely
+                                 // Add dummy user object for rendering
+                                 visibleUsers.push({
+                                     id: a.userId,
+                                     nama: a.name || a.nama,
+                                     posisi: role,
+                                     kode_hub: h
+                                 });
+                                 registeredIds.add(a.userId);
+                             }
+                        });
+                    }
+                });
+
+                // Sort merged list
+                visibleUsers.sort((a,b) => {
                      const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
                      const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
                      if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id);
@@ -867,7 +914,7 @@
 
                 let currentRole = '';
 
-                users.forEach(u => {
+                visibleUsers.forEach(u => {
                      let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
                      if(roleType !== currentRole) {
                          currentRole = roleType;
@@ -878,8 +925,10 @@
                      html += `<tr><td class="p-2 border font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[150px]">${u.nama}</td>`;
                      
                      dateRange.forEach(d => {
-                         const offset = d.getTimezoneOffset();
-                         const dateKey = new Date(d.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+                         const y = d.getFullYear();
+                         const m = String(d.getMonth() + 1).padStart(2, '0');
+                         const da = String(d.getDate()).padStart(2, '0');
+                         const dateKey = `${y}-${m}-${da}`;
                          
                          let status = '';
                          if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
@@ -903,8 +952,10 @@
             html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20"><td class="p-2 border text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700">Total Hadir:</td>`;
             let rangeTotal = 0;
             dateRange.forEach(d => {
-                 const offset = d.getTimezoneOffset();
-                 const dateKey = new Date(d.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+                 const y = d.getFullYear();
+                 const m = String(d.getMonth() + 1).padStart(2, '0');
+                 const da = String(d.getDate()).padStart(2, '0');
+                 const dateKey = `${y}-${m}-${da}`;
                  const tot = colTotals[dateKey] || 0;
                  rangeTotal += tot;
                  html += `<td class="p-1 border text-center text-indigo-600">${tot}</td>`;

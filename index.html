@@ -38,8 +38,27 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+    <!-- SECURITY MODAL -->
+    <div id="security-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-80 transform transition-all scale-100">
+            <div class="text-center mb-4">
+                <div class="bg-red-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="shield-alert" class="text-red-600 w-6 h-6"></i>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800">Otorisasi Diperlukan</h3>
+                <p class="text-xs text-slate-500">Masukkan Kode Keamanan dari Admin untuk melanjutkan tindakan ini.</p>
+            </div>
+            <input type="password" id="input-secure-code" class="w-full border border-slate-300 p-2 rounded-lg mb-4 text-center tracking-widest font-bold focus:ring-2 focus:ring-red-500 outline-none" placeholder="****">
+            <div id="secure-error" class="text-xs text-red-500 text-center mb-2 hidden">Kode salah!</div>
+            <div class="flex gap-2">
+                <button id="btn-cancel-secure" class="flex-1 py-2 text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+                <button id="btn-confirm-secure" class="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">Verifikasi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div id="loading-screen" class="fixed inset-0 bg-white z-40 flex items-center justify-center">
         <div class="flex flex-col items-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
             <p class="text-slate-500 text-sm">Memuat Sistem...</p>
@@ -183,11 +202,14 @@
                         </div>
                         
                         <!-- Form Input -->
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> Input Laporan Operasional
+                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> <span id="form-report-title">Input Laporan Operasional</span>
                             </h3>
+                            
                             <form id="form-daily-report" class="space-y-6">
+                                <input type="hidden" id="edit-report-id"> <!-- ID untuk mode edit -->
+                                
                                 <!-- Bagian Header -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
                                     <div>
@@ -272,6 +294,7 @@
                                 </div>
 
                                 <div class="flex items-center justify-end pt-4 gap-3 border-t border-slate-100">
+                                    <button type="button" id="btn-cancel-report-edit" class="hidden text-slate-500 px-4 py-2 hover:bg-slate-100 rounded-lg text-sm" onclick="resetReportForm()">Batal Edit</button>
                                     <p id="rpt-msg" class="text-sm hidden"></p>
                                     <button type="submit" id="btn-save-report" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2">
                                         <i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan
@@ -294,10 +317,11 @@
                                             <th class="p-3">HUB</th>
                                             <th class="p-3 text-right">Total Paket</th>
                                             <th class="p-3 text-right">Total MPP</th>
+                                            <th class="p-3 text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="rpt-history-body" class="divide-y divide-slate-100">
-                                        <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -318,6 +342,9 @@
                             <button onclick="switchSettingsTab('employees')" id="tab-btn-employees" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">
                                 Data Karyawan (Leader/Sorter)
                             </button>
+                            <button onclick="switchSettingsTab('security')" id="tab-btn-security" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2">
+                                <i data-lucide="shield" class="w-3 h-3"></i> Keamanan
+                            </button>
                         </div>
 
                         <!-- TAB: DATA HUB -->
@@ -327,6 +354,7 @@
                                     <i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i> Tambah / Edit HUB
                                 </h3>
                                 <form id="form-add-hub" class="flex flex-col md:flex-row gap-4 items-end">
+                                    <input type="hidden" id="edit-hub-id">
                                     <div class="w-full md:w-1/3">
                                         <label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB (Misal: CGK)</label>
                                         <input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required>
@@ -338,6 +366,7 @@
                                     <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[100px]">
                                         Simpan
                                     </button>
+                                    <button type="button" id="btn-cancel-hub" class="hidden text-slate-500 text-sm" onclick="resetHubForm()">Batal</button>
                                 </form>
                                 <p id="hub-msg" class="text-xs mt-3 hidden"></p>
                             </div>
@@ -430,6 +459,26 @@
                             </div>
                         </div>
 
+                        <!-- TAB: SECURITY CONFIG -->
+                        <div id="tab-content-security" class="settings-tab-content hidden space-y-6">
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-lg">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i data-lucide="lock" class="w-5 h-5 text-blue-600"></i> Konfigurasi Keamanan
+                                </h3>
+                                <p class="text-sm text-slate-500 mb-4">
+                                    Atur "Kode Otorisasi" yang akan diminta saat User (Non-Admin) mencoba menghapus atau mengedit data sensitif.
+                                </p>
+                                <form id="form-security-code" class="flex gap-2 items-end">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Default: 123456)</label>
+                                        <input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456">
+                                    </div>
+                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Simpan Kode</button>
+                                </form>
+                                <p id="security-msg" class="text-xs mt-3 hidden"></p>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -444,23 +493,20 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // ==========================================
-        // KONFIGURASI FIREBASE (HYBRID: PREVIEW + LIVE)
+        // KONFIGURASI FIREBASE
         // ==========================================
         
         let firebaseConfig;
         let APP_ID;
 
-        // 1. Cek Environment (Preview vs Production)
         if (typeof __firebase_config !== 'undefined') {
-            // [MODE PREVIEW] Gunakan Database Sandbox bawaan (agar tidak error console)
             console.log("Mode Preview: Menggunakan Sandbox Database");
             firebaseConfig = JSON.parse(__firebase_config);
-            APP_ID = 'daily-report-app-v2'; // Gunakan ID tetap agar data persisten di sesi preview
+            APP_ID = 'daily-report-app-v2'; 
         } else {
-            // [MODE LIVE/GITHUB] Gunakan Database Asli Anda
             console.log("Mode Live: Menggunakan Database Production");
             firebaseConfig = {
                 apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
@@ -484,7 +530,8 @@
             userData: null,
             currentView: 'dashboard',
             hubs: [],
-            employees: [] // Gabungan Leader & Sorter
+            employees: [],
+            secureCode: '123456' // Default fallback
         };
 
         // --- DOM ELEMENTS ---
@@ -507,19 +554,27 @@
             userNameDisplay: document.getElementById('user-name-display'),
             userRoleDisplay: document.getElementById('user-role-display'),
             
+            // Security Modal
+            securityModal: document.getElementById('security-modal'),
+            inputSecureCode: document.getElementById('input-secure-code'),
+            btnCancelSecure: document.getElementById('btn-cancel-secure'),
+            btnConfirmSecure: document.getElementById('btn-confirm-secure'),
+            secureError: document.getElementById('secure-error'),
+
             views: {
                 dashboard: document.getElementById('view-dashboard'),
                 reports: document.getElementById('view-reports'),
                 settings: document.getElementById('view-settings')
             },
             
-            // Dashboard
             dashName: document.getElementById('dash-name'),
             dashRole: document.getElementById('dash-role'),
             dashInfo: document.getElementById('dash-info'),
             
             // Reports
             formDailyReport: document.getElementById('form-daily-report'),
+            formReportTitle: document.getElementById('form-report-title'),
+            editReportId: document.getElementById('edit-report-id'),
             rptDate: document.getElementById('rpt-date'),
             rptHub: document.getElementById('rpt-hub'),
             rptGateway: document.getElementById('rpt-gateway'),
@@ -527,6 +582,7 @@
             rptSap: document.getElementById('rpt-sap'),
             rptJne: document.getElementById('rpt-jne'),
             rptTotalPaket: document.getElementById('rpt-total-paket'),
+            btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'),
             
             sorterAttendanceList: document.getElementById('sorter-attendance-list'),
             displayTotalMpp: document.getElementById('display-total-mpp'),
@@ -535,15 +591,16 @@
             rptMsg: document.getElementById('rpt-msg'),
             rptHistoryBody: document.getElementById('rpt-history-body'),
             
-            // Settings - Hubs
+            // Settings
             formAddHub: document.getElementById('form-add-hub'),
+            editHubId: document.getElementById('edit-hub-id'),
             hubCode: document.getElementById('hub-code'),
             hubName: document.getElementById('hub-name'),
             btnSaveHub: document.getElementById('btn-save-hub'),
+            btnCancelHub: document.getElementById('btn-cancel-hub'),
             hubMsg: document.getElementById('hub-msg'),
             hubTableBody: document.getElementById('hub-table-body'),
 
-            // Settings - Users (Combined)
             formAddUser: document.getElementById('form-add-user'),
             formUserTitle: document.getElementById('form-user-title'),
             editUserId: document.getElementById('edit-user-id'),
@@ -558,18 +615,20 @@
             btnCancelEdit: document.getElementById('btn-cancel-edit'),
             userMsg: document.getElementById('user-msg'),
             userTableBody: document.getElementById('user-table-body'),
-            userCount: document.getElementById('user-count')
+            userCount: document.getElementById('user-count'),
+
+            // Security Config
+            formSecurityCode: document.getElementById('form-security-code'),
+            configSecureCode: document.getElementById('config-secure-code'),
+            securityMsg: document.getElementById('security-msg'),
         };
 
         // --- INITIALIZATION ---
         async function init() {
             try { lucide.createIcons(); } catch(e) {}
 
-            // Auto-login Preview Mode
             if (typeof __initial_auth_token !== 'undefined') {
-                try {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } catch(e) { console.error("Auto Login Error", e); }
+                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
             }
 
             onAuthStateChanged(auth, (currentUser) => {
@@ -590,27 +649,64 @@
             });
         }
 
-        // --- UI HELPERS ---
-        window.togglePasswordInput = () => {
-            if(els.userCanLogin.checked) {
-                els.passContainer.classList.remove('hidden');
-                els.userPass.required = true;
-            } else {
-                els.passContainer.classList.add('hidden');
-                els.userPass.required = false;
-                els.userPass.value = '';
+        // --- SECURITY LOGIC ---
+        let pendingSecureAction = null;
+
+        function secureCheck(callback) {
+            // Jika Admin, bypass check
+            if (state.role === 'admin') {
+                callback();
+                return;
             }
+            // Jika bukan admin, minta kode
+            pendingSecureAction = callback;
+            els.inputSecureCode.value = '';
+            els.secureError.classList.add('hidden');
+            els.securityModal.classList.remove('hidden');
+            els.inputSecureCode.focus();
         }
 
-        window.resetUserForm = () => {
-            els.formAddUser.reset();
-            els.editUserId.value = '';
-            els.formUserTitle.textContent = 'Tambah Data Karyawan';
-            els.btnSaveUser.textContent = 'Simpan Data';
-            els.btnCancelEdit.classList.add('hidden');
-            els.userNik.disabled = false;
-            togglePasswordInput();
+        function closeSecureModal() {
+            els.securityModal.classList.add('hidden');
+            pendingSecureAction = null;
         }
+
+        els.btnCancelSecure.addEventListener('click', closeSecureModal);
+        
+        els.btnConfirmSecure.addEventListener('click', async () => {
+            const input = els.inputSecureCode.value.trim();
+            // Fetch code from DB to be sure
+            const settingsRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config');
+            try {
+                const snap = await getDoc(settingsRef);
+                const serverCode = snap.exists() ? snap.data().secure_code : '123456';
+                
+                if (input === serverCode) {
+                    closeSecureModal();
+                    if(pendingSecureAction) pendingSecureAction();
+                } else {
+                    els.secureError.textContent = "Kode salah!";
+                    els.secureError.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error(e);
+                els.secureError.textContent = "Gagal memverifikasi. Cek koneksi.";
+                els.secureError.classList.remove('hidden');
+            }
+        });
+
+        // Config Security
+        els.formSecurityCode.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newCode = els.configSecureCode.value.trim();
+            if(!newCode) return;
+            try {
+                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), { secure_code: newCode }, { merge: true });
+                showStatusMsg(els.securityMsg, "Kode keamanan berhasil disimpan!", "success");
+            } catch(e) {
+                showStatusMsg(els.securityMsg, "Gagal simpan.", "error");
+            }
+        });
 
         // --- NAVIGATION & UI ---
         function showLogin() {
@@ -621,22 +717,14 @@
         function showApp() {
             els.loginScreen.classList.add('hidden');
             els.appScreen.classList.remove('hidden');
-            
             els.userNameDisplay.textContent = state.userData?.name || 'User';
             els.userRoleDisplay.textContent = state.role;
-            
-            if (state.role === 'admin') {
-                els.menuSettings.classList.remove('hidden');
-            } else {
-                els.menuSettings.classList.add('hidden');
-            }
-            
+            if (state.role === 'admin') els.menuSettings.classList.remove('hidden');
             navigateTo('dashboard');
         }
 
         window.navigateTo = (viewId) => {
             state.currentView = viewId;
-            
             document.querySelectorAll('.nav-item').forEach(el => {
                 if(el.dataset.target === viewId) {
                     el.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
@@ -646,14 +734,11 @@
                     el.classList.add('text-slate-400', 'hover:bg-slate-800');
                 }
             });
-            
             Object.values(els.views).forEach(el => el.classList.add('hidden'));
             if (els.views[viewId]) els.views[viewId].classList.remove('hidden');
-            
             if (viewId === 'dashboard') loadDashboard();
             if (viewId === 'reports') loadReportsView();
             if (viewId === 'settings' && state.role === 'admin') loadSettings();
-            
             els.sidebar.classList.add('-translate-x-full');
             els.sidebarOverlay.classList.add('hidden');
         };
@@ -661,15 +746,12 @@
         function loadDashboard() {
             els.dashName.textContent = state.userData?.name || state.role;
             els.dashRole.textContent = state.role;
-            els.dashInfo.textContent = state.role === 'admin' 
-                ? 'Anda dapat mengelola HUB dan Karyawan di menu Pengaturan.' 
-                : 'Silakan isi laporan harian tim Anda di menu Laporan Harian.';
+            els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : 'User Mode';
         }
 
         // ==========================================
-        // REPORTS LOGIC (UPDATED WITH DW & NEW ATTENDANCE)
+        // REPORTS LOGIC
         // ==========================================
-        
         document.querySelectorAll('.metric-input').forEach(input => {
             input.addEventListener('input', calculateReportTotals);
         });
@@ -680,36 +762,22 @@
             const sa = Number(els.rptSap.value) || 0;
             const j = Number(els.rptJne.value) || 0;
             els.rptTotalPaket.value = (g + s + sa + j).toLocaleString('id-ID');
-
-            // Count Checkboxes with value s1, s2, s3
-            // In radio buttons, checked items with values s1,s2,s3 count as MPP
             let workingCount = 0;
-            const checkedRadios = document.querySelectorAll('.attendance-radio:checked');
-            checkedRadios.forEach(radio => {
-                if(['s1', 's2', 's3'].includes(radio.value)) {
-                    workingCount++;
-                }
+            document.querySelectorAll('.attendance-radio:checked').forEach(radio => {
+                if(['s1', 's2', 's3'].includes(radio.value)) workingCount++;
             });
-            
             els.displayTotalMpp.textContent = workingCount;
         }
         window.calculateReportTotals = calculateReportTotals;
 
-        // Add DW Row
         window.addDwRow = () => {
             const uniqueId = 'dw_' + Date.now();
             const row = document.createElement('tr');
             row.className = 'border-b border-slate-50 hover:bg-slate-50';
             row.innerHTML = `
-                <td class="p-3">
-                    <input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uniqueId}">
-                </td>
+                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uniqueId}"></td>
                 ${generateAttendanceColumns(uniqueId)}
-                <td class="p-3 text-center">
-                    <button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600">
-                        <i data-lucide="x-circle" class="w-4 h-4"></i>
-                    </button>
-                </td>
+                <td class="p-3 text-center"><button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600"><i data-lucide="x-circle" class="w-4 h-4"></i></button></td>
             `;
             els.sorterAttendanceList.appendChild(row);
             lucide.createIcons();
@@ -728,66 +796,51 @@
         }
 
         async function loadReportsView() {
+            // Jangan reset form jika sedang edit
+            if(els.editReportId.value) return;
+
             els.rptDate.valueAsDate = new Date();
             const hubCode = state.userData?.hub_code || 'UNKNOWN';
             els.rptHub.value = hubCode;
             
-            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat daftar karyawan...</td></tr>';
-            
+            // Load Employees
+            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
             try {
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                let qSorter;
-                if (state.role === 'admin') {
-                     qSorter = query(usersRef); 
-                } else {
-                     qSorter = query(usersRef, where("hub_code", "==", hubCode));
-                }
-
+                let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", hubCode));
                 const snap = await getDocs(qSorter);
                 
+                els.sorterAttendanceList.innerHTML = '';
                 if (snap.empty) {
-                    els.sorterAttendanceList.innerHTML = ''; // Start empty for DW
-                } else {
                     els.sorterAttendanceList.innerHTML = '';
+                } else {
                     snap.forEach(doc => {
                         const s = doc.data();
-                        // Jangan tampilkan admin
                         if(s.role === 'admin') return;
-
                         const row = document.createElement('tr');
                         row.className = 'border-b border-slate-50 hover:bg-slate-50';
-                        // rowId used for radio grouping
                         const rowId = doc.id;
-                        
                         row.innerHTML = `
-                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">
-                                ${s.name} <span class="text-xs text-slate-400 font-normal">(${s.role})</span>
-                            </td>
+                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
                             ${generateAttendanceColumns(rowId)}
                             <td class="p-3"></td>
                         `;
                         els.sorterAttendanceList.appendChild(row);
                     });
                 }
-            } catch (e) {
-                console.error("Load Employees Error", e);
-                els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat karyawan.</td></tr>';
-            }
+            } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
 
             loadMyReports();
-            calculateReportTotals(); 
+            calculateReportTotals();
         }
 
         window.loadMyReports = async () => {
-            els.rptHistoryBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400"><span class="animate-spin inline-block mr-2">⟳</span> Memuat data...</td></tr>';
+            els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
             try {
                 const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
-                let q;
-                if(state.userData?.nik && state.role !== 'admin') {
-                     q = query(reportsRef, where("nik", "==", state.userData.nik), orderBy("date", "desc"), limit(10));
-                } else {
-                     q = query(reportsRef, orderBy("date", "desc"), limit(10));
-                }
+                let q = state.userData?.nik && state.role !== 'admin' 
+                    ? query(reportsRef, where("nik", "==", state.userData.nik), orderBy("date", "desc"), limit(10))
+                    : query(reportsRef, orderBy("date", "desc"), limit(10));
 
                 let querySnapshot;
                 try { querySnapshot = await getDocs(q); } 
@@ -797,7 +850,7 @@
                 }
 
                 if (querySnapshot.empty) {
-                    els.rptHistoryBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
+                    els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
                     return;
                 }
 
@@ -811,83 +864,158 @@
                         <td class="p-3 font-medium">${data.hub}</td>
                         <td class="p-3 text-right text-blue-600 font-mono">${(data.total_paket || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right font-mono font-bold">${data.total_mpp || 0}</td>
+                        <td class="p-3 text-right flex gap-2 justify-end">
+                            <button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...data})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                            <button onclick='confirmDeleteReport("${doc.id}", "${data.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
                     `;
                     els.rptHistoryBody.appendChild(tr);
                 });
+                lucide.createIcons();
+            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
+        };
 
-            } catch (err) {
-                console.error(err);
-                els.rptHistoryBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">Gagal memuat data.</td></tr>';
-            }
+        // --- REPORT ACTIONS ---
+        window.confirmDeleteReport = (id, hub) => {
+            secureCheck(async () => {
+                if(state.role !== 'admin' && hub !== state.userData.hub_code) {
+                    alert("Anda hanya bisa menghapus laporan HUB Anda sendiri.");
+                    return;
+                }
+                if(!confirm('Hapus laporan ini?')) return;
+                try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); } 
+                catch(e) { alert('Gagal hapus'); }
+            });
+        };
+
+        window.confirmEditReport = (rpt) => {
+            secureCheck(() => {
+                if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) {
+                    alert("Anda hanya bisa mengedit laporan HUB Anda sendiri.");
+                    return;
+                }
+                // Populate Form
+                els.editReportId.value = rpt.id;
+                els.rptDate.value = rpt.date;
+                els.rptHub.value = rpt.hub;
+                els.rptGateway.value = rpt.gateway;
+                els.rptStaging.value = rpt.staging;
+                els.rptSap.value = rpt.sap;
+                els.rptJne.value = rpt.jne;
+                
+                // UI Changes
+                els.formReportTitle.textContent = "Edit Laporan";
+                els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
+                els.btnCancelReportEdit.classList.remove('hidden');
+                
+                calculateReportTotals();
+                
+                // Restore Attendance (Complex part: simplified by just resetting list and manual re-entry for MVP stability or simple message)
+                // In full implementation, we'd map attendance_data back to checkboxes. 
+                // For now, let's keep it simple: inform user they need to re-verify attendance or just keep totals.
+                // Or better: try to map it.
+                // Reset radios
+                document.querySelectorAll('.attendance-radio').forEach(r => r.checked = false);
+                document.querySelectorAll('.att-remarks').forEach(i => i.value = '');
+                
+                if(rpt.attendance_data) {
+                    rpt.attendance_data.forEach(att => {
+                        // Try to find row by name
+                        const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
+                        let row;
+                        if(nameCell) {
+                            row = nameCell.closest('tr');
+                        } else {
+                            // Create DW row
+                            addDwRow(); 
+                            // Get the last added row
+                            row = els.sorterAttendanceList.lastElementChild;
+                            row.querySelector('.dw-name-input').value = att.name;
+                        }
+                        
+                        // Set Radio
+                        if(row) {
+                            const radio = row.querySelector(`input[value="${att.status}"]`);
+                            if(radio) radio.checked = true;
+                            const remarkInput = row.querySelector('.att-remarks');
+                            if(remarkInput) remarkInput.value = att.remarks || '';
+                        }
+                    });
+                }
+                
+                calculateReportTotals();
+                els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
+            });
+        };
+
+        window.resetReportForm = () => {
+            els.formDailyReport.reset();
+            els.editReportId.value = '';
+            els.formReportTitle.textContent = "Input Laporan Operasional";
+            els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan';
+            els.btnCancelReportEdit.classList.add('hidden');
+            // Reload basic employee list to clear DWs
+            els.rptHub.value = state.userData?.hub_code || '';
+            const listContainer = els.sorterAttendanceList;
+            // Remove DW rows (those with inputs in first cell)
+            Array.from(listContainer.querySelectorAll('tr')).forEach(tr => {
+                if(tr.querySelector('.dw-name-input')) tr.remove();
+                else {
+                    tr.querySelectorAll('input').forEach(i => {
+                        if(i.type === 'radio') i.checked = false;
+                        if(i.type === 'text') i.value = '';
+                    });
+                }
+            });
+            calculateReportTotals();
         };
 
         els.formDailyReport.addEventListener('submit', async (e) => {
             e.preventDefault();
             els.btnSaveReport.disabled = true;
-            els.btnSaveReport.innerHTML = '<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span> Menyimpan...';
+            els.btnSaveReport.textContent = 'Menyimpan...';
             els.rptMsg.classList.add('hidden');
 
             try {
-                // Collect Attendance Data
                 const attendanceDetails = [];
-                const rows = els.sorterAttendanceList.querySelectorAll('tr');
-                
-                rows.forEach(row => {
-                    // Check if checked
+                els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
                     const checked = row.querySelector('.attendance-radio:checked');
                     if(checked) {
-                        let name = '';
-                        const nameCell = row.querySelector('td[data-name]');
-                        if(nameCell) {
-                            name = nameCell.dataset.name; // From DB
-                        } else {
-                            const input = row.querySelector('.dw-name-input'); // From DW Input
-                            name = input ? input.value : 'Unknown';
-                        }
-                        
-                        // Remarks
-                        const remarks = row.querySelector('.att-remarks').value;
-
-                        attendanceDetails.push({ 
-                            name: name, 
-                            status: checked.value, // s1, s2, s3, i, s, a
-                            remarks: remarks
-                        });
+                        let name = row.querySelector('td[data-name]')?.dataset.name || row.querySelector('.dw-name-input')?.value || 'Unknown';
+                        attendanceDetails.push({ name: name, status: checked.value, remarks: row.querySelector('.att-remarks').value });
                     }
                 });
 
-                const gateway = Number(els.rptGateway.value) || 0;
-                const staging = Number(els.rptStaging.value) || 0;
-                const sap = Number(els.rptSap.value) || 0;
-                const jne = Number(els.rptJne.value) || 0;
+                const g = Number(els.rptGateway.value) || 0;
+                const s = Number(els.rptStaging.value) || 0;
+                const sa = Number(els.rptSap.value) || 0;
+                const j = Number(els.rptJne.value) || 0;
                 
-                // Calculate Total MPP (Only working shifts)
-                const totalMpp = attendanceDetails.filter(a => ['s1','s2','s3'].includes(a.status)).length;
-
                 const reportData = {
                     date: els.rptDate.value,
                     hub: els.rptHub.value,
                     nik: state.userData?.nik || 'UNKNOWN',
                     reporter_name: state.userData?.name || 'UNKNOWN',
-                    gateway: gateway, staging: staging, sap: sap, jne: jne,
-                    total_paket: gateway + staging + sap + jne,
-                    total_mpp: totalMpp,
+                    gateway: g, staging: s, sap: sa, jne: j,
+                    total_paket: g+s+sa+j,
+                    total_mpp: attendanceDetails.filter(a => ['s1','s2','s3'].includes(a.status)).length,
                     attendance_data: attendanceDetails,
                     created_at: new Date().toISOString()
                 };
 
-                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), reportData);
+                if(els.editReportId.value) {
+                    await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', els.editReportId.value), reportData);
+                    els.rptMsg.textContent = "Laporan berhasil diupdate!";
+                } else {
+                    await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), reportData);
+                    els.rptMsg.textContent = "Laporan berhasil disimpan!";
+                }
                 
-                els.rptMsg.textContent = "Laporan berhasil disimpan!";
                 els.rptMsg.className = "text-sm text-green-600 font-medium animate-pulse";
                 els.rptMsg.classList.remove('hidden');
                 
-                els.rptGateway.value = ''; els.rptStaging.value = ''; els.rptSap.value = ''; els.rptJne.value = '';
-                els.rptTotalPaket.value = '0';
-                els.displayTotalMpp.textContent = '0';
-                
-                // Refresh list to clear inputs
-                loadReportsView(); 
+                resetReportForm();
+                loadMyReports();
 
             } catch (err) {
                 els.rptMsg.textContent = "Gagal: " + err.message;
@@ -895,7 +1023,7 @@
                 els.rptMsg.classList.remove('hidden');
             } finally {
                 els.btnSaveReport.disabled = false;
-                els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4 mr-2"></i> Simpan Laporan';
+                if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan';
                 lucide.createIcons();
             }
         });
@@ -905,44 +1033,33 @@
             e.preventDefault();
             const nik = els.loginNik.value.trim();
             const pass = els.loginPass.value.trim();
-            
             els.loginError.classList.add('hidden');
             els.btnLogin.disabled = true;
-            els.btnLogin.innerHTML = `<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Memeriksa...`;
+            els.btnLogin.textContent = 'Memeriksa...';
 
             try {
                 if (nik.toLowerCase() === 'admin' && pass === 'admin123') {
                     updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
                     return; 
                 }
-
                 if (!auth.currentUser) {
                     try {
-                        if (typeof __initial_auth_token !== 'undefined') {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch(e) { console.error("Auth Init Failed:", e); }
+                        if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
+                        else await signInAnonymously(auth);
+                    } catch(e) {}
                 }
                 
-                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                const q = query(usersRef, where("nik", "==", nik), where("password", "==", pass));
-                const querySnapshot = await getDocs(q);
+                const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
+                const snap = await getDocs(q);
 
-                if (!querySnapshot.empty) {
-                    const userDoc = querySnapshot.docs[0].data();
-                    if (userDoc.can_login === true) {
-                        updateLocalState(userDoc.role, userDoc); 
-                    } else {
-                        throw new Error('Akun tidak memiliki akses login.');
-                    }
+                if (!snap.empty) {
+                    const u = snap.docs[0].data();
+                    if (u.can_login === true) updateLocalState(u.role, u); 
+                    else throw new Error('Akun tidak memiliki akses login.');
                 } else {
                     throw new Error('Invalid Credentials');
                 }
-
             } catch (err) {
-                console.error("Login Error:", err);
                 els.loginError.textContent = err.message === 'Akun tidak memiliki akses login.' ? err.message : 'NIK atau Password salah.';
                 els.loginError.classList.remove('hidden');
                 els.btnLogin.disabled = false;
@@ -965,186 +1082,163 @@
         };
 
         // ==========================================
-        // SETTINGS LOGIC (ADMIN)
+        // SETTINGS LOGIC
         // ==========================================
         let unsubscribeHubs = null;
         let unsubscribeEmployees = null;
 
         window.switchSettingsTab = (tabName) => {
             document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
-            
-            ['hubs', 'employees'].forEach(t => {
+            ['hubs', 'employees', 'security'].forEach(t => {
                 const btn = document.getElementById(`tab-btn-${t}`);
-                if (t === tabName) {
-                    btn.classList.remove('tab-inactive');
-                    btn.classList.add('tab-active');
-                } else {
-                    btn.classList.add('tab-inactive');
-                    btn.classList.remove('tab-active');
-                }
+                if (t === tabName) { btn.classList.remove('tab-inactive'); btn.classList.add('tab-active'); } 
+                else { btn.classList.add('tab-inactive'); btn.classList.remove('tab-active'); }
             });
             document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
         }
 
         function loadSettings() {
             if (!unsubscribeHubs) {
-                const hubsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs');
-                unsubscribeHubs = onSnapshot(hubsRef, (snapshot) => {
-                    state.hubs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                unsubscribeHubs = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), (snap) => {
+                    state.hubs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderHubsTable();
                     populateHubDropdowns();
                 });
             }
             if (!unsubscribeEmployees) {
-                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                unsubscribeEmployees = onSnapshot(usersRef, (snapshot) => {
-                    state.employees = snapshot.docs
-                        .map(doc => ({ id: doc.id, ...doc.data() }))
-                        .filter(u => u.role !== 'admin');
+                unsubscribeEmployees = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => {
+                    state.employees = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.role !== 'admin');
                     renderEmployeesTable();
                 });
             }
+            // Load Security Config
+            getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config')).then(snap => {
+                if(snap.exists()) els.configSecureCode.value = snap.data().secure_code || '123456';
+            });
         }
 
         function populateHubDropdowns() {
-            const options = `<option value="">Pilih HUB...</option>` + 
-                state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
+            const options = `<option value="">Pilih HUB...</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
             if(els.userHub) els.userHub.innerHTML = options;
         }
 
         // --- HUB LOGIC ---
         els.formAddHub.addEventListener('submit', async (e) => {
             e.preventDefault();
-            els.btnSaveHub.disabled = true;
-            els.btnSaveHub.textContent = '...';
-            els.hubMsg.classList.add('hidden');
-
-            const newHub = {
-                code: els.hubCode.value.toUpperCase().trim(),
-                name: els.hubName.value.trim(),
-                created_at: new Date().toISOString()
-            };
-
-            try {
-                if(state.hubs.find(h => h.code === newHub.code)) throw new Error("Kode HUB sudah ada!");
-                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), newHub);
-                els.hubCode.value = ''; els.hubName.value = '';
-                showStatusMsg(els.hubMsg, "HUB berhasil ditambahkan", "success");
-            } catch(err) {
-                showStatusMsg(els.hubMsg, err.message, "error");
-            } finally {
-                els.btnSaveHub.disabled = false;
-                els.btnSaveHub.textContent = 'Simpan';
-            }
+            const id = els.editHubId.value;
+            const data = { code: els.hubCode.value.toUpperCase().trim(), name: els.hubName.value.trim(), created_at: new Date().toISOString() };
+            secureCheck(async () => {
+                try {
+                    if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'hubs', id), data);
+                    else {
+                        if(state.hubs.find(h => h.code === data.code)) throw new Error("Kode sudah ada!");
+                        await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data);
+                    }
+                    resetHubForm();
+                    showStatusMsg(els.hubMsg, "Berhasil!", "success");
+                } catch(err) { showStatusMsg(els.hubMsg, err.message, "error"); }
+            });
         });
 
+        window.editHub = (h) => {
+            if(typeof h === 'string') h = JSON.parse(h);
+            secureCheck(() => {
+                els.editHubId.value = h.id;
+                els.hubCode.value = h.code;
+                els.hubName.value = h.name;
+                els.btnSaveHub.textContent = 'Update';
+                els.btnCancelHub.classList.remove('hidden');
+                els.formAddHub.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        window.resetHubForm = () => {
+            els.formAddHub.reset();
+            els.editHubId.value = '';
+            els.btnSaveHub.textContent = 'Simpan';
+            els.btnCancelHub.classList.add('hidden');
+        }
+
         function renderHubsTable() {
-            els.hubTableBody.innerHTML = state.hubs.length === 0 
-                ? `<tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada HUB.</td></tr>`
-                : state.hubs.map(hub => `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                        <td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td>
-                        <td class="p-4 font-medium">${hub.name}</td>
-                        <td class="p-4 text-right">
-                            <button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
+            els.hubTableBody.innerHTML = state.hubs.map(hub => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                    <td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td>
+                    <td class="p-4 font-medium">${hub.name}</td>
+                    <td class="p-4 text-right">
+                        <button onclick='editHub(${JSON.stringify(hub)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+            `).join('');
             lucide.createIcons();
         }
 
         // --- EMPLOYEE LOGIC ---
         els.formAddUser.addEventListener('submit', async (e) => {
             e.preventDefault();
-            els.btnSaveUser.disabled = true;
-            els.btnSaveUser.textContent = 'Menyimpan...';
-            
-            const isEdit = els.editUserId.value !== '';
-            
-            const userData = {
-                nik: els.userNik.value.trim(),
-                name: els.userName.value.trim(),
-                hub_code: els.userHub.value, 
-                role: els.userRole.value,
-                can_login: els.userCanLogin.checked,
-                password: els.userPass.value.trim(), 
-                created_at: new Date().toISOString()
+            const id = els.editUserId.value;
+            const data = {
+                nik: els.userNik.value.trim(), name: els.userName.value.trim(), hub_code: els.userHub.value, 
+                role: els.userRole.value, can_login: els.userCanLogin.checked, password: els.userPass.value.trim(), created_at: new Date().toISOString()
             };
-
-            try {
-                if (!isEdit && state.employees.find(e => e.nik === userData.nik)) throw new Error('NIK sudah terdaftar!');
-
-                if (isEdit) {
-                    const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', els.editUserId.value);
-                    await updateDoc(userRef, userData);
-                    showStatusMsg(els.userMsg, 'Data berhasil diperbarui!', 'success');
-                } else {
-                    await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), userData);
-                    showStatusMsg(els.userMsg, 'Karyawan berhasil ditambahkan!', 'success');
-                }
-                
-                resetUserForm();
-            } catch (err) {
-                showStatusMsg(els.userMsg, err.message, 'error');
-            } finally {
-                els.btnSaveUser.disabled = false;
-                els.btnSaveUser.textContent = 'Simpan Data';
-            }
+            secureCheck(async () => {
+                try {
+                    if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id), data);
+                    else {
+                        if(state.employees.find(e => e.nik === data.nik)) throw new Error('NIK sudah terdaftar!');
+                        await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data);
+                    }
+                    resetUserForm();
+                    showStatusMsg(els.userMsg, 'Berhasil!', 'success');
+                } catch (err) { showStatusMsg(els.userMsg, err.message, 'error'); }
+            });
         });
+
+        window.togglePasswordInput = () => {
+            if(els.userCanLogin.checked) { els.passContainer.classList.remove('hidden'); els.userPass.required = true; } 
+            else { els.passContainer.classList.add('hidden'); els.userPass.required = false; els.userPass.value = ''; }
+        }
+
+        window.resetUserForm = () => {
+            els.formAddUser.reset(); els.editUserId.value = ''; els.formUserTitle.textContent = 'Tambah Data Karyawan';
+            els.btnSaveUser.textContent = 'Simpan Data'; els.btnCancelEdit.classList.add('hidden'); els.userNik.disabled = false; togglePasswordInput();
+        }
 
         function renderEmployeesTable() {
             els.userCount.textContent = `Total: ${state.employees.length}`;
-            els.userTableBody.innerHTML = state.employees.length === 0 
-                ? `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada data karyawan.</td></tr>`
-                : state.employees.map(u => `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                        <td class="p-4">
-                            <div class="font-medium text-slate-800">${u.name}</div>
-                            <div class="text-xs text-slate-500 font-mono">${u.nik}</div>
-                        </td>
-                        <td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${u.hub_code || '-'}</span></td>
-                        <td class="p-4 capitalize text-slate-600">${u.role}</td>
-                        <td class="p-4 font-mono text-slate-500 text-xs">${u.can_login ? u.password : '-'}</td>
-                        <td class="p-4">
-                            ${u.can_login 
-                                ? '<span class="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Aktif</span>' 
-                                : '<span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded-full">Tidak</span>'}
-                        </td>
-                        <td class="p-4 text-right flex gap-2 justify-end">
-                            <button onclick='editUser(${JSON.stringify(u)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick="deleteDocItem('users', '${u.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
+            els.userTableBody.innerHTML = state.employees.map(u => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                    <td class="p-4"><div class="font-medium text-slate-800">${u.name}</div><div class="text-xs text-slate-500 font-mono">${u.nik}</div></td>
+                    <td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${u.hub_code || '-'}</span></td>
+                    <td class="p-4 capitalize text-slate-600">${u.role}</td>
+                    <td class="p-4 font-mono text-slate-500 text-xs">${u.can_login ? u.password : '-'}</td>
+                    <td class="p-4">${u.can_login ? '<span class="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Aktif</span>' : '<span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded-full">Tidak</span>'}</td>
+                    <td class="p-4 text-right flex gap-2 justify-end">
+                        <button onclick='editUser(${JSON.stringify(u)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteDocItem('users', '${u.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+            `).join('');
             lucide.createIcons();
         }
 
         window.editUser = (u) => {
             if(typeof u === 'string') u = JSON.parse(u);
-            
-            els.editUserId.value = u.id;
-            els.userNik.value = u.nik;
-            els.userNik.disabled = true; 
-            els.userName.value = u.name;
-            els.userHub.value = u.hub_code;
-            els.userRole.value = u.role;
-            els.userCanLogin.checked = u.can_login;
-            els.userPass.value = u.password || '';
-            
-            togglePasswordInput();
-            
-            els.formUserTitle.textContent = 'Edit Data Karyawan';
-            els.btnSaveUser.textContent = 'Update Data';
-            els.btnCancelEdit.classList.remove('hidden');
-            
-            els.formAddUser.scrollIntoView({ behavior: 'smooth' });
+            secureCheck(() => {
+                els.editUserId.value = u.id; els.userNik.value = u.nik; els.userNik.disabled = true; els.userName.value = u.name;
+                els.userHub.value = u.hub_code; els.userRole.value = u.role; els.userCanLogin.checked = u.can_login; els.userPass.value = u.password || '';
+                togglePasswordInput();
+                els.formUserTitle.textContent = 'Edit Data Karyawan'; els.btnSaveUser.textContent = 'Update Data'; els.btnCancelEdit.classList.remove('hidden');
+                els.formAddUser.scrollIntoView({ behavior: 'smooth' });
+            });
         }
 
-        // --- UTILS ---
         window.deleteDocItem = async (colName, id) => {
-            if(!confirm('Hapus data ini?')) return;
-            try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); } 
-            catch(e) { alert('Gagal hapus'); }
+            secureCheck(async () => {
+                if(!confirm('Hapus data ini?')) return;
+                try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); } 
+                catch(e) { alert('Gagal hapus'); }
+            });
         };
 
         function showStatusMsg(el, text, type) {
@@ -1154,7 +1248,6 @@
             setTimeout(() => el.classList.add('hidden'), 3000);
         }
 
-        // --- SIDEBAR TOGGLE ---
         els.openSidebarBtn.addEventListener('click', () => { els.sidebar.classList.remove('-translate-x-full'); els.sidebarOverlay.classList.remove('hidden'); });
         els.closeSidebarBtn.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
         els.sidebarOverlay.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });

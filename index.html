@@ -805,8 +805,10 @@
 
             try {
                 if (!auth.currentUser) {
-                    if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
-                    else await signInAnonymously(auth);
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
+                        else await signInAnonymously(auth);
+                    } catch(e) { console.warn("Auth Init Failed:", e); }
                 }
 
                 // Make sure config is loaded

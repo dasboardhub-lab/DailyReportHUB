@@ -434,20 +434,31 @@
         import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // ==========================================
-        // KONFIGURASI FIREBASE (PRODUCTION/GITHUB)
+        // KONFIGURASI FIREBASE (HYBRID: PREVIEW + LIVE)
         // ==========================================
         
-        const firebaseConfig = {
-            apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
-            authDomain: "dailyreport-cfc8f.firebaseapp.com",
-            projectId: "dailyreport-cfc8f",
-            storageBucket: "dailyreport-cfc8f.firebasestorage.app",
-            messagingSenderId: "963104518926",
-            appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
-        };
-        
-        // Pastikan APP_ID sama dengan saat data dibuat (v2)
-        const APP_ID = "daily-report-app-v2";
+        let firebaseConfig;
+        let APP_ID;
+
+        // 1. Cek Environment (Preview vs Production)
+        if (typeof __firebase_config !== 'undefined') {
+            // [MODE PREVIEW] Gunakan Database Sandbox bawaan (agar tidak error console)
+            console.log("Mode Preview: Menggunakan Sandbox Database");
+            firebaseConfig = JSON.parse(__firebase_config);
+            APP_ID = 'daily-report-app-v2'; // Gunakan ID tetap agar data persisten di sesi preview
+        } else {
+            // [MODE LIVE/GITHUB] Gunakan Database Asli Anda
+            console.log("Mode Live: Menggunakan Database Production");
+            firebaseConfig = {
+                apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
+                authDomain: "dailyreport-cfc8f.firebaseapp.com",
+                projectId: "dailyreport-cfc8f",
+                storageBucket: "dailyreport-cfc8f.firebasestorage.app",
+                messagingSenderId: "963104518926",
+                appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
+            };
+            APP_ID = "daily-report-app-v2"; 
+        }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -540,6 +551,13 @@
         // --- INITIALIZATION ---
         async function init() {
             try { lucide.createIcons(); } catch(e) {}
+
+            // Auto-login Preview Mode
+            if (typeof __initial_auth_token !== 'undefined') {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch(e) { console.error("Auto Login Error", e); }
+            }
 
             onAuthStateChanged(auth, (currentUser) => {
                 state.user = currentUser;
@@ -820,12 +838,26 @@
             els.btnLogin.innerHTML = `<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Memeriksa...`;
 
             try {
+                // 1. Cek Admin Hardcoded
                 if (nik.toLowerCase() === 'admin' && pass === 'admin123') {
                     updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
                     return; 
                 }
 
-                if (!auth.currentUser) await signInAnonymously(auth); 
+                // 2. Pastikan Koneksi Database Aman (Anonymous)
+                if (!auth.currentUser) {
+                    try {
+                        // Cek apakah di environment preview
+                        if (typeof __initial_auth_token !== 'undefined') {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch(e) {
+                        console.error("Auth Init Failed:", e);
+                        // Lanjut saja, mungkin sudah auth sebelumnya
+                    }
+                }
                 
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
                 // Cek NIK dan Password

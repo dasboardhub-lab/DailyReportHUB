@@ -876,23 +876,10 @@
         async function init() {
             try { lucide.createIcons(); } catch(e) {}
             
-            // SECURITY FALLBACK: Force remove loading screen after 3 seconds
-            // This prevents the "stuck on loading" issue if Firebase fails to initialize
-            const fallbackTimer = setTimeout(() => {
-                const loader = document.getElementById('loading-screen');
-                if (loader && !loader.classList.contains('hidden')) {
-                    console.warn("Loading timeout - forcing display");
-                    loader.classList.add('opacity-0');
-                    setTimeout(() => loader.classList.add('hidden'), 500);
-                    if (!state.user) showLogin();
-                }
-            }, 3000);
-
             if (typeof __initial_auth_token !== 'undefined') { try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {} }
             loadGlobalConfig();
             
             onAuthStateChanged(auth, (currentUser) => {
-                clearTimeout(fallbackTimer); // Cancel fallback if auth responds
                 state.user = currentUser;
                 const savedRole = localStorage.getItem('userRole');
                 const savedUserData = localStorage.getItem('userData');
@@ -1274,6 +1261,43 @@
         els.closeSidebarBtn.addEventListener('click', closeMenu); els.sidebarOverlay.addEventListener('click', closeMenu);
 
         init();
+    </script>
+    <script>
+        // GLOBAL ERROR HANDLER & TIMEOUT
+        // Ini berjalan di luar module untuk menangani jika Firebase gagal dimuat
+        
+        // 1. Timeout Safety (4 detik)
+        setTimeout(() => {
+            const loader = document.getElementById('loading-screen');
+            if (loader && !loader.classList.contains('hidden')) {
+                console.warn("Fallback Timer Triggered");
+                loader.classList.add('opacity-0');
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    // Paksa tampilkan login jika app belum siap
+                    if (document.getElementById('app-screen').classList.contains('hidden')) {
+                        document.getElementById('login-screen').classList.remove('hidden');
+                        // Tampilkan notifikasi error
+                        const errDiv = document.getElementById('login-error');
+                        if(errDiv) {
+                            errDiv.classList.remove('hidden');
+                            document.getElementById('login-error-text').innerText = "Koneksi lambat/Offline. Mode terbatas.";
+                        }
+                    }
+                }, 500);
+            }
+        }, 4000);
+    
+        // 2. Error Handler
+        window.addEventListener('error', function(e) {
+            console.error("Global Error:", e);
+            // Jika error terjadi saat loading masih ada, matikan loading
+            const loader = document.getElementById('loading-screen');
+            if (loader && !loader.classList.contains('hidden')) {
+                loader.classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>

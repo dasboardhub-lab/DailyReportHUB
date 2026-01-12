@@ -325,11 +325,12 @@
                                             <th class="p-3">HUB</th>
                                             <th class="p-3 text-right">Total Paket</th>
                                             <th class="p-3 text-right">Total MPP</th>
+                                            <th class="p-3 text-right">Est. Biaya</th>
                                             <th class="p-3 text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="rpt-history-body" class="divide-y divide-slate-100">
-                                        <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -348,10 +349,10 @@
                                 Data HUB
                             </button>
                             <button onclick="switchSettingsTab('employees')" id="tab-btn-employees" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">
-                                Data Karyawan (Leader/Sorter)
+                                Data Karyawan
                             </button>
-                            <button onclick="switchSettingsTab('security')" id="tab-btn-security" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2">
-                                <i data-lucide="shield" class="w-3 h-3"></i> Keamanan
+                            <button onclick="switchSettingsTab('config')" id="tab-btn-config" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2">
+                                <i data-lucide="settings-2" class="w-3 h-3"></i> Konfigurasi Umum
                             </button>
                         </div>
 
@@ -363,15 +364,19 @@
                                 </h3>
                                 <form id="form-add-hub" class="flex flex-col md:flex-row gap-4 items-end">
                                     <input type="hidden" id="edit-hub-id">
-                                    <div class="w-full md:w-1/3">
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB (Misal: CGK)</label>
+                                    <div class="w-full md:w-1/4">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB</label>
                                         <input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required>
                                     </div>
-                                    <div class="w-full md:w-2/3">
+                                    <div class="w-full md:w-2/4">
                                         <label class="block text-xs font-medium text-slate-500 mb-1">Nama HUB</label>
                                         <input type="text" id="hub-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lokasi HUB" required>
                                     </div>
-                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[100px]">
+                                    <div class="w-full md:w-1/4">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Rate Sorter (Rp)</label>
+                                        <input type="number" id="hub-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0">
+                                    </div>
+                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[80px]">
                                         Simpan
                                     </button>
                                     <button type="button" id="btn-cancel-hub" class="hidden text-slate-500 text-sm" onclick="resetHubForm()">Batal</button>
@@ -380,9 +385,9 @@
                             </div>
 
                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div class="p-4 border-b border-slate-100 bg-slate-50"><h3 class="font-semibold text-slate-800">Daftar HUB</h3></div>
+                                <div class="p-4 border-b border-slate-100 bg-slate-50"><h3 class="font-semibold text-slate-800">Daftar HUB & Biaya</h3></div>
                                 <table class="w-full text-left text-sm">
-                                    <thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Aksi</th></tr></thead>
+                                    <thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Rate Sorter</th><th class="p-4 text-right">Aksi</th></tr></thead>
                                     <tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody>
                                 </table>
                             </div>
@@ -467,24 +472,43 @@
                             </div>
                         </div>
 
-                        <!-- TAB: SECURITY CONFIG -->
-                        <div id="tab-content-security" class="settings-tab-content hidden space-y-6">
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-lg">
-                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                    <i data-lucide="lock" class="w-5 h-5 text-blue-600"></i> Konfigurasi Keamanan
-                                </h3>
-                                <p class="text-sm text-slate-500 mb-4">
-                                    Atur "Kode Otorisasi" yang akan diminta saat User (Non-Admin) mencoba menghapus atau mengedit data sensitif.
-                                </p>
-                                <form id="form-security-code" class="flex gap-2 items-end">
-                                    <div class="flex-1">
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Default: 123456)</label>
-                                        <input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456">
-                                    </div>
-                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Simpan Kode</button>
-                                </form>
-                                <p id="security-msg" class="text-xs mt-3 hidden"></p>
+                        <!-- TAB: KONFIGURASI UMUM (NEW) -->
+                        <div id="tab-content-config" class="settings-tab-content hidden space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Keamanan Admin -->
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                        <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i> Akun & Keamanan
+                                    </h3>
+                                    <form id="form-config-security" class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Ganti Password Admin</label>
+                                            <input type="text" id="config-admin-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Password Baru">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Delete/Edit)</label>
+                                            <input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456">
+                                        </div>
+                                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 w-full">Update Keamanan</button>
+                                    </form>
+                                </div>
+
+                                <!-- Biaya Global -->
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                        <i data-lucide="wallet" class="w-5 h-5 text-green-600"></i> Biaya Operasional Global
+                                    </h3>
+                                    <form id="form-config-cost" class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Biaya DW per Kehadiran (Rp)</label>
+                                            <input type="number" id="config-dw-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0">
+                                            <p class="text-xs text-slate-400 mt-1">*Berlaku sama untuk semua HUB</p>
+                                        </div>
+                                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 w-full">Update Biaya</button>
+                                    </form>
+                                </div>
                             </div>
+                            <p id="config-msg" class="text-center text-sm font-medium hidden"></p>
                         </div>
 
                     </div>
@@ -540,7 +564,11 @@
             currentView: 'dashboard',
             hubs: [],
             employees: [],
-            secureCode: '123456' 
+            config: {
+                secure_code: '123456',
+                admin_password: 'admin123',
+                dw_rate: 0
+            }
         };
 
         // --- DOM ELEMENTS ---
@@ -609,11 +637,12 @@
             rptMsg: document.getElementById('rpt-msg'),
             rptHistoryBody: document.getElementById('rpt-history-body'),
             
-            // Settings
+            // Settings - Hubs
             formAddHub: document.getElementById('form-add-hub'),
             editHubId: document.getElementById('edit-hub-id'),
             hubCode: document.getElementById('hub-code'),
             hubName: document.getElementById('hub-name'),
+            hubRate: document.getElementById('hub-rate'),
             btnSaveHub: document.getElementById('btn-save-hub'),
             btnCancelHub: document.getElementById('btn-cancel-hub'),
             hubMsg: document.getElementById('hub-msg'),
@@ -635,10 +664,13 @@
             userTableBody: document.getElementById('user-table-body'),
             userCount: document.getElementById('user-count'),
 
-            // Security Config
-            formSecurityCode: document.getElementById('form-security-code'),
+            // Config (New)
+            formConfigSecurity: document.getElementById('form-config-security'),
+            configAdminPass: document.getElementById('config-admin-pass'),
             configSecureCode: document.getElementById('config-secure-code'),
-            securityMsg: document.getElementById('security-msg'),
+            formConfigCost: document.getElementById('form-config-cost'),
+            configDwRate: document.getElementById('config-dw-rate'),
+            configMsg: document.getElementById('config-msg'),
         };
 
         // --- INITIALIZATION ---
@@ -648,6 +680,9 @@
             if (typeof __initial_auth_token !== 'undefined') {
                 try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
             }
+
+            // Load Global Config Early
+            loadGlobalConfig();
 
             onAuthStateChanged(auth, (currentUser) => {
                 state.user = currentUser;
@@ -667,16 +702,20 @@
             });
         }
 
+        async function loadGlobalConfig() {
+            try {
+                const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'));
+                if (snap.exists()) {
+                    state.config = { ...state.config, ...snap.data() };
+                }
+            } catch(e) { console.error("Config Load Error", e); }
+        }
+
         // --- SECURITY LOGIC ---
         let pendingSecureAction = null;
 
         function secureCheck(callback) {
-            // Jika Admin, bypass check
-            if (state.role === 'admin') {
-                callback();
-                return;
-            }
-            // Jika bukan admin, minta kode
+            if (state.role === 'admin') { callback(); return; }
             pendingSecureAction = callback;
             els.inputSecureCode.value = '';
             els.secureError.classList.add('hidden');
@@ -691,74 +730,67 @@
 
         els.btnCancelSecure.addEventListener('click', closeSecureModal);
         
-        els.btnConfirmSecure.addEventListener('click', async () => {
+        els.btnConfirmSecure.addEventListener('click', () => {
             const input = els.inputSecureCode.value.trim();
-            const settingsRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config');
-            try {
-                const snap = await getDoc(settingsRef);
-                const serverCode = snap.exists() ? snap.data().secure_code : '123456';
-                
-                if (input === serverCode) {
-                    closeSecureModal();
-                    if(pendingSecureAction) pendingSecureAction();
-                } else {
-                    els.secureError.textContent = "Kode salah!";
-                    els.secureError.classList.remove('hidden');
-                }
-            } catch (e) {
-                console.error(e);
-                els.secureError.textContent = "Gagal verifikasi.";
+            if (input === state.config.secure_code) {
+                closeSecureModal();
+                if(pendingSecureAction) pendingSecureAction();
+            } else {
+                els.secureError.textContent = "Kode salah!";
                 els.secureError.classList.remove('hidden');
             }
         });
 
-        els.formSecurityCode.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newCode = els.configSecureCode.value.trim();
-            if(!newCode) return;
+        // Config Save Handlers
+        async function saveConfig(data) {
             try {
-                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), { secure_code: newCode }, { merge: true });
-                showStatusMsg(els.securityMsg, "Kode berhasil disimpan!", "success");
-            } catch(e) { showStatusMsg(els.securityMsg, "Gagal simpan.", "error"); }
+                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), data, { merge: true });
+                // Update local state
+                state.config = { ...state.config, ...data };
+                showStatusMsg(els.configMsg, "Konfigurasi berhasil disimpan!", "success");
+            } catch(e) { showStatusMsg(els.configMsg, "Gagal simpan.", "error"); }
+        }
+
+        els.formConfigSecurity.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = els.configAdminPass.value.trim();
+            const code = els.configSecureCode.value.trim();
+            const update = {};
+            if(pass) update.admin_password = pass;
+            if(code) update.secure_code = code;
+            if(Object.keys(update).length > 0) saveConfig(update);
+        });
+
+        els.formConfigCost.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const rate = Number(els.configDwRate.value);
+            saveConfig({ dw_rate: rate });
         });
 
         // --- LOGIN LOGIC ---
         window.switchLoginTab = (tab) => {
             state.loginTab = tab;
-            
-            // Reset styles
             ['sorter', 'leader', 'admin'].forEach(t => {
                 const el = document.getElementById(`tab-login-${t}`);
-                if(t === tab) {
-                    el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600";
-                } else {
-                    el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive";
-                }
+                if(t === tab) el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600";
+                else el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive";
             });
 
-            // Adjust fields visibility
             els.loginError.classList.add('hidden');
-            els.loginNik.value = '';
-            els.loginPass.value = '';
+            els.loginNik.value = ''; els.loginPass.value = '';
 
             if (tab === 'sorter') {
-                els.fieldNik.classList.remove('hidden');
-                els.fieldPass.classList.add('hidden');
+                els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.add('hidden');
                 els.loginHint.textContent = "Masuk sebagai Sorter (View Only)";
-                els.loginNik.required = true;
-                els.loginPass.required = false;
+                els.loginNik.required = true; els.loginPass.required = false;
             } else if (tab === 'leader') {
-                els.fieldNik.classList.remove('hidden');
-                els.fieldPass.classList.remove('hidden');
+                els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.remove('hidden');
                 els.loginHint.textContent = "Masuk sebagai Leader/Staf (Akses Penuh)";
-                els.loginNik.required = true;
-                els.loginPass.required = true;
+                els.loginNik.required = true; els.loginPass.required = true;
             } else if (tab === 'admin') {
-                els.fieldNik.classList.add('hidden');
-                els.fieldPass.classList.remove('hidden');
+                els.fieldNik.classList.add('hidden'); els.fieldPass.classList.remove('hidden');
                 els.loginHint.textContent = "Masuk sebagai Administrator";
-                els.loginNik.required = false;
-                els.loginPass.required = true;
+                els.loginNik.required = false; els.loginPass.required = true;
             }
         };
 
@@ -769,87 +801,64 @@
             const pass = els.loginPass.value.trim();
             
             els.loginError.classList.add('hidden');
-            els.btnLogin.disabled = true;
-            els.btnLogin.textContent = 'Memeriksa...';
+            els.btnLogin.disabled = true; els.btnLogin.textContent = 'Memeriksa...';
 
             try {
-                // Ensure Firebase connection
                 if (!auth.currentUser) {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
-                        else await signInAnonymously(auth);
-                    } catch(e) {}
+                    if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
+                    else await signInAnonymously(auth);
                 }
 
+                // Make sure config is loaded
+                if(!state.config.admin_password) await loadGlobalConfig();
+
                 if (tab === 'admin') {
-                    if (pass === 'admin123') { // Simple admin check
+                    if (pass === state.config.admin_password) { 
                         updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
-                    } else {
-                        throw new Error('Password Admin Salah');
-                    }
+                    } else throw new Error('Password Admin Salah');
                 } else if (tab === 'leader') {
-                    // Masuk sebagai Leader (Siapapun yang punya akses login)
                     const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
                     const snap = await getDocs(q);
                     if (!snap.empty) {
                         const u = snap.docs[0].data();
-                        if (u.can_login) updateLocalState('leader', u); // Role 'leader' means Write Access here
-                        else throw new Error('Akun ini tidak memiliki akses login (Hanya View). Gunakan tab Sorter.');
+                        if (u.can_login) updateLocalState('leader', u); 
+                        else throw new Error('Akun ini tidak memiliki akses login.');
                     } else throw new Error('NIK atau Password Salah');
                 } else if (tab === 'sorter') {
-                    // Check if NIK exists as sorter (Read Only)
                     const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
                     const snap = await getDocs(q);
-                    if (!snap.empty) {
-                        const u = snap.docs[0].data();
-                        updateLocalState('sorter', u); // Role 'sorter' means Read Only
-                    } else throw new Error('NIK tidak ditemukan.');
+                    if (!snap.empty) updateLocalState('sorter', snap.docs[0].data());
+                    else throw new Error('NIK tidak ditemukan.');
                 }
-
             } catch (err) {
                 console.error("Login Error:", err);
                 els.loginError.textContent = err.message || 'Login Gagal';
                 els.loginError.classList.remove('hidden');
-                els.btnLogin.disabled = false;
-                els.btnLogin.textContent = 'Masuk';
+                els.btnLogin.disabled = false; els.btnLogin.textContent = 'Masuk';
             }
         });
 
         function updateLocalState(role, userData) {
-            state.role = role; 
-            state.userData = userData;
+            state.role = role; state.userData = userData;
             localStorage.setItem('userRole', role);
             localStorage.setItem('userData', JSON.stringify(userData));
             showApp();
         }
 
-        // --- NAVIGATION & UI ---
         function showLogin() {
-            els.loginScreen.classList.remove('hidden');
-            els.appScreen.classList.add('hidden');
-            switchLoginTab('leader'); // Default tab
+            els.loginScreen.classList.remove('hidden'); els.appScreen.classList.add('hidden'); switchLoginTab('leader');
         }
 
         function showApp() {
-            els.loginScreen.classList.add('hidden');
-            els.appScreen.classList.remove('hidden');
+            els.loginScreen.classList.add('hidden'); els.appScreen.classList.remove('hidden');
             els.userNameDisplay.textContent = state.userData?.name || 'User';
-            // Tampilkan Jabatan Asli jika ada, kalau tidak gunakan Role sesi
             els.userRoleDisplay.textContent = state.userData?.role || state.role;
             
-            // Access Control UI
-            if (state.role === 'admin') {
-                els.menuSettings.classList.remove('hidden');
-            } else {
-                els.menuSettings.classList.add('hidden');
-            }
+            if (state.role === 'admin') els.menuSettings.classList.remove('hidden');
+            else els.menuSettings.classList.add('hidden');
 
-            // Hide Input Report if Sorter (Read Only)
-            if (state.role === 'sorter') {
-                if(els.sectionInputReport) els.sectionInputReport.classList.add('hidden');
-            } else {
-                if(els.sectionInputReport) els.sectionInputReport.classList.remove('hidden');
-            }
+            if (state.role === 'sorter') els.sectionInputReport.classList.add('hidden');
+            else els.sectionInputReport.classList.remove('hidden');
             
             navigateTo('dashboard');
         }
@@ -857,21 +866,15 @@
         window.navigateTo = (viewId) => {
             state.currentView = viewId;
             document.querySelectorAll('.nav-item').forEach(el => {
-                if(el.dataset.target === viewId) {
-                    el.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
-                    el.classList.remove('text-slate-400', 'hover:bg-slate-800');
-                } else {
-                    el.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
-                    el.classList.add('text-slate-400', 'hover:bg-slate-800');
-                }
+                if(el.dataset.target === viewId) { el.classList.add('bg-blue-600', 'text-white', 'shadow-lg'); el.classList.remove('text-slate-400', 'hover:bg-slate-800'); } 
+                else { el.classList.remove('bg-blue-600', 'text-white', 'shadow-lg'); el.classList.add('text-slate-400', 'hover:bg-slate-800'); }
             });
             Object.values(els.views).forEach(el => el.classList.add('hidden'));
             if (els.views[viewId]) els.views[viewId].classList.remove('hidden');
             if (viewId === 'dashboard') loadDashboard();
             if (viewId === 'reports') loadReportsView();
             if (viewId === 'settings' && state.role === 'admin') loadSettings();
-            els.sidebar.classList.add('-translate-x-full');
-            els.sidebarOverlay.classList.add('hidden');
+            els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden');
         };
 
         function loadDashboard() {
@@ -881,9 +884,7 @@
         }
 
         window.handleLogout = async () => {
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('userData');
-            window.location.reload();
+            localStorage.removeItem('userRole'); localStorage.removeItem('userData'); window.location.reload();
         };
 
         // ==========================================
@@ -933,13 +934,11 @@
         }
 
         async function loadReportsView() {
-            if(els.editReportId.value) return; // Don't reset if editing
-
+            if(els.editReportId.value) return; 
             els.rptDate.valueAsDate = new Date();
             const hubCode = state.userData?.hub_code || 'UNKNOWN';
             els.rptHub.value = hubCode;
             
-            // Load Employees only if user can input reports (Leader/Admin)
             if (state.role !== 'sorter') {
                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
                 try {
@@ -967,30 +966,25 @@
                     }
                 } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
             }
-
             loadMyReports();
             calculateReportTotals();
         }
 
         window.loadMyReports = async () => {
-            els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
+            els.rptHistoryBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
             try {
-                // Fetch ALL reports (Global View)
                 const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
-                
-                // Remove User Filter so everyone sees everything (Limit 20)
                 let q = query(reportsRef, orderBy("date", "desc"), limit(20));
-
+                
                 let querySnapshot;
                 try { querySnapshot = await getDocs(q); } 
                 catch(err) {
-                    console.log("Index error, fetching all");
-                    const q2 = query(reportsRef, limit(20)); // Fallback
+                    const q2 = query(reportsRef, limit(20)); 
                     querySnapshot = await getDocs(q2);
                 }
 
                 if (querySnapshot.empty) {
-                    els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
+                    els.rptHistoryBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
                     return;
                 }
 
@@ -1000,7 +994,6 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
                     
-                    // Logic Hak Akses Tombol: Hanya Admin atau Leader di HUB yang sama
                     let actionButtons = '';
                     if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === data.hub)) {
                         actionButtons = `
@@ -1014,6 +1007,7 @@
                         <td class="p-3 font-medium">${data.hub}</td>
                         <td class="p-3 text-right text-blue-600 font-mono">${(data.total_paket || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right font-mono font-bold">${data.total_mpp || 0}</td>
+                        <td class="p-3 text-right text-green-600 font-mono text-xs">Rp ${(data.est_cost || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right flex gap-2 justify-end">
                             ${actionButtons}
                         </td>
@@ -1021,16 +1015,12 @@
                     els.rptHistoryBody.appendChild(tr);
                 });
                 lucide.createIcons();
-            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
+            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
         };
 
-        // --- REPORT ACTIONS ---
         window.confirmDeleteReport = (id, hub) => {
             secureCheck(async () => {
-                // Double check permission on execute
-                if(state.role !== 'admin' && hub !== state.userData.hub_code) {
-                    alert("Akses Ditolak. Anda hanya bisa menghapus laporan HUB Anda."); return;
-                }
+                if(state.role !== 'admin' && hub !== state.userData.hub_code) { alert("Akses Ditolak."); return; }
                 if(!confirm('Hapus laporan ini?')) return;
                 try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); } 
                 catch(e) { alert('Gagal hapus'); }
@@ -1039,113 +1029,96 @@
 
         window.confirmEditReport = (rpt) => {
             secureCheck(() => {
-                if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) {
-                    alert("Akses Ditolak. Anda hanya bisa mengedit laporan HUB Anda."); return;
-                }
-                els.editReportId.value = rpt.id;
-                els.rptDate.value = rpt.date;
-                els.rptHub.value = rpt.hub;
-                els.rptGateway.value = rpt.gateway;
-                els.rptStaging.value = rpt.staging;
-                els.rptSap.value = rpt.sap;
-                els.rptJne.value = rpt.jne;
+                if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) { alert("Akses Ditolak."); return; }
+                els.editReportId.value = rpt.id; els.rptDate.value = rpt.date; els.rptHub.value = rpt.hub;
+                els.rptGateway.value = rpt.gateway; els.rptStaging.value = rpt.staging; els.rptSap.value = rpt.sap; els.rptJne.value = rpt.jne;
                 
-                els.formReportTitle.textContent = "Edit Laporan";
-                els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
+                els.formReportTitle.textContent = "Edit Laporan"; els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
                 els.btnCancelReportEdit.classList.remove('hidden');
                 
-                // Restore Attendance (Simplified: Clear & suggest manual re-entry if complex, or try basic map)
-                // For a robust edit, we'd need to re-render the list and map the values.
-                // Re-rendering list for specific HUB:
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                // Use a quick fetch to rebuild the list context for the edited HUB
                 let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", rpt.hub));
                 getDocs(qSorter).then(snap => {
                     els.sorterAttendanceList.innerHTML = '';
                     snap.forEach(doc => {
-                        const s = doc.data();
-                        if(s.role === 'admin') return;
+                        const s = doc.data(); if(s.role === 'admin') return;
                         const row = document.createElement('tr');
                         row.className = 'border-b border-slate-50 hover:bg-slate-50';
                         const rowId = doc.id;
-                        row.innerHTML = `
-                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
-                            ${generateAttendanceColumns(rowId)}
-                            <td class="p-3"></td>
-                        `;
+                        row.innerHTML = `<td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>${generateAttendanceColumns(rowId)}<td class="p-3"></td>`;
                         els.sorterAttendanceList.appendChild(row);
                     });
                     
-                    // Map existing data
                     if(rpt.attendance_data) {
                         rpt.attendance_data.forEach(att => {
-                            // Find row
                             const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
                             let row;
-                            if(nameCell) {
-                                row = nameCell.closest('tr');
-                            } else {
-                                addDwRow(); 
-                                row = els.sorterAttendanceList.lastElementChild;
-                                row.querySelector('.dw-name-input').value = att.name;
-                            }
-                            
+                            if(nameCell) row = nameCell.closest('tr');
+                            else { addDwRow(); row = els.sorterAttendanceList.lastElementChild; row.querySelector('.dw-name-input').value = att.name; }
                             if(row) {
-                                const radio = row.querySelector(`input[value="${att.status}"]`);
-                                if(radio) radio.checked = true;
-                                const remarkInput = row.querySelector('.att-remarks');
-                                if(remarkInput) remarkInput.value = att.remarks || '';
+                                const radio = row.querySelector(`input[value="${att.status}"]`); if(radio) radio.checked = true;
+                                const remarkInput = row.querySelector('.att-remarks'); if(remarkInput) remarkInput.value = att.remarks || '';
                             }
                         });
                     }
                     calculateReportTotals();
                 });
-
                 els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
             });
         };
 
         window.resetReportForm = () => {
-            els.formDailyReport.reset();
-            els.editReportId.value = '';
-            els.formReportTitle.textContent = "Input Laporan Operasional";
-            els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan';
-            els.btnCancelReportEdit.classList.add('hidden');
-            els.rptHub.value = state.userData?.hub_code || '';
-            // Reset attendance UI
-            loadReportsView();
+            els.formDailyReport.reset(); els.editReportId.value = ''; els.formReportTitle.textContent = "Input Laporan Operasional";
+            els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan'; els.btnCancelReportEdit.classList.add('hidden');
+            els.rptHub.value = state.userData?.hub_code || ''; loadReportsView();
         };
 
         els.formDailyReport.addEventListener('submit', async (e) => {
             e.preventDefault();
-            els.btnSaveReport.disabled = true;
-            els.btnSaveReport.textContent = 'Menyimpan...';
-            els.rptMsg.classList.add('hidden');
+            els.btnSaveReport.disabled = true; els.btnSaveReport.textContent = 'Menyimpan...'; els.rptMsg.classList.add('hidden');
 
             try {
+                // Get rates
+                let sorterRate = 0;
+                const hubData = state.hubs.find(h => h.code === els.rptHub.value);
+                if(hubData) sorterRate = Number(hubData.sorter_rate) || 0;
+                
+                const dwRate = Number(state.config.dw_rate) || 0;
+
                 const attendanceDetails = [];
+                let sorterCount = 0;
+                let dwCount = 0;
+
                 els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
                     const checked = row.querySelector('.attendance-radio:checked');
                     if(checked) {
-                        let name = row.querySelector('td[data-name]')?.dataset.name || row.querySelector('.dw-name-input')?.value || 'Unknown';
-                        attendanceDetails.push({ name: name, status: checked.value, remarks: row.querySelector('.att-remarks').value });
+                        const isDb = row.querySelector('td[data-is-db="true"]');
+                        let name = isDb ? isDb.dataset.name : row.querySelector('.dw-name-input')?.value || 'Unknown';
+                        const status = checked.value;
+                        const isWorking = ['s1','s2','s3'].includes(status);
+                        
+                        attendanceDetails.push({ name: name, status: status, remarks: row.querySelector('.att-remarks').value });
+                        
+                        if(isWorking) {
+                            if(isDb) sorterCount++;
+                            else dwCount++;
+                        }
                     }
                 });
 
-                const g = Number(els.rptGateway.value) || 0;
-                const s = Number(els.rptStaging.value) || 0;
-                const sa = Number(els.rptSap.value) || 0;
-                const j = Number(els.rptJne.value) || 0;
+                const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
+                const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
                 
+                // Calculate Cost
+                const estCost = (sorterCount * sorterRate) + (dwCount * dwRate);
+
                 const reportData = {
-                    date: els.rptDate.value,
-                    hub: els.rptHub.value,
-                    nik: state.userData?.nik || 'UNKNOWN',
+                    date: els.rptDate.value, hub: els.rptHub.value, nik: state.userData?.nik || 'UNKNOWN',
                     reporter_name: state.userData?.name || 'UNKNOWN',
-                    gateway: g, staging: s, sap: sa, jne: j,
-                    total_paket: g+s+sa+j,
-                    total_mpp: attendanceDetails.filter(a => ['s1','s2','s3'].includes(a.status)).length,
+                    gateway: g, staging: s, sap: sa, jne: j, total_paket: g+s+sa+j,
+                    total_mpp: sorterCount + dwCount,
                     attendance_data: attendanceDetails,
+                    est_cost: estCost, // Save cost
                     created_at: new Date().toISOString()
                 };
 
@@ -1157,30 +1130,22 @@
                     els.rptMsg.textContent = "Laporan berhasil disimpan!";
                 }
                 
-                els.rptMsg.className = "text-sm text-green-600 font-medium animate-pulse";
-                els.rptMsg.classList.remove('hidden');
-                
-                resetReportForm();
-                loadMyReports();
+                els.rptMsg.className = "text-sm text-green-600 font-medium animate-pulse"; els.rptMsg.classList.remove('hidden');
+                resetReportForm(); loadMyReports();
 
             } catch (err) {
-                els.rptMsg.textContent = "Gagal: " + err.message;
-                els.rptMsg.className = "text-sm text-red-600 font-medium";
-                els.rptMsg.classList.remove('hidden');
+                els.rptMsg.textContent = "Gagal: " + err.message; els.rptMsg.className = "text-sm text-red-600 font-medium"; els.rptMsg.classList.remove('hidden');
             } finally {
-                els.btnSaveReport.disabled = false;
-                if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan';
-                lucide.createIcons();
+                els.btnSaveReport.disabled = false; if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan'; lucide.createIcons();
             }
         });
 
         // --- SETTINGS LOGIC ---
-        let unsubscribeHubs = null;
-        let unsubscribeEmployees = null;
+        let unsubscribeHubs = null; let unsubscribeEmployees = null;
 
         window.switchSettingsTab = (tabName) => {
             document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
-            ['hubs', 'employees', 'security'].forEach(t => {
+            ['hubs', 'employees', 'config'].forEach(t => {
                 const btn = document.getElementById(`tab-btn-${t}`);
                 if (t === tabName) { btn.classList.remove('tab-inactive'); btn.classList.add('tab-active'); } 
                 else { btn.classList.add('tab-inactive'); btn.classList.remove('tab-active'); }
@@ -1192,8 +1157,7 @@
             if (!unsubscribeHubs) {
                 unsubscribeHubs = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), (snap) => {
                     state.hubs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderHubsTable();
-                    populateHubDropdowns();
+                    renderHubsTable(); populateHubDropdowns();
                 });
             }
             if (!unsubscribeEmployees) {
@@ -1202,9 +1166,10 @@
                     renderEmployeesTable();
                 });
             }
-            getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config')).then(snap => {
-                if(snap.exists()) els.configSecureCode.value = snap.data().secure_code || '123456';
-            });
+            if(state.config) {
+                els.configSecureCode.value = state.config.secure_code || '';
+                els.configDwRate.value = state.config.dw_rate || 0;
+            }
         }
 
         function populateHubDropdowns() {
@@ -1215,7 +1180,12 @@
         els.formAddHub.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = els.editHubId.value;
-            const data = { code: els.hubCode.value.toUpperCase().trim(), name: els.hubName.value.trim(), created_at: new Date().toISOString() };
+            const data = { 
+                code: els.hubCode.value.toUpperCase().trim(), 
+                name: els.hubName.value.trim(), 
+                sorter_rate: Number(els.hubRate.value) || 0,
+                created_at: new Date().toISOString() 
+            };
             secureCheck(async () => {
                 try {
                     if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'hubs', id), data);
@@ -1223,8 +1193,7 @@
                         if(state.hubs.find(h => h.code === data.code)) throw new Error("Kode sudah ada!");
                         await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data);
                     }
-                    resetHubForm();
-                    showStatusMsg(els.hubMsg, "Berhasil!", "success");
+                    resetHubForm(); showStatusMsg(els.hubMsg, "Berhasil!", "success");
                 } catch(err) { showStatusMsg(els.hubMsg, err.message, "error"); }
             });
         });
@@ -1233,6 +1202,7 @@
             if(typeof h === 'string') h = JSON.parse(h);
             secureCheck(() => {
                 els.editHubId.value = h.id; els.hubCode.value = h.code; els.hubName.value = h.name;
+                els.hubRate.value = h.sorter_rate || 0;
                 els.btnSaveHub.textContent = 'Update'; els.btnCancelHub.classList.remove('hidden');
                 els.formAddHub.scrollIntoView({ behavior: 'smooth' });
             });
@@ -1247,6 +1217,7 @@
                 <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
                     <td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td>
                     <td class="p-4 font-medium">${hub.name}</td>
+                    <td class="p-4 text-right">Rp ${(hub.sorter_rate||0).toLocaleString('id-ID')}</td>
                     <td class="p-4 text-right">
                         <button onclick='editHub(${JSON.stringify(hub)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                         <button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -1256,6 +1227,7 @@
             lucide.createIcons();
         }
 
+        // --- EMPLOYEE LOGIC ---
         els.formAddUser.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = els.editUserId.value;
@@ -1270,8 +1242,7 @@
                         if(state.employees.find(e => e.nik === data.nik)) throw new Error('NIK sudah terdaftar!');
                         await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data);
                     }
-                    resetUserForm();
-                    showStatusMsg(els.userMsg, 'Berhasil!', 'success');
+                    resetUserForm(); showStatusMsg(els.userMsg, 'Berhasil!', 'success');
                 } catch (err) { showStatusMsg(els.userMsg, err.message, 'error'); }
             });
         });

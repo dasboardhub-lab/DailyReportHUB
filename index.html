@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Report Team</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none !important; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Styles untuk Tab Navigasi */
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
+        .tab-inactive:hover { color: #334155; }
+
+        /* Style Checkbox */
+        .custom-checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-slate-500 text-sm">Memuat Sistem...</p>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="min-h-screen bg-slate-100 flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-slate-200">
+            <div class="text-center mb-8">
+                <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-blue-200 shadow-lg">
+                    <i data-lucide="file-text" class="text-white w-8 h-8"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800">Daily Report Tim</h1>
+                <p class="text-slate-500 text-sm mt-1">Sistem Laporan Harian</p>
+            </div>
+
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Username / NIK</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="login-nik" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Masukan NIK atau 'admin'" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <input type="password" id="login-pass" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Masukan Password" required>
+                    </div>
+                </div>
+
+                <div id="login-error" class="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 text-center hidden"></div>
+
+                <button type="submit" id="btn-login" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50 flex justify-center items-center gap-2">
+                    <span>Masuk</span>
+                </button>
+                
+                <div class="text-xs text-center text-slate-400 mt-4">
+                    Demo Admin: user: <b>admin</b>, pass: <b>admin123</b>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN -->
+    <div id="app-screen" class="flex h-screen overflow-hidden hidden">
+        
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col h-full">
+            <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">DR</div>
+                    <span class="font-bold text-lg tracking-wide">DailyReport</span>
+                </div>
+                <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+                <button onclick="navigateTo('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white" data-target="dashboard">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="font-medium">Dashboard</span>
+                </button>
+                <button onclick="navigateTo('reports')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white" data-target="reports">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-medium">Laporan Harian</span>
+                </button>
+                <button onclick="navigateTo('settings')" id="menu-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white hidden" data-target="settings">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="font-medium">Pengaturan</span>
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <div class="bg-slate-800 rounded-lg p-4 mb-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="user-circle" class="text-slate-400 w-8 h-8"></i>
+                        <div class="overflow-hidden">
+                            <p id="user-name-display" class="text-sm font-medium text-white truncate">User</p>
+                            <p id="user-role-display" class="text-xs text-blue-400 uppercase font-bold tracking-wider">ROLE</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all text-sm">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Keluar</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+            <!-- Mobile Header -->
+            <header class="bg-white shadow-sm border-b border-slate-200 lg:hidden flex-shrink-0">
+                <div class="px-4 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button id="open-sidebar" class="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                        <span class="font-bold text-slate-800">Daily Report</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Views -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
+                <div class="max-w-6xl mx-auto">
+                    
+                    <!-- VIEW: DASHBOARD -->
+                    <div id="view-dashboard" class="content-view hidden space-y-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <h2 class="text-xl font-bold text-slate-800 mb-1">Halo, <span id="dash-name">User</span>!</h2>
+                            <p class="text-slate-500 text-sm">Selamat datang kembali di Dashboard.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                <div class="text-slate-500 mb-2 text-sm font-medium uppercase">Role Anda</div>
+                                <div id="dash-role" class="text-2xl font-bold text-blue-600 capitalize">-</div>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-2">
+                                <div class="text-slate-500 mb-2 text-sm font-medium uppercase">Info</div>
+                                <p id="dash-info" class="text-slate-700">Info role...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW: REPORTS (MODIFIED) -->
+                    <div id="view-reports" class="content-view hidden space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
+                            <span id="current-date-display" class="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200"></span>
+                        </div>
+                        
+                        <!-- Form Input -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> Input Laporan Operasional
+                            </h3>
+                            <form id="form-daily-report" class="space-y-6">
+                                <!-- Bagian Header -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Laporan</label>
+                                        <input type="date" id="rpt-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">HUB Operasional</label>
+                                        <input type="text" id="rpt-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bagian Metrik -->
+                                <div>
+                                    <h4 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i> Metrik Operasional
+                                    </h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Gateway</label>
+                                            <input type="number" id="rpt-gateway" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Staging</label>
+                                            <input type="number" id="rpt-staging" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">SAP</label>
+                                            <input type="number" id="rpt-sap" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">JNE</label>
+                                            <input type="number" id="rpt-jne" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                                            <label class="block text-xs font-bold text-blue-700 mb-1">TOTAL PAKET</label>
+                                            <input type="text" id="rpt-total-paket" class="w-full bg-transparent font-bold text-xl text-blue-700 text-right outline-none" value="0" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bagian Absensi Sorter -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-3">
+                                        <h4 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> Kehadiran Sorter (MPP)
+                                        </h4>
+                                        <div class="text-right">
+                                            <span class="text-xs text-slate-500 uppercase">Total MPP (Hadir)</span>
+                                            <div id="display-total-mpp" class="text-2xl font-bold text-green-600 leading-none">0</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="border border-slate-200 rounded-lg overflow-hidden">
+                                        <div class="max-h-64 overflow-y-auto">
+                                            <table class="w-full text-sm text-left">
+                                                <thead class="bg-slate-100 text-slate-600 font-medium sticky top-0 z-10">
+                                                    <tr>
+                                                        <th class="p-3 w-1/2">Nama Sorter</th>
+                                                        <th class="p-3 text-center">Shift 1</th>
+                                                        <th class="p-3 text-center">Shift 2</th>
+                                                        <th class="p-3 text-center">Shift 3</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="sorter-attendance-list" class="divide-y divide-slate-100">
+                                                    <!-- List Sorter Akan Digenerate Disini -->
+                                                    <tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Pilih HUB atau login sebagai Leader untuk melihat daftar sorter.</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-2">*Ceklis pada shift yang sesuai jika sorter hadir.</p>
+                                </div>
+
+                                <div class="flex items-center justify-end pt-4 gap-3 border-t border-slate-100">
+                                    <p id="rpt-msg" class="text-sm hidden"></p>
+                                    <button type="submit" id="btn-save-report" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2">
+                                        <i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Table History -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                <h3 class="font-semibold text-slate-800">Riwayat Laporan Saya</h3>
+                                <button onclick="loadMyReports()" class="text-blue-600 text-xs hover:text-blue-800 font-medium">Refresh Data</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 font-medium">
+                                        <tr>
+                                            <th class="p-3">Tanggal</th>
+                                            <th class="p-3">HUB</th>
+                                            <th class="p-3 text-right">Total Paket</th>
+                                            <th class="p-3 text-right">Total MPP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rpt-history-body" class="divide-y divide-slate-100">
+                                        <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW: SETTINGS (MULTI-TAB) -->
+                    <div id="view-settings" class="content-view hidden space-y-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
+                        </div>
+
+                        <!-- Tabs Navigation -->
+                        <div class="flex border-b border-slate-200 mb-6 gap-6 overflow-x-auto">
+                            <button onclick="switchSettingsTab('hubs')" id="tab-btn-hubs" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-active transition-colors">
+                                Data HUB
+                            </button>
+                            <button onclick="switchSettingsTab('leaders')" id="tab-btn-leaders" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">
+                                Data Leader
+                            </button>
+                            <button onclick="switchSettingsTab('sorters')" id="tab-btn-sorters" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">
+                                Data Sorter
+                            </button>
+                        </div>
+
+                        <!-- TAB: DATA HUB -->
+                        <div id="tab-content-hubs" class="settings-tab-content space-y-6">
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i> Tambah / Edit HUB
+                                </h3>
+                                <form id="form-add-hub" class="flex flex-col md:flex-row gap-4 items-end">
+                                    <div class="w-full md:w-1/3">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB (Misal: CGK)</label>
+                                        <input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required>
+                                    </div>
+                                    <div class="w-full md:w-2/3">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Nama HUB</label>
+                                        <input type="text" id="hub-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lokasi HUB" required>
+                                    </div>
+                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[100px]">
+                                        Simpan
+                                    </button>
+                                </form>
+                                <p id="hub-msg" class="text-xs mt-3 hidden"></p>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50"><h3 class="font-semibold text-slate-800">Daftar HUB</h3></div>
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Aksi</th></tr></thead>
+                                    <tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- TAB: DATA LEADER -->
+                        <div id="tab-content-leaders" class="settings-tab-content hidden space-y-6">
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i data-lucide="user-plus" class="w-5 h-5 text-blue-600"></i> Tambah Akun Leader
+                                </h3>
+                                <form id="form-add-leader" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">NIK (ID Login)</label>
+                                        <input type="text" id="new-nik" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Contoh: 2024001" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label>
+                                        <input type="text" id="new-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Leader" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Penempatan HUB</label>
+                                        <select id="new-leader-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required>
+                                            <option value="">Pilih HUB...</option>
+                                            <!-- Populated by JS -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Password</label>
+                                        <input type="text" id="new-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Password Login" required>
+                                    </div>
+                                    <button type="submit" id="btn-save-leader" class="md:col-span-4 bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                                        Simpan Leader
+                                    </button>
+                                </form>
+                                <p id="settings-msg" class="text-xs mt-3 hidden"></p>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                    <h3 class="font-semibold text-slate-800">Daftar Leader</h3>
+                                    <span id="leader-count" class="text-xs text-slate-500">Total: 0</span>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left text-sm">
+                                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                                            <tr>
+                                                <th class="p-4">NIK</th>
+                                                <th class="p-4">Nama</th>
+                                                <th class="p-4">HUB</th>
+                                                <th class="p-4 text-right">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="leader-table-body" class="divide-y divide-slate-100"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: DATA SORTER -->
+                        <div id="tab-content-sorters" class="settings-tab-content hidden space-y-6">
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i data-lucide="users" class="w-5 h-5 text-blue-600"></i> Tambah Anggota Sorter
+                                </h3>
+                                <p class="text-xs text-slate-500 mb-4 -mt-2">Sorter tidak memiliki akses login. Data ini digunakan untuk checklist kehadiran oleh Leader.</p>
+                                <form id="form-add-sorter" class="flex flex-col md:flex-row gap-4 items-end">
+                                    <div class="w-full md:w-1/3">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Nama Sorter</label>
+                                        <input type="text" id="sorter-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lengkap" required>
+                                    </div>
+                                    <div class="w-full md:w-1/3">
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Penempatan HUB</label>
+                                        <select id="sorter-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required>
+                                            <option value="">Pilih HUB...</option>
+                                            <!-- Populated by JS -->
+                                        </select>
+                                    </div>
+                                    <button type="submit" id="btn-save-sorter" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[100px]">
+                                        Simpan
+                                    </button>
+                                </form>
+                                <p id="sorter-msg" class="text-xs mt-3 hidden"></p>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50"><h3 class="font-semibold text-slate-800">Daftar Sorter</h3></div>
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Nama</th><th class="p-4">HUB</th><th class="p-4 text-right">Aksi</th></tr></thead>
+                                    <tbody id="sorter-table-body" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </main>
+        </div>
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ==========================================
+        // KONFIGURASI FIREBASE
+        // ==========================================
+        
+        let firebaseConfig;
+        let APP_ID;
+
+        if (typeof __firebase_config !== 'undefined') {
+            console.log("Mode Preview: Menggunakan Sandbox Database");
+            firebaseConfig = JSON.parse(__firebase_config);
+            APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'daily-report-app-v2'; 
+        } else {
+            console.log("Mode Live: Menggunakan Database Production");
+            firebaseConfig = {
+                apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
+                authDomain: "dailyreport-cfc8f.firebaseapp.com",
+                projectId: "dailyreport-cfc8f",
+                storageBucket: "dailyreport-cfc8f.firebasestorage.app",
+                messagingSenderId: "963104518926",
+                appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
+            };
+            APP_ID = "daily-report-app-v2"; 
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- STATE MANAGEMENT ---
+        let state = {
+            user: null, 
+            role: null, 
+            userData: null,
+            currentView: 'dashboard',
+            hubs: [],
+            leaders: [],
+            sorters: []
+        };
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            loading: document.getElementById('loading-screen'),
+            loginScreen: document.getElementById('login-screen'),
+            appScreen: document.getElementById('app-screen'),
+            loginForm: document.getElementById('login-form'),
+            loginNik: document.getElementById('login-nik'),
+            loginPass: document.getElementById('login-pass'),
+            loginError: document.getElementById('login-error'),
+            btnLogin: document.getElementById('btn-login'),
+            
+            sidebar: document.getElementById('sidebar'),
+            sidebarOverlay: document.getElementById('sidebar-overlay'),
+            openSidebarBtn: document.getElementById('open-sidebar'),
+            closeSidebarBtn: document.getElementById('close-sidebar'),
+            menuSettings: document.getElementById('menu-settings'),
+            
+            userNameDisplay: document.getElementById('user-name-display'),
+            userRoleDisplay: document.getElementById('user-role-display'),
+            
+            views: {
+                dashboard: document.getElementById('view-dashboard'),
+                reports: document.getElementById('view-reports'),
+                settings: document.getElementById('view-settings')
+            },
+            
+            // Dashboard
+            dashName: document.getElementById('dash-name'),
+            dashRole: document.getElementById('dash-role'),
+            dashInfo: document.getElementById('dash-info'),
+            
+            // Reports (NEW ELEMENTS)
+            formDailyReport: document.getElementById('form-daily-report'),
+            rptDate: document.getElementById('rpt-date'),
+            rptHub: document.getElementById('rpt-hub'),
+            rptGateway: document.getElementById('rpt-gateway'),
+            rptStaging: document.getElementById('rpt-staging'),
+            rptSap: document.getElementById('rpt-sap'),
+            rptJne: document.getElementById('rpt-jne'),
+            rptTotalPaket: document.getElementById('rpt-total-paket'),
+            
+            sorterAttendanceList: document.getElementById('sorter-attendance-list'),
+            displayTotalMpp: document.getElementById('display-total-mpp'),
+            
+            btnSaveReport: document.getElementById('btn-save-report'),
+            rptMsg: document.getElementById('rpt-msg'),
+            rptHistoryBody: document.getElementById('rpt-history-body'),
+            
+            // Settings
+            formAddLeader: document.getElementById('form-add-leader'),
+            newNik: document.getElementById('new-nik'),
+            newName: document.getElementById('new-name'),
+            newPass: document.getElementById('new-pass'),
+            newLeaderHub: document.getElementById('new-leader-hub'),
+            btnSaveLeader: document.getElementById('btn-save-leader'),
+            settingsMsg: document.getElementById('settings-msg'),
+            leaderTableBody: document.getElementById('leader-table-body'),
+            leaderCount: document.getElementById('leader-count'),
+
+            // Settings - Hubs
+            formAddHub: document.getElementById('form-add-hub'),
+            hubCode: document.getElementById('hub-code'),
+            hubName: document.getElementById('hub-name'),
+            btnSaveHub: document.getElementById('btn-save-hub'),
+            hubMsg: document.getElementById('hub-msg'),
+            hubTableBody: document.getElementById('hub-table-body'),
+
+            // Settings - Sorters
+            formAddSorter: document.getElementById('form-add-sorter'),
+            sorterName: document.getElementById('sorter-name'),
+            sorterHub: document.getElementById('sorter-hub'),
+            btnSaveSorter: document.getElementById('btn-save-sorter'),
+            sorterMsg: document.getElementById('sorter-msg'),
+            sorterTableBody: document.getElementById('sorter-table-body'),
+        };
+
+        // --- INITIALIZATION ---
+        async function init() {
+            try { lucide.createIcons(); } catch(e) {}
+
+            if (typeof __initial_auth_token !== 'undefined') {
+                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
+            }
+
+            onAuthStateChanged(auth, (currentUser) => {
+                state.user = currentUser;
+                const savedRole = localStorage.getItem('userRole');
+                const savedUserData = localStorage.getItem('userData');
+                
+                if (currentUser && savedRole) {
+                    state.role = savedRole;
+                    if (savedUserData) state.userData = JSON.parse(savedUserData);
+                    showApp();
+                } else {
+                    state.role = null;
+                    state.userData = null;
+                    showLogin();
+                }
+                els.loading.classList.add('hidden');
+            });
+        }
+
+        // --- NAVIGATION & UI ---
+        function showLogin() {
+            els.loginScreen.classList.remove('hidden');
+            els.appScreen.classList.add('hidden');
+        }
+
+        function showApp() {
+            els.loginScreen.classList.add('hidden');
+            els.appScreen.classList.remove('hidden');
+            
+            els.userNameDisplay.textContent = state.userData?.name || 'User';
+            els.userRoleDisplay.textContent = state.role;
+            
+            if (state.role === 'admin') {
+                els.menuSettings.classList.remove('hidden');
+            } else {
+                els.menuSettings.classList.add('hidden');
+            }
+            
+            navigateTo('dashboard');
+        }
+
+        window.navigateTo = (viewId) => {
+            state.currentView = viewId;
+            
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if(el.dataset.target === viewId) {
+                    el.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
+                    el.classList.remove('text-slate-400', 'hover:bg-slate-800');
+                } else {
+                    el.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
+                    el.classList.add('text-slate-400', 'hover:bg-slate-800');
+                }
+            });
+            
+            Object.values(els.views).forEach(el => el.classList.add('hidden'));
+            if (els.views[viewId]) els.views[viewId].classList.remove('hidden');
+            
+            if (viewId === 'dashboard') loadDashboard();
+            if (viewId === 'reports') loadReportsView();
+            if (viewId === 'settings' && state.role === 'admin') loadSettings();
+            
+            els.sidebar.classList.add('-translate-x-full');
+            els.sidebarOverlay.classList.add('hidden');
+        };
+
+        function loadDashboard() {
+            els.dashName.textContent = state.userData?.name || state.role;
+            els.dashRole.textContent = state.role;
+            els.dashInfo.textContent = state.role === 'admin' 
+                ? 'Anda dapat mengelola HUB, Leader, dan Sorter di menu Pengaturan.' 
+                : 'Silakan isi laporan harian tim Anda di menu Laporan Harian.';
+        }
+
+        // ==========================================
+        // REPORTS LOGIC (UPDATED)
+        // ==========================================
+        
+        // Auto Calculate Total Packages
+        document.querySelectorAll('.metric-input').forEach(input => {
+            input.addEventListener('input', calculateReportTotals);
+        });
+
+        function calculateReportTotals() {
+            // Calc Packages
+            const g = Number(els.rptGateway.value) || 0;
+            const s = Number(els.rptStaging.value) || 0;
+            const sa = Number(els.rptSap.value) || 0;
+            const j = Number(els.rptJne.value) || 0;
+            els.rptTotalPaket.value = (g + s + sa + j).toLocaleString('id-ID');
+
+            // Calc MPP (Count Checked Boxes)
+            const checks = document.querySelectorAll('.sorter-check:checked');
+            els.displayTotalMpp.textContent = checks.length;
+        }
+
+        // Make calc function global for onclick checkboxes
+        window.calculateReportTotals = calculateReportTotals;
+
+        async function loadReportsView() {
+            els.rptDate.valueAsDate = new Date();
+            const hubCode = state.userData?.hub_code || 'UNKNOWN';
+            els.rptHub.value = hubCode;
+            
+            // 1. Load Sorter List for Attendance
+            els.sorterAttendanceList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Memuat daftar sorter...</td></tr>';
+            
+            try {
+                // Get Sorters by HUB
+                const sortersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'sorters');
+                // Filter sorters by user's hub (if not admin)
+                let qSorter;
+                if (state.role === 'admin') {
+                     qSorter = query(sortersRef); // Admin sees all? Or maybe just empty
+                } else {
+                     qSorter = query(sortersRef, where("hub_code", "==", hubCode));
+                }
+
+                const snap = await getDocs(qSorter);
+                
+                if (snap.empty) {
+                    els.sorterAttendanceList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Tidak ada sorter terdaftar di HUB ini.</td></tr>';
+                } else {
+                    els.sorterAttendanceList.innerHTML = '';
+                    snap.forEach(doc => {
+                        const s = doc.data();
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                        row.innerHTML = `
+                            <td class="p-3 font-medium text-slate-700">${s.name}</td>
+                            <td class="p-3 text-center">
+                                <input type="checkbox" name="att_${doc.id}_s1" class="sorter-check custom-checkbox accent-blue-600" onclick="calculateReportTotals()" data-name="${s.name}" data-shift="1">
+                            </td>
+                            <td class="p-3 text-center">
+                                <input type="checkbox" name="att_${doc.id}_s2" class="sorter-check custom-checkbox accent-blue-600" onclick="calculateReportTotals()" data-name="${s.name}" data-shift="2">
+                            </td>
+                            <td class="p-3 text-center">
+                                <input type="checkbox" name="att_${doc.id}_s3" class="sorter-check custom-checkbox accent-blue-600" onclick="calculateReportTotals()" data-name="${s.name}" data-shift="3">
+                            </td>
+                        `;
+                        els.sorterAttendanceList.appendChild(row);
+                    });
+                }
+            } catch (e) {
+                console.error("Load Sorters Error", e);
+                els.sorterAttendanceList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">Gagal memuat sorter.</td></tr>';
+            }
+
+            // 2. Load History
+            loadMyReports();
+            calculateReportTotals(); // Reset totals
+        }
+
+        window.loadMyReports = async () => {
+            els.rptHistoryBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400"><span class="animate-spin inline-block mr-2">⟳</span> Memuat data...</td></tr>';
+            try {
+                const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
+                let q;
+                if(state.userData?.nik && state.role !== 'admin') {
+                     q = query(reportsRef, where("nik", "==", state.userData.nik), orderBy("date", "desc"), limit(10));
+                } else {
+                     q = query(reportsRef, orderBy("date", "desc"), limit(10));
+                }
+
+                let querySnapshot;
+                try { querySnapshot = await getDocs(q); } 
+                catch(err) {
+                    const q2 = query(reportsRef, where("nik", "==", state.userData.nik || 'ADMIN'));
+                    querySnapshot = await getDocs(q2);
+                }
+
+                if (querySnapshot.empty) {
+                    els.rptHistoryBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
+                    return;
+                }
+
+                els.rptHistoryBody.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
+                    tr.innerHTML = `
+                        <td class="p-3 whitespace-nowrap">${data.date}</td>
+                        <td class="p-3 font-medium">${data.hub}</td>
+                        <td class="p-3 text-right text-blue-600 font-mono">${(data.total_paket || 0).toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-right font-mono font-bold">${data.total_mpp || 0}</td>
+                    `;
+                    els.rptHistoryBody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error(err);
+                els.rptHistoryBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-400">Gagal memuat data.</td></tr>';
+            }
+        };
+
+        els.formDailyReport.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            els.btnSaveReport.disabled = true;
+            els.btnSaveReport.innerHTML = '<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span> Menyimpan...';
+            els.rptMsg.classList.add('hidden');
+
+            try {
+                // Collect Attendance Data
+                const attendanceDetails = [];
+                document.querySelectorAll('.sorter-check:checked').forEach(chk => {
+                    attendanceDetails.push({
+                        name: chk.dataset.name,
+                        shift: chk.dataset.shift
+                    });
+                });
+
+                const gateway = Number(els.rptGateway.value) || 0;
+                const staging = Number(els.rptStaging.value) || 0;
+                const sap = Number(els.rptSap.value) || 0;
+                const jne = Number(els.rptJne.value) || 0;
+                const totalMpp = attendanceDetails.length;
+
+                const reportData = {
+                    date: els.rptDate.value,
+                    hub: els.rptHub.value,
+                    nik: state.userData?.nik || 'UNKNOWN',
+                    reporter_name: state.userData?.name || 'UNKNOWN',
+                    
+                    gateway: gateway,
+                    staging: staging,
+                    sap: sap,
+                    jne: jne,
+                    total_paket: gateway + staging + sap + jne,
+                    
+                    total_mpp: totalMpp,
+                    attendance_data: attendanceDetails, // Store detail for audit
+                    
+                    created_at: new Date().toISOString()
+                };
+
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), reportData);
+                
+                els.rptMsg.textContent = "Laporan berhasil disimpan!";
+                els.rptMsg.className = "text-sm text-green-600 font-medium animate-pulse";
+                els.rptMsg.classList.remove('hidden');
+                
+                // Reset Form
+                els.rptGateway.value = ''; els.rptStaging.value = ''; els.rptSap.value = ''; els.rptJne.value = '';
+                els.rptTotalPaket.value = '0';
+                els.displayTotalMpp.textContent = '0';
+                // Uncheck all
+                document.querySelectorAll('.sorter-check').forEach(c => c.checked = false);
+                
+                loadMyReports();
+
+            } catch (err) {
+                els.rptMsg.textContent = "Gagal: " + err.message;
+                els.rptMsg.className = "text-sm text-red-600 font-medium";
+                els.rptMsg.classList.remove('hidden');
+            } finally {
+                els.btnSaveReport.disabled = false;
+                els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4 mr-2"></i> Simpan Laporan';
+                lucide.createIcons();
+            }
+        });
+
+        // --- AUTH ACTIONS ---
+        els.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nik = els.loginNik.value;
+            const pass = els.loginPass.value;
+            
+            els.loginError.classList.add('hidden');
+            els.btnLogin.disabled = true;
+            els.btnLogin.innerHTML = `<span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Memeriksa...`;
+
+            try {
+                if (nik.toLowerCase() === 'admin' && pass === 'admin123') {
+                    updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
+                    return; 
+                }
+
+                if (!auth.currentUser) await signInAnonymously(auth); 
+                
+                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
+                const q = query(usersRef, where("nik", "==", nik), where("password", "==", pass));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0].data();
+                    updateLocalState('leader', userDoc);
+                } else {
+                    throw new Error('Invalid Credentials');
+                }
+
+            } catch (err) {
+                els.loginError.textContent = 'NIK atau Password salah. Silakan coba lagi.';
+                els.loginError.classList.remove('hidden');
+                els.btnLogin.disabled = false;
+                els.btnLogin.textContent = 'Masuk';
+            }
+        });
+
+        function updateLocalState(role, userData) {
+            state.role = role;
+            state.userData = userData;
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userData', JSON.stringify(userData));
+            showApp();
+        }
+
+        window.handleLogout = async () => {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userData');
+            window.location.reload();
+        };
+
+        // ==========================================
+        // SETTINGS LOGIC (ADMIN)
+        // ==========================================
+        let unsubscribeHubs = null;
+        let unsubscribeLeaders = null;
+        let unsubscribeSorters = null;
+
+        window.switchSettingsTab = (tabName) => {
+            // Hide all tabs
+            document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Update button styles
+            ['hubs', 'leaders', 'sorters'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tabName) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.add('tab-inactive');
+                    btn.classList.remove('tab-active');
+                }
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+        }
+
+        function loadSettings() {
+            // Subscribe to Collections
+            if (!unsubscribeHubs) {
+                const hubsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs');
+                unsubscribeHubs = onSnapshot(hubsRef, (snapshot) => {
+                    state.hubs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderHubsTable();
+                    populateHubDropdowns();
+                });
+            }
+            if (!unsubscribeLeaders) {
+                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
+                unsubscribeLeaders = onSnapshot(usersRef, (snapshot) => {
+                    state.leaders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderLeadersTable();
+                });
+            }
+            if (!unsubscribeSorters) {
+                const sortersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'sorters');
+                unsubscribeSorters = onSnapshot(sortersRef, (snapshot) => {
+                    state.sorters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderSortersTable();
+                });
+            }
+        }
+
+        function populateHubDropdowns() {
+            const options = `<option value="">Pilih HUB...</option>` + 
+                state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
+            
+            if(els.newLeaderHub) els.newLeaderHub.innerHTML = options;
+            if(els.sorterHub) els.sorterHub.innerHTML = options;
+        }
+
+        // --- HUB LOGIC ---
+        els.formAddHub.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            els.btnSaveHub.disabled = true;
+            els.btnSaveHub.textContent = '...';
+            els.hubMsg.classList.add('hidden');
+
+            const newHub = {
+                code: els.hubCode.value.toUpperCase(),
+                name: els.hubName.value,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                if(state.hubs.find(h => h.code === newHub.code)) throw new Error("Kode HUB sudah ada!");
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), newHub);
+                els.hubCode.value = ''; els.hubName.value = '';
+                showStatusMsg(els.hubMsg, "HUB berhasil ditambahkan", "success");
+            } catch(err) {
+                showStatusMsg(els.hubMsg, err.message, "error");
+            } finally {
+                els.btnSaveHub.disabled = false;
+                els.btnSaveHub.textContent = 'Simpan';
+            }
+        });
+
+        function renderHubsTable() {
+            els.hubTableBody.innerHTML = state.hubs.length === 0 
+                ? `<tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada HUB.</td></tr>`
+                : state.hubs.map(hub => `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                        <td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td>
+                        <td class="p-4 font-medium">${hub.name}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            lucide.createIcons();
+        }
+
+        // --- LEADER LOGIC ---
+        els.formAddLeader.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            els.btnSaveLeader.disabled = true;
+            els.btnSaveLeader.textContent = 'Menyimpan...';
+            
+            const newLeader = {
+                nik: els.newNik.value,
+                name: els.newName.value,
+                password: els.newPass.value,
+                hub_code: els.newLeaderHub.value, 
+                role: 'leader',
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                if (state.leaders.find(l => l.nik === newLeader.nik)) throw new Error('NIK sudah terdaftar!');
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), newLeader);
+                els.newNik.value = ''; els.newName.value = ''; els.newPass.value = ''; els.newLeaderHub.value = '';
+                showStatusMsg(els.settingsMsg, 'Leader berhasil ditambahkan!', 'success');
+            } catch (err) {
+                showStatusMsg(els.settingsMsg, err.message, 'error');
+            } finally {
+                els.btnSaveLeader.disabled = false;
+                els.btnSaveLeader.textContent = 'Simpan Leader';
+            }
+        });
+
+        function renderLeadersTable() {
+            els.leaderCount.textContent = `Total: ${state.leaders.length}`;
+            els.leaderTableBody.innerHTML = state.leaders.length === 0 
+                ? `<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada data leader.</td></tr>`
+                : state.leaders.map(leader => `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                        <td class="p-4 font-mono text-slate-600">${leader.nik}</td>
+                        <td class="p-4 font-medium text-slate-800">${leader.name}</td>
+                        <td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${leader.hub_code || '-'}</span></td>
+                        <td class="p-4 text-right">
+                            <button onclick="deleteDocItem('users', '${leader.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            lucide.createIcons();
+        }
+
+        // --- SORTER LOGIC ---
+        els.formAddSorter.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            els.btnSaveSorter.disabled = true;
+            els.btnSaveSorter.textContent = '...';
+
+            const newSorter = {
+                name: els.sorterName.value,
+                hub_code: els.sorterHub.value,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'sorters'), newSorter);
+                els.sorterName.value = ''; els.sorterHub.value = '';
+                showStatusMsg(els.sorterMsg, "Sorter ditambahkan.", "success");
+            } catch(err) {
+                showStatusMsg(els.sorterMsg, "Gagal: " + err.message, "error");
+            } finally {
+                els.btnSaveSorter.disabled = false;
+                els.btnSaveSorter.textContent = 'Simpan';
+            }
+        });
+
+        function renderSortersTable() {
+            els.sorterTableBody.innerHTML = state.sorters.length === 0 
+                ? `<tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada Sorter.</td></tr>`
+                : state.sorters.map(s => `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                        <td class="p-4 font-medium">${s.name}</td>
+                        <td class="p-4"><span class="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded">${s.hub_code || '-'}</span></td>
+                        <td class="p-4 text-right">
+                            <button onclick="deleteDocItem('sorters', '${s.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            lucide.createIcons();
+        }
+
+        // --- UTILS ---
+        window.deleteDocItem = async (colName, id) => {
+            if(!confirm('Hapus data ini?')) return;
+            try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); } 
+            catch(e) { alert('Gagal hapus'); }
+        };
+
+        function showStatusMsg(el, text, type) {
+            el.textContent = text;
+            el.className = `text-xs mt-3 ${type === 'error' ? 'text-red-500' : 'text-green-600'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        // --- SIDEBAR TOGGLE ---
+        els.openSidebarBtn.addEventListener('click', () => { els.sidebar.classList.remove('-translate-x-full'); els.sidebarOverlay.classList.remove('hidden'); });
+        els.closeSidebarBtn.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
+        els.sidebarOverlay.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
+
+        init();
+    </script>
+</body>
+</html>

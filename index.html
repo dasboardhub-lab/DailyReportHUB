@@ -44,7 +44,6 @@
         <div id="loading-logs" class="text-xs text-gray-400 font-mono text-center max-w-md p-2 bg-gray-50 rounded border border-gray-200">
             Memuat konfigurasi...
         </div>
-        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm hidden shadow" id="btn-reload">Muat Ulang Halaman</button>
     </div>
 
     <!-- LOGIN SECTION -->
@@ -82,6 +81,13 @@
                 </div>
                 <button type="submit" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 transition font-bold">Masuk Admin</button>
             </form>
+
+            <!-- ERROR CONTAINER (NEW) -->
+            <div id="init-error-container" class="mt-6 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded hidden">
+                <div class="font-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Gagal Terhubung:</div>
+                <span id="init-error-text">Unknown Error</span>
+                <button onclick="location.reload()" class="block mt-2 text-blue-600 underline hover:text-blue-800">Coba Muat Ulang</button>
+            </div>
         </div>
     </div>
 
@@ -512,11 +518,21 @@
                 el.innerHTML = msg;
                 if (isError) {
                     el.classList.add('text-red-500'); el.classList.remove('text-gray-400');
-                    const icon = document.getElementById('loading-icon');
-                    icon.classList.remove('fa-circle-notch', 'fa-spin', 'text-blue-600');
-                    icon.classList.add('fa-exclamation-triangle', 'text-red-600');
+                    document.getElementById('loading-icon').className = 'fas fa-exclamation-triangle text-4xl text-red-600 mb-4';
                     document.getElementById('btn-reload').classList.remove('hidden');
                 }
+            }
+        }
+
+        // --- AUTH FAILBACK UI ---
+        // Jika auth gagal, overlay hilang, tampilkan login + error message di bawah form
+        function handleAuthError(errMessage) {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            const errCont = document.getElementById('init-error-container');
+            if(errCont) {
+                errCont.classList.remove('hidden');
+                document.getElementById('init-error-text').innerText = errMessage;
             }
         }
 
@@ -533,9 +549,7 @@
             }
         }
 
-        window.onerror = function(message, source, lineno, colno, error) {
-            updateLoadingLog(`System Error: ${message}`, true);
-        };
+        window.onerror = function(message) { updateLoadingLog(`System Error: ${message}`, true); };
 
         try {
             updateLoadingLog("Menginisialisasi Firebase...");
@@ -550,12 +564,12 @@
                 if (result.user) handleAuthSuccess(result.user);
             }).catch((error) => {
                 console.error("Auth Error:", error);
-                updateLoadingLog("Gagal Login Anonim. Cek koneksi internet.", true);
+                handleAuthError("Gagal Login Anonim. Pastikan 'Anonymous Auth' aktif di Firebase Console & Cek Koneksi Internet.");
             });
 
         } catch (e) {
             console.error(e);
-            updateLoadingLog(`Config Error: ${e.message}`, true);
+            handleAuthError(`Config Error: ${e.message}`);
         }
 
         // --- DATABASE LISTENERS ---
@@ -606,8 +620,6 @@
             const id = document.getElementById('login-id').value, isPic = document.getElementById('is-pic-checkbox').checked, pass = document.getElementById('login-pass-user').value, u = appData.users.find(u => u.id === id); 
             if (!u) return Swal.fire('Error', 'ID User tidak ditemukan.', 'error'); 
             
-            // Logic Auth Baru: Jika akses='YA', dia dianggap punya akses penuh (seperti LEADER)
-            // Tapi tetap login lewat form User
             if (isPic) { 
                 if (u.sandi === pass) { 
                     currentUser = { role: 'pic', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; 
@@ -629,17 +641,8 @@
             // Logic Tombol & Menu: Cek Akses Laporan 'YA'
             const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA');
             
-            if (currentUser.role === 'admin') { 
-                ns.classList.remove('hidden'); 
-            } else {
-                ns.classList.add('hidden');
-            }
-            
-            if (hasEditAccess) {
-                bt.classList.remove('hidden');
-            } else {
-                bt.classList.add('hidden');
-            }
+            if (currentUser.role === 'admin') { ns.classList.remove('hidden'); } else { ns.classList.add('hidden'); }
+            if (hasEditAccess) { bt.classList.remove('hidden'); } else { bt.classList.add('hidden'); }
             
             window.initDashboardFilters(); window.navigate('dashboard');
         };
@@ -653,21 +656,13 @@
         window.toggleSidebar = () => {}; 
 
         // -- DASHBOARD --
-        window.toggleHubDropdown = (e) => {
-            e.stopPropagation(); // Stop click from immediately closing it
-            document.getElementById('hub-filter-dropdown').classList.toggle('hidden');
-        };
-        
-        window.addEventListener('click', (e) => { 
-            if (!document.getElementById('hub-filter-btn').contains(e.target) && !document.getElementById('hub-filter-dropdown').contains(e.target)) 
-                document.getElementById('hub-filter-dropdown').classList.add('hidden'); 
-        });
+        window.toggleHubDropdown = (e) => { e.stopPropagation(); document.getElementById('hub-filter-dropdown').classList.toggle('hidden'); };
+        window.addEventListener('click', (e) => { if (!document.getElementById('hub-filter-btn').contains(e.target) && !document.getElementById('hub-filter-dropdown').contains(e.target)) document.getElementById('hub-filter-dropdown').classList.add('hidden'); });
 
         window.renderHubDropdownOptions = () => {
             const c = document.getElementById('hub-filter-dropdown'); if(!c) return; c.innerHTML = '';
             appData.costs.forEach(co => {
-                const chk = (currentUser.role !== 'admin' && currentUser.kode_hub === co.hub) ? 'checked disabled' : 'checked';
-                c.innerHTML += `<label class="flex items-center space-x-2 p-2 hover:bg-gray-50 cursor-pointer"><input type="checkbox" value="${co.hub}" class="hub-checkbox form-checkbox text-blue-600" ${chk} onchange="window.updateHubFilterLabel(); window.loadDashboardData()"><span class="text-sm text-gray-700">${co.hub}</span></label>`;
+                c.innerHTML += `<label class="flex items-center space-x-2 p-2 hover:bg-gray-50 cursor-pointer"><input type="checkbox" value="${co.hub}" class="hub-checkbox form-checkbox text-blue-600" checked onchange="window.updateHubFilterLabel(); window.loadDashboardData()"><span class="text-sm text-gray-700">${co.hub}</span></label>`;
             });
             window.updateHubFilterLabel();
         };
@@ -679,7 +674,7 @@
         window.resetDashboardFilters = () => {
             const e = new Date(), s = new Date(); s.setDate(e.getDate() - 30);
             document.getElementById('dash-end-date').valueAsDate = e; document.getElementById('dash-start-date').valueAsDate = s;
-            if (currentUser.role === 'admin') { document.querySelectorAll('.hub-checkbox').forEach(c => c.checked = true); window.updateHubFilterLabel(); }
+            document.querySelectorAll('.hub-checkbox').forEach(c => c.checked = true); window.updateHubFilterLabel();
             window.loadDashboardData();
         };
         window.loadDashboardData = () => {
@@ -722,12 +717,20 @@
         window.updateDashboardTables = (data) => {
             const tbd = document.getElementById('tbody-daily-detail'); tbd.innerHTML = '';
             data.forEach(l => { tbd.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-3 py-2 text-left whitespace-nowrap">${l.tanggal}</td><td class="px-3 py-2 font-semibold">${l.hub}</td><td class="px-3 py-2 text-blue-700 font-bold">${l.total_mpp}</td><td class="px-3 py-2">${window.formatNumber(l.staging)}</td><td class="px-3 py-2">${window.formatNumber(l.gateway)}</td><td class="px-3 py-2">${window.formatNumber(l.jne)}</td><td class="px-3 py-2">${window.formatNumber(l.sap)}</td><td class="px-3 py-2 font-bold bg-gray-50">${window.formatNumber(l.total_paket)}</td><td class="px-3 py-2 text-green-700 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-3 py-2 text-right text-red-600 text-xs">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
-            const tbh = document.getElementById('tbody-hub-breakdown'); tbh.innerHTML = ''; const hAg = {};
-            data.forEach(l => { if(!hAg[l.hub]) hAg[l.hub] = { mpp: 0, out: 0, cost: 0 }; hAg[l.hub].mpp += l.total_mpp; hAg[l.hub].out += l.total_paket; hAg[l.hub].cost += window.calculateReportCost(l); });
+            
+            const tbh = document.getElementById('tbody-hub-breakdown'); tbh.innerHTML = ''; 
+            const hAg = {};
+            data.forEach(l => { 
+                if(!hAg[l.hub]) hAg[l.hub] = { mpp: 0, out: 0, cost: 0 }; 
+                hAg[l.hub].mpp += l.total_mpp; 
+                hAg[l.hub].out += l.total_paket; 
+                hAg[l.hub].cost += window.calculateReportCost(l); 
+            });
+            
             Object.keys(hAg).sort((a, b) => hAg[b].out - hAg[a].out).forEach(h => { 
                 const d = hAg[h]; 
                 const avgProd = d.mpp > 0 ? Math.round(d.out / d.mpp) : 0;
-                tbh.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${h}</td><td class="px-4 py-3 text-blue-700">${d.mpp}</td><td class="px-4 py-3 font-bold bg-gray-50 text-blue-800">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-green-700">${window.formatNumber(avgProd)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`; 
+                tbh.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${h}</td><td class="px-4 py-3 text-blue-700 font-bold">${d.mpp}</td><td class="px-4 py-3 font-bold bg-gray-50 text-blue-800">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-green-700 font-bold">${window.formatNumber(avgProd)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`; 
             });
         };
         window.exportTableToCSV = (id, fn) => { const t = document.getElementById(id); let c = []; t.querySelectorAll("tr").forEach(r => { let row = []; r.querySelectorAll("td, th").forEach(z => row.push(z.innerText)); c.push(row.join(",")); }); const b = new Blob([c.join("\n")], {type: "text/csv"}), a = document.createElement("a"); a.download = fn; a.href = window.URL.createObjectURL(b); a.style.display = "none"; document.body.appendChild(a); a.click(); };
@@ -771,12 +774,10 @@
                 document.getElementById('input-kode-hub').value = u.kode_hub; 
                 document.getElementById('input-posisi').value = u.posisi; 
                 
-                // Set toggle logic for access
                 const toggle = document.getElementById('input-akses-toggle');
                 toggle.checked = (u.akses === 'YA');
                 document.getElementById('akses-label').innerText = u.akses;
 
-                // Handle readonly & password display
                 document.getElementById('input-id').readOnly = true; 
                 document.getElementById('input-id').classList.add('bg-gray-100'); 
             } else { 

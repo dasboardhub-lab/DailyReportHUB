@@ -39,11 +39,10 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
-        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-        <p class="font-bold text-gray-600 text-lg mb-2">Menghubungkan ke Database...</p>
-        <div id="loading-logs" class="text-xs text-gray-400 font-mono text-center max-w-md p-2 bg-gray-50 rounded border border-gray-200">
-            Memuat konfigurasi...
-        </div>
+        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-5xl text-blue-600"></i>
+        <!-- Status Text Hidden as requested -->
+        <div id="loading-logs" class="hidden"></div>
+        <button onclick="location.reload()" class="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm hidden shadow" id="btn-reload">Muat Ulang</button>
     </div>
 
     <!-- LOGIN SECTION -->
@@ -81,8 +80,8 @@
                 </div>
                 <button type="submit" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 transition font-bold">Masuk Admin</button>
             </form>
-
-            <!-- ERROR CONTAINER (NEW) -->
+            
+             <!-- ERROR CONTAINER -->
             <div id="init-error-container" class="mt-6 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded hidden">
                 <div class="font-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Gagal Terhubung:</div>
                 <span id="init-error-text">Unknown Error</span>
@@ -459,8 +458,8 @@
                             <thead class="bg-gray-100 text-xs uppercase font-bold text-gray-600">
                                 <tr>
                                     <th class="p-2 text-left w-1/3">Nama</th>
-                                    <th class="p-2 w-8">1</th><th class="p-2 w-8">2</th><th class="p-2 w-8">3</th>
-                                    <th class="p-2 w-8 text-yellow-600">I</th><th class="p-2 w-8 text-blue-600">S</th><th class="p-2 w-8 text-red-600">A</th>
+                                    <th class="p-2 w-8">1</th><th class="p-2 w-8">2</th><th class="p-2 w-8 border-r-4 border-gray-300">3</th>
+                                    <th class="p-2 w-8 text-yellow-600 pl-4">I</th><th class="p-2 w-8 text-blue-600">S</th><th class="p-2 w-8 text-red-600">A</th>
                                     <th class="p-2 text-left">Ket</th><th class="p-2 w-8"></th>
                                 </tr>
                             </thead>
@@ -513,33 +512,21 @@
 
         // --- ERROR HANDLING & INIT ---
         function updateLoadingLog(msg, isError = false) {
-            const el = document.getElementById('loading-logs');
-            if (el) {
-                el.innerHTML = msg;
-                if (isError) {
-                    el.classList.add('text-red-500'); el.classList.remove('text-gray-400');
-                    document.getElementById('loading-icon').className = 'fas fa-exclamation-triangle text-4xl text-red-600 mb-4';
-                    document.getElementById('btn-reload').classList.remove('hidden');
+            // Hidden by default in new design
+            if (isError) {
+                const el = document.getElementById('init-error-text');
+                if (el) {
+                    el.innerText = msg;
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                    document.getElementById('login-section').classList.remove('hidden');
+                    document.getElementById('init-error-container').classList.remove('hidden');
                 }
-            }
-        }
-
-        // --- AUTH FAILBACK UI ---
-        // Jika auth gagal, overlay hilang, tampilkan login + error message di bawah form
-        function handleAuthError(errMessage) {
-            document.getElementById('loading-overlay').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            const errCont = document.getElementById('init-error-container');
-            if(errCont) {
-                errCont.classList.remove('hidden');
-                document.getElementById('init-error-text').innerText = errMessage;
             }
         }
 
         function handleAuthSuccess(user) {
             const overlay = document.getElementById('loading-overlay');
             if (!overlay.classList.contains('hidden-fade')) {
-                updateLoadingLog("Koneksi Berhasil! Memuat Data...");
                 setTimeout(() => {
                     overlay.classList.add('hidden-fade');
                     setTimeout(() => overlay.classList.add('hidden'), 500);
@@ -552,24 +539,21 @@
         window.onerror = function(message) { updateLoadingLog(`System Error: ${message}`, true); };
 
         try {
-            updateLoadingLog("Menginisialisasi Firebase...");
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
             
-            updateLoadingLog("Menghubungkan ke Authentication...");
             onAuthStateChanged(auth, (user) => { if (user) handleAuthSuccess(user); });
             signInAnonymously(auth).then((result) => {
-                updateLoadingLog("Login Anonim Berhasil...");
                 if (result.user) handleAuthSuccess(result.user);
             }).catch((error) => {
                 console.error("Auth Error:", error);
-                handleAuthError("Gagal Login Anonim. Pastikan 'Anonymous Auth' aktif di Firebase Console & Cek Koneksi Internet.");
+                updateLoadingLog("Gagal Login Anonim. Cek koneksi internet.", true);
             });
 
         } catch (e) {
             console.error(e);
-            handleAuthError(`Config Error: ${e.message}`);
+            updateLoadingLog(`Config Error: ${e.message}`, true);
         }
 
         // --- DATABASE LISTENERS ---
@@ -638,7 +622,6 @@
             
             const ns = document.getElementById('nav-pengaturan'), bt = document.getElementById('btn-tambah-laporan');
             
-            // Logic Tombol & Menu: Cek Akses Laporan 'YA'
             const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA');
             
             if (currentUser.role === 'admin') { ns.classList.remove('hidden'); } else { ns.classList.add('hidden'); }
@@ -865,7 +848,11 @@
         window.loadHubUsersForAttendance = (hName=null, existing=null) => {
             let h = hName || (document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value);
             const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
-            const users = appData.users.filter(u => u.kode_hub === h);
+            const users = appData.users.filter(u => u.kode_hub === h).sort((a, b) => {
+                const roleScore = (role) => (role === 'LEADER' || role === 'Admin') ? 0 : 1;
+                if (roleScore(a.posisi) !== roleScore(b.posisi)) return roleScore(a.posisi) - roleScore(b.posisi);
+                return a.id.localeCompare(b.id);
+            });
             const map = {}; if(existing) existing.forEach(x => map[x.userId] = x);
             users.forEach(u => {
                 const isL = (u.posisi==='LEADER'||u.posisi==='Admin'); const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
@@ -879,7 +866,7 @@
             const nmF = man ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full border p-1 rounded text-sm" placeholder="Nama">` : `${nm} ${badge}<input type="hidden" name="user_nama[]" value="${nm}">`;
             const del = man ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : '';
             const chk = (n,v) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${n==='ijin'||n==='sakit'||n==='alfa'?'status-chk':'shift-chk'}" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-            tb.insertAdjacentHTML('beforeend', `<tr class="border-b ${cls}" data-role="${role}"><td class="p-2 text-left font-medium">${nmF}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${man}"></td><td class="p-2">${chk('s1',sv.s1)}</td><td class="p-2">${chk('s2',sv.s2)}</td><td class="p-2">${chk('s3',sv.s3)}</td><td class="p-2">${chk('ijin',sv.i)}</td><td class="p-2">${chk('sakit',sv.s)}</td><td class="p-2">${chk('alfa',sv.a)}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full border p-1 text-xs rounded" placeholder="..."></td><td class="p-2 text-center">${del}</td></tr>`);
+            tb.insertAdjacentHTML('beforeend', `<tr class="border-b ${cls}" data-role="${role}"><td class="p-2 text-left font-medium">${nmF}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${man}"></td><td class="p-2">${chk('s1',sv.s1)}</td><td class="p-2">${chk('s2',sv.s2)}</td><td class="p-2 border-r-4 border-gray-200">${chk('s3',sv.s3)}</td><td class="p-2 pl-4">${chk('ijin',sv.i)}</td><td class="p-2">${chk('sakit',sv.s)}</td><td class="p-2">${chk('alfa',sv.a)}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full border p-1 text-xs rounded" placeholder="..."></td><td class="p-2 text-center">${del}</td></tr>`);
         };
         window.addManualDWRow = () => { window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', '', 'bg-white', {}, true); };
         window.handleSingleCheck = (chk) => { if(chk.checked) { chk.closest('tr').querySelectorAll('.attendance-checkbox').forEach(c => { if(c!==chk) c.checked = false; }); } window.calcMetrics(); };

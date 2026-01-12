@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DailyReport</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,55 +38,42 @@
     </script>
 
     <style>
-        body { background-color: #f1f5f9; }
+        body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
         
         /* Dynamic Island Animations */
-        #dynamic-island-container {
-            pointer-events: none;
-            z-index: 9999;
-        }
-
+        #dynamic-island-container { pointer-events: none; z-index: 9999; }
         #dynamic-island {
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
             pointer-events: auto;
         }
-
-        /* States */
         .island-hidden { opacity: 0; transform: translateY(-20px) scale(0.9); pointer-events: none !important; }
         .island-loading { width: 40px; height: 40px; border-radius: 50%; background: #0f172a; }
         .island-expanded { width: auto; min-width: 180px; height: 44px; border-radius: 22px; padding: 0 16px; background: #0f172a; }
-        
         .island-error { background: #ef4444 !important; }
         .island-success { background: #10b981 !important; }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .attendance-checkbox { 
-            width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: #4f46e5; 
-            border-radius: 4px; transition: transform 0.1s;
-        }
-        .attendance-checkbox:active { transform: scale(0.9); }
-
-        /* Navbar & Nav Items */
-        .nav-link { 
-            position: relative; color: #94a3b8; transition: all 0.3s; cursor: pointer; 
-            padding: 0.75rem 1rem; border-radius: 0.5rem;
-        }
+        /* Navbar Items */
+        .nav-link { position: relative; color: #94a3b8; transition: all 0.3s; cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; }
         .nav-link:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
         .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); font-weight: 600; }
         
+        /* Bottom Mobile Nav */
+        .mobile-nav-item { color: #64748b; transition: all 0.3s; }
+        .mobile-nav-item.active { color: #4f46e5; font-weight: 600; }
+        .mobile-nav-item.active i { transform: translateY(-2px); }
+
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,1); transition: opacity 0.3s ease-out; }
         .hidden-fade { opacity: 0; pointer-events: none; }
-        
-        /* Button Press Effect */
         button:active { transform: scale(0.97); }
     </style>
 </head>
@@ -105,11 +92,10 @@
         </div>
     </div>
 
-    <!-- APP NAVBAR -->
-    <nav id="app-navbar" class="bg-slate-900 text-white shadow-lg z-50 hidden border-b border-white/5">
+    <!-- DESKTOP NAVBAR -->
+    <nav id="app-navbar" class="bg-slate-900 text-white shadow-lg z-50 hidden md:block border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo -->
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-glow">
                         <i class="fas fa-chart-bar text-white text-lg"></i>
@@ -119,17 +105,13 @@
                         <p class="text-[10px] text-indigo-300 font-medium tracking-wide">ONLINE SYSTEM</p>
                     </div>
                 </div>
-                
-                <!-- Menu Items -->
-                <div class="hidden md:flex items-center space-x-2">
+                <div class="flex items-center space-x-2">
                     <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active flex items-center gap-2"><i class="fas fa-chart-pie text-sm"></i> Dashboard</a>
                     <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-table text-sm"></i> Laporan</a>
                     <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-sm"></i> Pengaturan</a>
                 </div>
-
-                <!-- User Profile -->
                 <div class="flex items-center gap-3 pl-4 border-l border-white/10">
-                    <div class="text-right hidden sm:block">
+                    <div class="text-right">
                         <div class="text-xs font-semibold text-white truncate max-w-[100px]" id="user-name-display">User</div>
                         <div class="text-[10px] text-emerald-400 font-mono tracking-wider" id="user-badge">ROLE</div>
                     </div>
@@ -139,14 +121,36 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Mobile Menu (Simple Tabs for small screens) -->
-        <div class="md:hidden flex justify-around bg-slate-800 p-2 text-xs border-t border-white/5">
-             <a onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="flex-1 text-center py-2 text-white font-bold bg-white/10 rounded-lg">Dashboard</a>
-             <a onclick="window.navigate('laporan')" id="mob-nav-laporan" class="flex-1 text-center py-2 text-slate-400 hover:text-white">Laporan</a>
-             <a onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="flex-1 text-center py-2 text-slate-400 hover:text-white hidden">Pengaturan</a>
-        </div>
     </nav>
+
+    <!-- MOBILE TOP BAR (Logo + User) -->
+    <div id="mobile-topbar" class="md:hidden bg-slate-900 text-white px-4 py-3 flex justify-between items-center shadow-md z-40 hidden">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-chart-bar text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-base tracking-tight">DAILY REPORT</span>
+        </div>
+        <button onclick="window.doLogout()" class="text-slate-400 hover:text-white">
+            <i class="fas fa-power-off"></i>
+        </button>
+    </div>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden">
+        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-3 flex flex-col items-center gap-1">
+            <i class="fas fa-chart-pie text-lg"></i>
+            <span class="text-[10px] font-medium">Dashboard</span>
+        </button>
+        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1">
+            <i class="fas fa-table text-lg"></i>
+            <span class="text-[10px] font-medium">Laporan</span>
+        </button>
+        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1 hidden">
+            <i class="fas fa-sliders-h text-lg"></i>
+            <span class="text-[10px] font-medium">Atur</span>
+        </button>
+    </div>
 
     <!-- LOGIN SECTION -->
     <div id="login-section" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center hidden">
@@ -154,8 +158,7 @@
             <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-200/30 blur-3xl"></div>
             <div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/30 blur-3xl"></div>
         </div>
-
-        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100 relative fade-in z-10">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100 relative fade-in z-10 m-4">
             <div class="text-center mb-8">
                 <div class="w-14 h-14 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-200 mb-4">
                     <i class="fas fa-chart-line text-white text-2xl"></i>
@@ -163,14 +166,10 @@
                 <h2 class="text-2xl font-bold text-slate-800 mb-1">Selamat Datang</h2>
                 <p class="text-slate-500 text-sm">Masuk untuk akses data real-time</p>
             </div>
-
-            <!-- Login Tabs -->
             <div class="flex p-1.5 bg-slate-100 rounded-xl mb-6">
                 <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-indigo-600">User</button>
                 <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700">Admin</button>
             </div>
-
-            <!-- Forms -->
             <form id="form-login-user" class="space-y-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">ID User</label>
@@ -185,7 +184,6 @@
                 </div>
                 <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition transform active:scale-95">Masuk Aplikasi</button>
             </form>
-
             <form id="form-login-admin" class="space-y-5 hidden">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Password Admin</label>
@@ -193,13 +191,8 @@
                 </div>
                 <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg transition transform active:scale-95">Masuk sebagai Admin</button>
             </form>
-
-            <!-- Error Hint -->
             <div id="init-error-container" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl hidden">
-                <div class="flex items-center gap-2 text-red-600 mb-1">
-                    <i class="fas fa-wifi"></i>
-                    <span class="text-xs font-bold">Koneksi Bermasalah</span>
-                </div>
+                <div class="flex items-center gap-2 text-red-600 mb-1"><i class="fas fa-wifi"></i><span class="text-xs font-bold">Koneksi Bermasalah</span></div>
                 <p id="init-error-text" class="text-[10px] text-red-400 leading-relaxed"></p>
                 <button onclick="location.reload()" class="w-full mt-3 text-xs bg-white border border-red-200 text-red-500 py-2 rounded-lg font-bold hover:bg-red-50">Coba Lagi</button>
             </div>
@@ -213,83 +206,69 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 hidden">
-        <div class="max-w-7xl mx-auto space-y-8 pb-20">
+    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 hidden bg-slate-100">
+        <div class="max-w-7xl mx-auto space-y-6">
             
             <!-- VIEW: DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
-                <div class="bg-white rounded-2xl p-5 shadow-soft border border-slate-100 flex flex-col md:flex-row justify-between items-end md:items-center gap-4 relative z-20">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-800">Ringkasan Kinerja</h2>
-                        <p class="text-xs text-slate-500">Filter data real-time (Online)</p>
+                        <h2 class="text-lg font-bold text-slate-800">Dashboard</h2>
+                        <p class="text-xs text-slate-500">Ringkasan Kinerja Online</p>
                     </div>
-                    
-                    <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 md:flex-none">
                             <i class="far fa-calendar text-slate-400 text-xs"></i>
-                            <input type="date" id="dash-start-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600 font-medium" onchange="window.loadDashboardData()">
+                            <input type="date" id="dash-start-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-medium" onchange="window.loadDashboardData()">
                             <span class="text-slate-300">-</span>
-                            <input type="date" id="dash-end-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600 font-medium" onchange="window.loadDashboardData()">
+                            <input type="date" id="dash-end-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-medium" onchange="window.loadDashboardData()">
                         </div>
-
-                        <!-- Custom Dropdown -->
-                        <div class="relative w-48">
-                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2.5 flex justify-between items-center hover:bg-slate-50 hover:border-slate-300 transition active:scale-95" onclick="window.toggleHubDropdown(event)">
+                        <div class="relative flex-1 md:flex-none md:w-48">
+                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200 text-slate-600 text-xs rounded-xl px-3 py-2.5 flex justify-between items-center hover:bg-slate-50 transition" onclick="window.toggleHubDropdown(event)">
                                 <span id="hub-filter-label" class="truncate font-medium">Semua HUB</span>
-                                <i class="fas fa-chevron-down text-xs text-slate-400"></i>
+                                <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
                             </button>
-                            <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto">
-                                <!-- JS Populated -->
-                            </div>
+                            <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto"></div>
                         </div>
-
-                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 border border-transparent hover:border-slate-200 hover:text-slate-600 hover:bg-white transition" title="Reset Filter">
-                            <i class="fas fa-undo-alt"></i>
-                        </button>
+                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 border border-transparent hover:bg-white hover:shadow-sm transition"><i class="fas fa-undo-alt"></i></button>
                     </div>
                 </div>
 
-                <!-- Charts (Stacked) -->
-                <div class="space-y-6 relative z-10">
-                    <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
-                        <div class="flex items-center gap-2 mb-6">
-                            <div class="w-1 h-4 bg-indigo-500 rounded-full"></div>
-                            <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Tahunan</h3>
-                        </div>
-                        <div class="h-64"><canvas id="chart-annual"></canvas></div>
+                <!-- Charts (Cleaned) -->
+                <div class="space-y-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-4 border-l-4 border-indigo-500 pl-2">Trend Tahunan</h3>
+                        <div class="h-56"><canvas id="chart-annual"></canvas></div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
-                        <div class="flex items-center gap-2 mb-6">
-                            <div class="w-1 h-4 bg-emerald-500 rounded-full"></div>
-                            <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Harian (Periode Terpilih)</h3>
-                        </div>
-                        <div class="h-64"><canvas id="chart-daily"></canvas></div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-4 border-l-4 border-emerald-500 pl-2">Trend Harian</h3>
+                        <div class="h-56"><canvas id="chart-daily"></canvas></div>
                     </div>
                 </div>
 
                 <!-- Tables Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Daily Details -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden flex flex-col">
-                        <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                            <h3 class="font-bold text-slate-700">Rincian Data</h3>
-                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition border border-indigo-100"><i class="fas fa-download mr-1"></i> CSV</button>
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <h3 class="font-bold text-slate-700 text-sm">Rincian Data</h3>
+                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded hover:bg-indigo-100 transition"><i class="fas fa-download mr-1"></i> CSV</button>
                         </div>
                         <div class="overflow-x-auto flex-1">
-                            <table id="table-daily-detail" class="w-full text-sm text-center whitespace-nowrap">
-                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-bold tracking-wide">
+                            <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
+                                <thead class="text-slate-500 bg-slate-50 uppercase font-bold">
                                     <tr>
-                                        <th class="px-4 py-3 text-left">Tanggal</th>
-                                        <th class="px-4 py-3">HUB</th>
-                                        <th class="px-4 py-3 text-blue-600">MPP</th>
-                                        <th class="px-4 py-3 text-slate-400">Stg</th>
-                                        <th class="px-4 py-3 text-slate-400">Gtw</th>
-                                        <th class="px-4 py-3 text-slate-400">JNE</th>
-                                        <th class="px-4 py-3 text-slate-400">SAP</th>
-                                        <th class="px-4 py-3 font-bold text-slate-700 bg-slate-100">Total</th>
-                                        <th class="px-4 py-3 text-emerald-600">Prod.</th>
-                                        <th class="px-4 py-3 text-right text-rose-500">Cost</th>
+                                        <th class="px-3 py-3 text-left">Tanggal</th>
+                                        <th class="px-3 py-3">HUB</th>
+                                        <th class="px-3 py-3 text-blue-600">MPP</th>
+                                        <th class="px-3 py-3 text-slate-400">Stg</th>
+                                        <th class="px-3 py-3 text-slate-400">Gtw</th>
+                                        <th class="px-3 py-3 text-slate-400">JNE</th>
+                                        <th class="px-3 py-3 text-slate-400">SAP</th>
+                                        <th class="px-3 py-3 font-bold text-slate-700 bg-slate-100">Total</th>
+                                        <th class="px-3 py-3 text-emerald-600">Prod.</th>
+                                        <th class="px-3 py-3 text-right text-rose-500">Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-daily-detail" class="text-slate-600 divide-y divide-slate-50"></tbody>
@@ -298,20 +277,19 @@
                     </div>
 
                     <!-- HUB Performance -->
-                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden flex flex-col h-fit">
-                        <div class="p-5 border-b border-slate-50 bg-slate-50/30">
-                            <h3 class="font-bold text-slate-700">Performa HUB</h3>
-                            <p class="text-[10px] text-slate-400 mt-0.5 font-medium">Top Outbound</p>
+                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-fit">
+                        <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                            <h3 class="font-bold text-slate-700 text-sm">Performa HUB</h3>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-center">
-                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-bold tracking-wide">
+                            <table class="w-full text-xs text-center">
+                                <thead class="text-slate-500 bg-slate-50 uppercase font-bold">
                                     <tr>
-                                        <th class="px-4 py-3 text-left">HUB</th>
-                                        <th class="px-3 py-3">MPP</th>
-                                        <th class="px-4 py-3 text-indigo-600">Out.</th>
-                                        <th class="px-3 py-3 text-emerald-600">Prod</th>
-                                        <th class="px-4 py-3 text-right text-slate-400">Cost</th>
+                                        <th class="px-3 py-3 text-left">HUB</th>
+                                        <th class="px-2 py-3 text-blue-600">MPP</th>
+                                        <th class="px-3 py-3 text-indigo-600">Out.</th>
+                                        <th class="px-2 py-3 text-emerald-600">Prod</th>
+                                        <th class="px-3 py-3 text-right text-slate-400">Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-hub-breakdown" class="text-slate-600 divide-y divide-slate-50"></tbody>
@@ -322,143 +300,99 @@
             </div>
 
             <!-- VIEW: LAPORAN -->
-            <div id="view-laporan" class="view-content hidden fade-in max-w-7xl mx-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
-                        <p class="text-sm text-slate-500">Rekapitulasi data harian dari semua HUB</p>
-                    </div>
-                    <button onclick="window.openLaporanModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/20 font-bold transition hidden flex items-center gap-2 active:scale-95" id="btn-tambah-laporan">
-                        <i class="fas fa-plus"></i> <span>Buat Laporan</span>
+            <div id="view-laporan" class="view-content hidden fade-in space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
+                    <button onclick="window.openLaporanModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-lg shadow-indigo-500/20 font-bold text-xs transition hidden flex items-center gap-2 active:scale-95" id="btn-tambah-laporan">
+                        <i class="fas fa-plus"></i> Buat Laporan
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-slate-600">
-                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100 font-bold tracking-wide">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-slate-500 uppercase bg-slate-50 border-b border-slate-100 font-bold">
                                 <tr>
-                                    <th class="px-6 py-4">Tanggal</th>
-                                    <th class="px-6 py-4">HUB</th>
-                                    <th class="px-6 py-4">Total Paket</th>
-                                    <th class="px-6 py-4">MPP</th>
-                                    <th class="px-6 py-4">Productivity</th>
-                                    <th class="px-6 py-4 text-right">Aksi</th>
+                                    <th class="px-4 py-4">Tanggal</th>
+                                    <th class="px-4 py-4">HUB</th>
+                                    <th class="px-4 py-4">Total Paket</th>
+                                    <th class="px-4 py-4">MPP</th>
+                                    <th class="px-4 py-4">Productivity</th>
+                                    <th class="px-4 py-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="laporan-list-body" class="divide-y divide-slate-50"></tbody>
                         </table>
                     </div>
-                    <div id="empty-laporan-msg" class="hidden text-center py-20">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4">
-                            <i class="fas fa-folder-open text-2xl text-slate-300"></i>
+                    <div id="empty-laporan-msg" class="hidden text-center py-16">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3">
+                            <i class="fas fa-folder-open text-xl text-slate-300"></i>
                         </div>
-                        <p class="text-slate-500 font-medium">Belum ada laporan.</p>
+                        <p class="text-slate-500 text-xs font-medium">Belum ada laporan.</p>
                     </div>
                 </div>
             </div>
 
             <!-- VIEW: PENGATURAN -->
-            <div id="view-pengaturan" class="view-content hidden fade-in max-w-5xl mx-auto">
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-slate-800">Pengaturan</h2>
-                    <p class="text-sm text-slate-500">Kelola user, akses, dan biaya</p>
+            <div id="view-pengaturan" class="view-content hidden fade-in space-y-6">
+                <h2 class="text-xl font-bold text-slate-800">Pengaturan</h2>
+                
+                <div class="flex space-x-1 bg-white p-1 rounded-xl w-full md:w-fit shadow-sm border border-slate-200">
+                    <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition bg-indigo-50 text-indigo-600">User</button>
+                    <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition">Akses</button>
+                    <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition">Cost</button>
                 </div>
 
-                <!-- Tabs -->
-                <div class="flex space-x-1 bg-slate-100 p-1.5 rounded-xl mb-8 w-fit shadow-inner">
-                    <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="px-6 py-2 rounded-lg text-sm font-bold transition bg-white text-indigo-600 shadow-sm">User</button>
-                    <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition">Akses</button>
-                    <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition">Cost</button>
-                </div>
-
-                <!-- Panel User -->
                 <div id="settings-users" class="settings-panel">
-                    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
-                        <div class="p-6 border-b border-slate-50 flex justify-between items-center">
-                            <h3 class="font-bold text-slate-800">Daftar Pengguna</h3>
-                            <button onclick="window.openUserModal()" class="text-xs bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-100 font-bold transition flex items-center gap-2 border border-emerald-100">
-                                <i class="fas fa-user-plus"></i> Tambah
-                            </button>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-50 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-sm">Daftar Pengguna</h3>
+                            <button onclick="window.openUserModal()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold transition border border-emerald-100"><i class="fas fa-user-plus mr-1"></i> Tambah</button>
                         </div>
-                        <table class="w-full text-sm text-left text-slate-600">
-                            <thead class="text-xs text-slate-400 uppercase bg-slate-50/50">
-                                <tr>
-                                    <th class="px-6 py-3">Nama</th>
-                                    <th class="px-6 py-3">ID</th>
-                                    <th class="px-6 py-3">HUB</th>
-                                    <th class="px-6 py-3">Posisi</th>
-                                    <th class="px-6 py-3 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="user-table-body" class="divide-y divide-slate-50"></tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-600">
+                                <thead class="text-slate-400 uppercase bg-slate-50/50">
+                                    <tr><th class="px-4 py-3">Nama</th><th class="px-4 py-3">ID</th><th class="px-4 py-3">HUB</th><th class="px-4 py-3">Posisi</th><th class="px-4 py-3 text-right">Aksi</th></tr>
+                                </thead>
+                                <tbody id="user-table-body" class="divide-y divide-slate-50"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Panel General -->
                 <div id="settings-general" class="settings-panel hidden">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
-                            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mb-4">
-                                <i class="fas fa-key"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-800 mb-4">Password Admin</h3>
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Password Baru</label>
-                                <input type="password" id="new-admin-pass" class="w-full border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
-                            </div>
-                            <button onclick="window.saveAdminPass()" class="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Update</button>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Password Admin</h3>
+                            <div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Password Baru</label><input type="password" id="new-admin-pass" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></div>
+                            <button onclick="window.saveAdminPass()" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition">Update</button>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
-                            <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 mb-4">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-800 mb-2">Kode Akses Leader</h3>
-                            <p class="text-xs text-slate-400 mb-4">Kode untuk otorisasi edit/hapus data oleh Leader.</p>
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kode Baru</label>
-                                <input type="text" id="access-code-input" class="w-full border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition text-sm">
-                            </div>
-                            <button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-purple-700 transition">Simpan Kode</button>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Kode Akses Leader</h3>
+                            <div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Baru</label><input type="text" id="access-code-input" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none"></div>
+                            <button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-purple-700 transition">Simpan</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Panel Cost -->
-                <div id="settings-cost" class="settings-panel hidden space-y-6">
-                    <!-- Global DW -->
-                    <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-xl">
-                                <i class="fas fa-coins"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-800">Biaya DW (Global)</h3>
-                                <p class="text-xs text-slate-400">Berlaku untuk semua DW di semua HUB</p>
-                            </div>
-                        </div>
-                        <input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-40 text-right font-mono font-bold text-slate-700 border-none bg-slate-50 rounded-lg focus:ring-2 focus:ring-amber-400" onkeyup="window.formatCostInput(this)">
+                <div id="settings-cost" class="settings-panel hidden space-y-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div><h3 class="font-bold text-slate-800 text-sm">Biaya DW (Global)</h3><p class="text-[10px] text-slate-400">Berlaku untuk semua DW</p></div>
+                        <input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-32 text-right font-mono font-bold text-slate-700 border-none bg-slate-50 rounded-lg focus:ring-0 text-sm" onkeyup="window.formatCostInput(this)">
                     </div>
-
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <!-- Add Form -->
-                        <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-soft border border-slate-100 h-fit">
-                            <h4 class="font-bold text-slate-800 mb-4">Tambah HUB</h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="md:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                            <h4 class="font-bold text-slate-800 mb-3 text-sm">Tambah HUB</h4>
                             <div class="space-y-3">
-                                <input type="text" id="new-hub-name" placeholder="Kode HUB (mis: JKT-01)" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                                <input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-3 rounded-xl text-sm font-mono text-right focus:ring-2 focus:ring-indigo-500 outline-none" onkeyup="window.formatCostInput(this)">
-                                <button onclick="window.addHubToTable()" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition">Tambah ke Daftar</button>
+                                <input type="text" id="new-hub-name" placeholder="Kode HUB" class="w-full border border-slate-200 p-2.5 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-2.5 rounded-xl text-xs font-mono text-right focus:ring-2 focus:ring-indigo-500 outline-none" onkeyup="window.formatCostInput(this)">
+                                <button onclick="window.addHubToTable()" class="w-full bg-indigo-600 text-white py-2 rounded-xl font-bold text-xs hover:bg-indigo-700 transition">Tambah</button>
                             </div>
                         </div>
-
-                        <!-- List -->
-                        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
-                            <h4 class="font-bold text-slate-800 mb-4">Daftar Biaya HUB (Sorter)</h4>
-                            <div id="cost-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-2">
-                                <!-- Generated Rows -->
-                            </div>
-                            <div class="mt-6 pt-4 border-t border-slate-100">
-                                <button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95">SIMPAN PERUBAHAN</button>
+                        <div class="md:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <h4 class="font-bold text-slate-800 mb-3 text-sm">Daftar Biaya HUB (Sorter)</h4>
+                            <div id="cost-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-2"></div>
+                            <div class="mt-4 pt-3 border-t border-slate-100">
+                                <button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95">SIMPAN PERUBAHAN</button>
                             </div>
                         </div>
                     </div>
@@ -468,64 +402,30 @@
     </main>
 
     <!-- MODAL USER -->
-    <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300">
-        <div class="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl transform transition-all scale-95 opacity-0" id="user-modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-slate-800" id="modal-title">User</h3>
+    <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
+        <div class="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0" id="user-modal-content">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3>
                 <button onclick="window.closeUserModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            <form id="user-form" class="space-y-5">
+            <form id="user-form" class="space-y-4">
                 <input type="hidden" id="edit-user-id">
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nama Lengkap</label>
-                        <input type="text" id="input-nama" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" required>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kode HUB</label>
-                            <select id="input-kode-hub" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required></select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Posisi</label>
-                            <select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" onchange="window.toggleUserModalPassword()">
-                                <option value="Sorter">Sorter</option>
-                                <option value="DW">DW</option>
-                                <option value="LEADER">LEADER</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2" id="id-container">
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">ID User</label>
-                            <input type="text" id="input-id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required>
-                        </div>
-                        <div class="hidden col-span-1" id="password-container">
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kata Sandi</label>
-                            <input type="text" id="input-sandi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <div>
-                            <span class="block text-sm font-bold text-indigo-900">Akses Edit Laporan</span>
-                            <span class="text-xs text-indigo-600">Izinkan user ini mengubah data?</span>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="input-akses-toggle" class="sr-only peer" onchange="document.getElementById('akses-label').innerText = this.checked ? 'YA' : 'TIDAK'">
-                            <div class="w-12 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600 shadow-inner"></div>
-                            <span class="ml-3 text-xs font-bold text-indigo-800 w-8" id="akses-label">TIDAK</span>
-                        </label>
-                    </div>
+                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama Lengkap</label><input type="text" id="input-nama" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kode HUB</label><select id="input-kode-hub" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required></select></div>
+                    <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Posisi</label><select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" onchange="window.toggleUserModalPassword()"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="LEADER">LEADER</option><option value="Admin">Admin</option></select></div>
                 </div>
-
-                <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
-                    <button type="button" onclick="window.closeUserModal()" class="px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-100 transition">Batal</button>
-                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition transform active:scale-95">Simpan Data</button>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2" id="id-container"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">ID User</label><input type="text" id="input-id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required></div>
+                    <div class="hidden col-span-1" id="password-container"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kata Sandi</label><input type="text" id="input-sandi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition"></div>
+                </div>
+                <div class="flex items-center justify-between bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                    <div><span class="block text-xs font-bold text-indigo-900">Akses Edit</span><span class="text-[10px] text-indigo-600">Izinkan ubah data?</span></div>
+                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="input-akses-toggle" class="sr-only peer" onchange="document.getElementById('akses-label').innerText = this.checked ? 'YA' : 'TIDAK'"><div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 shadow-inner"></div><span class="ml-2 text-[10px] font-bold text-indigo-800 w-8" id="akses-label">TIDAK</span></label>
+                </div>
+                <div class="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="window.closeUserModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95">Simpan</button>
                 </div>
             </form>
         </div>
@@ -533,94 +433,48 @@
 
     <!-- MODAL LAPORAN -->
     <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-2xl w-full max-w-5xl shadow-2xl my-4 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0" id="laporan-modal-content">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-2xl">
-                <div>
-                    <h3 class="text-xl font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3>
-                    <p class="text-xs text-slate-400">Input data harian dan absensi tim</p>
-                </div>
+        <div class="bg-white rounded-2xl w-full max-w-5xl shadow-2xl my-4 mx-2 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0" id="laporan-modal-content">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-2xl">
+                <div><h3 class="text-lg font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3></div>
                 <button onclick="window.closeLaporanModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            
-            <div class="p-6 overflow-y-auto bg-slate-50">
-                <form id="laporan-form" class="space-y-6">
+            <div class="p-4 overflow-y-auto bg-slate-50">
+                <form id="laporan-form" class="space-y-5">
                     <input type="hidden" id="edit-laporan-id">
-                    
-                    <!-- Header Info -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tanggal Laporan</label>
-                            <input type="date" id="lap-tanggal" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanggal</label><input type="date" id="lap-tanggal" class="w-full border border-slate-200 bg-slate-50 p-2.5 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" required></div>
+                        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">HUB</label><select id="lap-hub-select" class="w-full border border-slate-200 bg-slate-50 p-2.5 rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none hidden" onchange="window.loadHubUsersForAttendance()"></select><input type="text" id="lap-hub-text" class="w-full border border-slate-200 bg-slate-100 p-2.5 rounded-xl text-sm font-bold text-slate-500 cursor-not-allowed hidden" readonly></div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-700 mb-2 text-sm flex items-center"><i class="fas fa-box mr-2 text-indigo-500"></i>Metrix Paket</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Gateway</label><input type="text" id="lap-gateway" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Staging</label><input type="text" id="lap-staging" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">JNE</label><input type="text" id="lap-jne" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">SAP</label><input type="text" id="lap-sap" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Lokasi HUB</label>
-                            <select id="lap-hub-select" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none hidden" onchange="window.loadHubUsersForAttendance()"></select>
-                            <input type="text" id="lap-hub-text" class="w-full border border-slate-200 bg-slate-100 p-3 rounded-xl font-bold text-slate-500 cursor-not-allowed hidden" readonly>
+                        <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-center"><p class="text-[10px] font-bold text-indigo-400 uppercase">Total</p><p class="text-2xl font-bold text-indigo-600 mt-0.5" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div>
+                            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center"><p class="text-[10px] font-bold text-emerald-500 uppercase">Productivity</p><p class="text-2xl font-bold text-emerald-600 mt-0.5" id="disp-productivity">0</p></div>
                         </div>
                     </div>
-
-                    <!-- Metrics -->
                     <div>
-                        <h4 class="font-bold text-slate-700 mb-3 flex items-center"><i class="fas fa-chart-bar mr-2 text-indigo-500"></i>Metrix Paket</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Gateway</label><input type="text" id="lap-gateway" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Staging</label><input type="text" id="lap-staging" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">JNE</label><input type="text" id="lap-jne" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">SAP</label><input type="text" id="lap-sap" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                        </div>
-                        
-                        <div class="mt-4 grid grid-cols-2 gap-4">
-                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
-                                <p class="text-xs font-bold text-indigo-400 uppercase">Total Paket</p>
-                                <p class="text-3xl font-bold text-indigo-600 mt-1" id="disp-total-paket">0</p>
-                                <input type="hidden" id="val-total-paket">
-                            </div>
-                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-center">
-                                <p class="text-xs font-bold text-emerald-500 uppercase">Productivity</p>
-                                <p class="text-3xl font-bold text-emerald-600 mt-1" id="disp-productivity">0</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Attendance -->
-                    <div>
-                        <div class="flex justify-between items-end mb-3">
-                            <h4 class="font-bold text-slate-700 flex items-center"><i class="fas fa-users mr-2 text-indigo-500"></i>Absensi Tim</h4>
-                            <div class="text-right bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">
-                                <span class="text-xs text-slate-400 font-bold uppercase">Total MPP:</span>
-                                <span class="font-bold text-lg text-slate-800 ml-1" id="disp-total-mpp">0</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <table class="w-full text-sm text-center">
-                                <thead class="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
-                                    <tr>
-                                        <th class="p-3 text-left w-1/3">Nama Personil</th>
-                                        <th class="p-3 w-10 bg-blue-50/50 text-blue-600">1</th>
-                                        <th class="p-3 w-10 bg-blue-50/50 text-blue-600">2</th>
-                                        <th class="p-3 w-10 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th>
-                                        <th class="p-3 w-10 text-amber-500">I</th>
-                                        <th class="p-3 w-10 text-blue-500">S</th>
-                                        <th class="p-3 w-10 text-rose-500">A</th>
-                                        <th class="p-3 text-left">Keterangan</th>
-                                        <th class="p-3 w-8"></th>
-                                    </tr>
+                        <div class="flex justify-between items-end mb-2"><h4 class="font-bold text-slate-700 text-sm flex items-center"><i class="fas fa-users mr-2 text-indigo-500"></i>Absensi</h4><div class="text-right bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-sm"><span class="text-[10px] text-slate-400 font-bold uppercase">Total MPP:</span><span class="font-bold text-sm text-slate-800 ml-1" id="disp-total-mpp">0</span></div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <table class="w-full text-xs text-center">
+                                <thead class="bg-slate-50 font-bold text-slate-500 uppercase border-b border-slate-200">
+                                    <tr><th class="p-2 text-left w-1/3">Nama</th><th class="p-2 w-8 bg-blue-50/50 text-blue-600">1</th><th class="p-2 w-8 bg-blue-50/50 text-blue-600">2</th><th class="p-2 w-8 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th><th class="p-2 w-8 text-amber-500">I</th><th class="p-2 w-8 text-blue-500">S</th><th class="p-2 w-8 text-red-600">A</th><th class="p-2 text-left">Ket</th><th class="p-2 w-6"></th></tr>
                                 </thead>
                                 <tbody id="attendance-tbody" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
-                        
-                        <button type="button" onclick="window.addManualDWRow()" class="mt-3 w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center justify-center gap-2">
-                            <i class="fas fa-plus-circle"></i> Tambah DW Manual
-                        </button>
+                        <button type="button" onclick="window.addManualDWRow()" class="mt-3 w-full py-2.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 text-xs font-bold hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> Tambah DW Manual</button>
                     </div>
                 </form>
             </div>
-            
-            <div class="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-20 flex justify-end gap-3 rounded-b-2xl">
-                <button type="button" onclick="window.closeLaporanModal()" class="px-6 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-50 transition">Batal</button>
-                <button onclick="document.getElementById('laporan-form').requestSubmit()" class="px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition transform active:scale-95">SIMPAN LAPORAN</button>
+            <div class="p-4 border-t border-slate-100 bg-white sticky bottom-0 z-20 flex justify-end gap-3 rounded-b-2xl">
+                <button type="button" onclick="window.closeLaporanModal()" class="px-5 py-2.5 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-50 transition">Batal</button>
+                <button onclick="document.getElementById('laporan-form').requestSubmit()" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition transform active:scale-95">SIMPAN</button>
             </div>
         </div>
     </div>
@@ -643,7 +497,7 @@
         const storageId = 'hub-data-v1';
         let app, auth, db, unsubscribeUsers, unsubscribeCosts, unsubscribeLaporan, unsubscribeSettings;
 
-        // Dynamic Island Logic
+        // Dynamic Island
         const island = document.getElementById('dynamic-island');
         const islandContent = document.getElementById('island-content');
         const islandIcon = document.getElementById('island-icon');
@@ -653,7 +507,6 @@
         window.notify = (msg, type = 'loading') => {
             island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
             island.classList.remove('island-hidden');
-
             if (type === 'loading') {
                 island.classList.add('island-loading', 'bg-dark');
                 islandSpinner.classList.remove('opacity-0');
@@ -661,35 +514,18 @@
             } else {
                 island.classList.remove('island-loading');
                 island.classList.add('island-expanded');
-                
-                if (type === 'success') {
-                    island.classList.add('island-success');
-                    islandIcon.className = 'fas fa-check-circle text-white';
-                } else if (type === 'error') {
-                    island.classList.add('island-error');
-                    islandIcon.className = 'fas fa-exclamation-circle text-white';
-                }
-
+                if (type === 'success') { island.classList.add('island-success'); islandIcon.className = 'fas fa-check-circle text-white'; }
+                else if (type === 'error') { island.classList.add('island-error'); islandIcon.className = 'fas fa-exclamation-circle text-white'; }
                 islandSpinner.classList.add('opacity-0');
-                
-                setTimeout(() => {
-                    islandMsg.innerText = msg;
-                    islandContent.classList.remove('opacity-0', 'scale-90');
-                }, 200);
-
-                // Auto hide after 3s
+                setTimeout(() => { islandMsg.innerText = msg; islandContent.classList.remove('opacity-0', 'scale-90'); }, 200);
                 setTimeout(() => {
                     islandContent.classList.add('opacity-0', 'scale-90');
-                    setTimeout(() => {
-                        // REVISED: Go to hidden state instead of spinner
-                        island.className = 'island-hidden';
-                        island.classList.remove('island-expanded', 'island-success', 'island-error');
-                    }, 200);
+                    setTimeout(() => { island.className = 'island-hidden'; island.classList.remove('island-expanded', 'island-success', 'island-error'); }, 200);
                 }, 3000);
             }
         };
 
-        // Initialize
+        // Init
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
         let currentUser = null, annualChart = null, dailyChart = null;
 
@@ -697,9 +533,9 @@
             window.notify('Terhubung', 'success');
             document.getElementById('loading-overlay').classList.add('hidden-fade');
             setTimeout(() => {
-                document.getElementById('loading-overlay').classList.add('hidden'); // Fully hide
-                document.getElementById('loading-overlay').remove(); // remove from DOM
-            }, 300); // reduced wait
+                document.getElementById('loading-overlay').classList.add('hidden');
+                document.getElementById('loading-overlay').remove();
+            }, 300);
             document.getElementById('login-section').classList.remove('hidden');
             initListeners();
         }
@@ -708,21 +544,11 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            
-            // Enable Offline Persistence
-            enableIndexedDbPersistence(db).catch((err) => {
-                if (err.code == 'failed-precondition') {
-                    console.log('Multiple tabs open, persistence can only be enabled in one tab at a a time.');
-                } else if (err.code == 'unimplemented') {
-                    console.log('The current browser does not support all of the features required to enable persistence');
-                }
-            });
-
+            enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
             onAuthStateChanged(auth, (u) => { if(u) handleAuthSuccess(u); });
             signInAnonymously(auth).catch(e => {
-                console.error(e);
-                window.notify('Gagal Koneksi', 'error');
-                document.getElementById('init-error-text').innerText = "Cek koneksi internet / Firebase Auth.";
+                console.error(e); window.notify('Gagal Koneksi', 'error');
+                document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
                 document.getElementById('init-error-container').classList.remove('hidden');
             });
         } catch(e) { window.notify('Config Error', 'error'); }
@@ -730,20 +556,27 @@
         function initListeners() {
             const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
             
-            // Settings
             onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (s) => {
-                if(s.exists()) {
-                    const d = s.data(); appData.adminPass = d.adminPass; appData.accessCode = d.accessCode; appData.costDW = d.costDW;
-                } else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
+                if(s.exists()) { const d = s.data(); appData.adminPass = d.adminPass; appData.accessCode = d.accessCode; appData.costDW = d.costDW; }
+                else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
             });
 
-            // Data
             onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
             onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); window.renderHubDropdownOptions(); if(currentUser) window.renderCostInputs(); });
-            onSnapshot(pub('laporan'), (s) => { appData.laporan=[]; s.forEach(d=>appData.laporan.push(d.data())); if(currentUser) { window.loadDashboardData(); window.renderLaporanList(); } });
+            
+            // Fix: Always populate appData regardless of currentUser state to ensure data readiness
+            onSnapshot(pub('laporan'), (s) => { 
+                appData.laporan=[]; 
+                s.forEach(d=>appData.laporan.push(d.data())); 
+                // Only render if user is logged in (views are active)
+                if(currentUser) { 
+                    if(!document.getElementById('view-dashboard').classList.contains('hidden')) window.loadDashboardData(); 
+                    if(!document.getElementById('view-laporan').classList.contains('hidden')) window.renderLaporanList(); 
+                } 
+            });
         }
 
-        // --- CHART & UTILS ---
+        // Utils
         window.Chart.register(ChartDataLabels);
         window.formatNumber = (n) => (!n && n!==0)?'':n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         window.parseFormattedNumber = (s) => { if(!s)return 0; return parseInt(s.toString().replace(/[^0-9]/g,''),10)||0; };
@@ -751,7 +584,7 @@
         window.formatRupiah = (n) => n==null?'': 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
 
-        // --- AUTH ---
+        // Auth
         window.switchLoginTab = (t) => {
             const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
             if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-indigo-600','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-indigo-600','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
@@ -759,25 +592,27 @@
         };
         window.togglePasswordField = () => { const c=document.getElementById('is-pic-checkbox'), p=document.getElementById('login-pass-user'); c.checked ? (p.classList.remove('hidden'), p.setAttribute('required','true')) : (p.classList.add('hidden'), p.removeAttribute('required'), p.value=''); };
 
-        // Login Logic
         const doLogin = (role, name, id, access, hub) => {
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('app-navbar').classList.remove('hidden');
+            document.getElementById('mobile-topbar').classList.remove('hidden');
+            document.getElementById('mobile-bottom-nav').classList.remove('hidden');
+            document.getElementById('mobile-bottom-nav').classList.add('flex');
             document.getElementById('app-content').classList.remove('hidden');
+            
             document.getElementById('user-name-display').innerText = name;
             document.getElementById('user-badge').innerText = role.toUpperCase();
             
-            // Permissions
             const isAdm = role==='admin', isAcc = role==='pic'||access==='YA';
             document.getElementById('nav-pengaturan').classList.toggle('hidden', !isAdm);
+            document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
             window.initDashboardFilters(); window.navigate('dashboard');
             window.notify(`Halo, ${name}`, 'success');
         };
         
-        // --- FIXED LOGOUT ---
         window.doLogout = () => {
             signOut(auth).then(() => {
                 location.reload();
@@ -800,25 +635,34 @@
             }
         };
 
-        // --- NAVIGATION ---
+        // Navigation
         window.navigate = (id) => {
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
             document.getElementById(`view-${id}`).classList.remove('hidden');
+            
+            // Desktop Nav
             document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active', 'text-white'));
-            document.getElementById(`nav-${id}`).classList.add('active', 'text-white');
+            const dNav = document.getElementById(`nav-${id}`);
+            if(dNav) dNav.classList.add('active', 'text-white');
+            
+            // Mobile Nav
+            document.querySelectorAll('.mobile-nav-item').forEach(e => e.classList.remove('active', 'text-indigo-600'));
+            const mNav = document.getElementById(`mob-nav-${id}`);
+            if(mNav) mNav.classList.add('active', 'text-indigo-600');
+
             if(id==='dashboard') window.loadDashboardData();
             if(id==='pengaturan') window.loadSettingsUI();
             if(id==='laporan') window.renderLaporanList();
         };
 
-        // --- DASHBOARD ---
+        // Dashboard
         window.toggleHubDropdown = (e) => { e.stopPropagation(); document.getElementById('hub-filter-dropdown').classList.toggle('hidden'); };
         window.onclick = (e) => { if(!e.target.closest('#hub-filter-btn') && !e.target.closest('#hub-filter-dropdown')) document.getElementById('hub-filter-dropdown').classList.add('hidden'); };
         
         window.renderHubDropdownOptions = () => {
             const c = document.getElementById('hub-filter-dropdown'); c.innerHTML = '';
             appData.costs.forEach(h => {
-                c.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg"><input type="checkbox" value="${h.hub}" class="hub-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" checked onchange="window.updateHubLabel(); window.loadDashboardData()"> <span class="text-sm text-slate-700">${h.hub}</span></label>`;
+                c.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg"><input type="checkbox" value="${h.hub}" class="hub-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" checked onchange="window.updateHubLabel(); window.loadDashboardData()"> <span class="text-xs text-slate-700 font-medium">${h.hub}</span></label>`;
             });
             window.updateHubLabel();
         };
@@ -841,7 +685,6 @@
             window.updateCharts(data, hubs); window.updateDashboardTables(data);
         };
 
-        // --- LOGIC PERHITUNGAN ---
         const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;
         window.calculateReportCost = (r) => {
             let t=0, hr=getRate(r.hub), dr=appData.costDW||0;
@@ -851,7 +694,6 @@
             }}); else t=r.total_mpp*hr; return t;
         };
 
-        // --- CHARTS ---
         window.updateCharts = (data, hubs) => {
             const cy = new Date().getFullYear(), mD = Array(12).fill(0).map(()=>({p:0,m:0}));
             let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
@@ -860,285 +702,111 @@
             
             const ctx1=document.getElementById('chart-annual').getContext('2d');
             if(annualChart) annualChart.destroy();
-            annualChart=new Chart(ctx1, { type:'bar', data:{ labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets:[{label:'Paket',data:mD.map(d=>d.p),backgroundColor:'#6366f1',borderRadius:4},{label:'Prod',data:mD.map(d=>d.m?Math.round(d.p/d.m):0),type:'line',borderColor:'#10b981',borderWidth:2,tension:0.4}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}} });
+            annualChart=new Chart(ctx1, { type:'bar', data:{ labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets:[{label:'Paket',data:mD.map(d=>d.p),backgroundColor:'#6366f1',borderRadius:4,barPercentage:0.6},{label:'Prod',data:mD.map(d=>d.m?Math.round(d.p/d.m):0),type:'line',borderColor:'#10b981',borderWidth:2,tension:0.3,pointRadius:0}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{display:false}}} });
 
             const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
             const sD=Object.keys(agg).sort(), lbs=sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
             
             const ctx2=document.getElementById('chart-daily').getContext('2d');
             if(dailyChart) dailyChart.destroy();
-            dailyChart=new Chart(ctx2, { type:'bar', data:{ labels:lbs, datasets:[{label:'Paket',data:sD.map(d=>agg[d].p),backgroundColor:'#10b981',borderRadius:4}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}} });
+            dailyChart=new Chart(ctx2, { type:'bar', data:{ labels:lbs, datasets:[{label:'Paket',data:sD.map(d=>agg[d].p),backgroundColor:'#10b981',borderRadius:4,barPercentage:0.6}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{display:false}}} });
         };
 
         window.updateDashboardTables = (data) => {
             const tb1 = document.getElementById('tbody-daily-detail'); tb1.innerHTML='';
-            data.forEach(l => { tb1.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-medium">${l.tanggal}</td><td class="px-4 py-3">${l.hub}</td><td class="px-4 py-3 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-bold bg-slate-100">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3 text-emerald-600 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
+            data.forEach(l => { tb1.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-medium text-slate-800">${l.tanggal}</td><td class="px-4 py-3">${l.hub}</td><td class="px-4 py-3 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-bold bg-slate-100">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3 text-emerald-600 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
             
             const hAg={}; data.forEach(l=>{ if(!hAg[l.hub])hAg[l.hub]={m:0,o:0,c:0}; hAg[l.hub].m+=l.total_mpp; hAg[l.hub].o+=l.total_paket; hAg[l.hub].c+=window.calculateReportCost(l); });
             const tb2 = document.getElementById('tbody-hub-breakdown'); tb2.innerHTML='';
-            Object.keys(hAg).sort((a,b)=>hAg[b].o-hAg[a].o).forEach(h=>{ const d=hAg[h]; tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 text-emerald-600 font-medium">${window.formatNumber(d.m?Math.round(d.o/d.m):0)}</td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; });
+            Object.keys(hAg).sort((a,b)=>hAg[b].o-hAg[a].o).forEach(h=>{ const d=hAg[h]; tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 text-emerald-600 font-medium">${window.formatNumber(d.m?Math.round(d.o/d.m):0)}</td><td class="px-4 py-3 text-right text-slate-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; });
         };
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
 
-        // --- SETTINGS ---
+        // Settings
         window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
         window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
-        
-        window.renderUserTable = () => {
-            const tb=document.getElementById('user-table-body'); tb.innerHTML='';
-            appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-medium text-slate-700">${u.nama}</td><td class="px-6 py-4">${u.id}</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-3"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button></td></tr>`);
-        };
-
-        window.toggleUserModalPassword = () => {
-            const p = document.getElementById('input-posisi').value;
-            const isL = p==='LEADER' || p==='Admin';
-            document.getElementById('password-container').classList.toggle('hidden', !isL);
-            const idC = document.getElementById('id-container');
-            if(isL) { idC.classList.remove('col-span-2'); idC.classList.add('col-span-1'); } else { idC.classList.remove('col-span-1'); idC.classList.add('col-span-2'); }
-        };
-
+        window.renderUserTable = () => { const tb=document.getElementById('user-table-body'); tb.innerHTML=''; appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-medium text-slate-700">${u.nama}</td><td class="px-6 py-4">${u.id}</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-3"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button></td></tr>`); };
+        window.toggleUserModalPassword = () => { const p=document.getElementById('input-posisi').value, isL=p==='LEADER'||p==='Admin', pc=document.getElementById('password-container'), ic=document.getElementById('id-container'); pc.classList.toggle('hidden', !isL); if(isL){ic.classList.remove('col-span-2');ic.classList.add('col-span-1')}else{ic.classList.remove('col-span-1');ic.classList.add('col-span-2')} };
         window.openUserModal = (id=null) => {
-            const m=document.getElementById('user-modal'); m.classList.remove('hidden'); 
-            setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
-            
+            const m=document.getElementById('user-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
             const hS=document.getElementById('input-kode-hub'); hS.innerHTML='<option value="">-- Pilih --</option>'; appData.costs.forEach(c=>hS.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`);
-            
-            if(id) {
-                const u=appData.users.find(x=>x.id===id);
-                document.getElementById('modal-title').innerText='Edit User'; document.getElementById('edit-user-id').value=id;
-                document.getElementById('input-nama').value=u.nama; document.getElementById('input-id').value=u.id; document.getElementById('input-sandi').value=u.sandi||'';
-                document.getElementById('input-kode-hub').value=u.kode_hub; document.getElementById('input-posisi').value=u.posisi;
-                document.getElementById('input-akses-toggle').checked = (u.akses==='YA'); document.getElementById('akses-label').innerText = u.akses;
-                document.getElementById('input-id').readOnly=true; document.getElementById('input-id').classList.add('bg-slate-100');
-            } else {
-                document.getElementById('modal-title').innerText='Tambah User'; document.getElementById('edit-user-id').value=''; document.getElementById('user-form').reset();
-                document.getElementById('input-id').readOnly=false; document.getElementById('input-id').classList.remove('bg-slate-100');
-                document.getElementById('akses-label').innerText = 'TIDAK';
-            }
+            if(id) { const u=appData.users.find(x=>x.id===id); document.getElementById('modal-title').innerText='Edit User'; document.getElementById('edit-user-id').value=id; document.getElementById('input-nama').value=u.nama; document.getElementById('input-id').value=u.id; document.getElementById('input-sandi').value=u.sandi||''; document.getElementById('input-kode-hub').value=u.kode_hub; document.getElementById('input-posisi').value=u.posisi; document.getElementById('input-akses-toggle').checked=(u.akses==='YA'); document.getElementById('akses-label').innerText=u.akses; document.getElementById('input-id').readOnly=true; document.getElementById('input-id').classList.add('bg-slate-100'); }
+            else { document.getElementById('modal-title').innerText='Tambah User'; document.getElementById('edit-user-id').value=''; document.getElementById('user-form').reset(); document.getElementById('input-id').readOnly=false; document.getElementById('input-id').classList.remove('bg-slate-100'); document.getElementById('akses-label').innerText='TIDAK'; }
             window.toggleUserModalPassword();
         };
         window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
-        
-        document.getElementById('user-form').onsubmit = async (e) => {
-            e.preventDefault(); window.notify('Menyimpan...', 'loading');
-            const id = document.getElementById('input-id').value;
-            const data = {
-                nama: document.getElementById('input-nama').value, id: id, sandi: document.getElementById('input-sandi').value,
-                kode_hub: document.getElementById('input-kode-hub').value, posisi: document.getElementById('input-posisi').value,
-                akses: document.getElementById('input-akses-toggle').checked ? 'YA' : 'TIDAK'
-            };
-            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); }
-        };
+        document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
         window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
-
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-2 items-center mb-2"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border p-2 rounded-lg text-sm bg-slate-50" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border p-2 rounded-lg text-sm text-right font-mono" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-500 hover:text-rose-700 px-2"><i class="fas fa-trash"></i></button></div>`); };
-        window.addHubToTable = () => {
-            const n = document.getElementById('new-hub-name').value.toUpperCase(), c = window.parseFormattedNumber(document.getElementById('new-hub-cost').value);
-            if(!n) return Swal.fire('Info', 'Isi data HUB', 'warning');
-            appData.costs.push({hub:n, cost:c}); window.renderCostInputs();
-            document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value='';
-        };
+        window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
-        window.saveCosts = async () => {
-            window.notify('Menyimpan...', 'loading');
-            const dw = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
-            // Re-capture table values
-            const newCosts = [];
-            const rows = document.getElementById('cost-container').children;
-            for(let i=0; i<rows.length; i++) {
-                const h = document.getElementById(`cost-hub-${i}`).value, c = window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value);
-                newCosts.push({hub:h, cost:c});
-            }
-            try {
-                await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw});
-                // Using Promise.all for parallel writes
-                const batch = [];
-                newCosts.forEach(item => batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', item.hub), item)));
-                await Promise.all(batch);
-                window.notify('Konfigurasi Tersimpan', 'success');
-            } catch(e) { window.notify('Gagal Simpan', 'error'); }
-        };
+        window.saveCosts = async () => { window.notify('Menyimpan...', 'loading'); const dw=window.parseFormattedNumber(document.getElementById('global-cost-dw').value), batch=[]; const rows=document.getElementById('cost-container').children; const newCosts=[]; for(let i=0;i<rows.length;i++){ const h=document.getElementById(`cost-hub-${i}`).value, c=window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); newCosts.push({hub:h, cost:c}); batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), {hub:h, cost:c})); } try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw}); await Promise.all(batch); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); } };
 
-        // --- LAPORAN ---
+        // Laporan
         window.openLaporanModal = () => {
-            const m = document.getElementById('laporan-modal'); m.classList.remove('hidden');
-            setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
-            
-            document.getElementById('laporan-form').reset();
-            document.getElementById('laporan-modal-title').innerText = 'Buat Laporan Baru';
-            document.getElementById('edit-laporan-id').value = '';
-            document.getElementById('lap-tanggal').valueAsDate = new Date();
-            
-            const sel = document.getElementById('lap-hub-select'), txt = document.getElementById('lap-hub-text');
-            if(currentUser.role === 'admin') {
-                sel.classList.remove('hidden'); txt.classList.add('hidden');
-                sel.innerHTML = '<option value="">-- Pilih HUB --</option>';
-                appData.costs.forEach(c => sel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
-                document.getElementById('attendance-tbody').innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-400">Pilih HUB terlebih dahulu untuk memuat tim.</td></tr>';
-            } else {
-                sel.classList.add('hidden'); txt.classList.remove('hidden');
-                txt.value = currentUser.kode_hub;
-                window.loadHubUsersForAttendance(currentUser.kode_hub);
-            }
-            
-            ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id => document.getElementById(id).innerText = '0');
+            const m=document.getElementById('laporan-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
+            document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText='Buat Laporan Baru'; document.getElementById('edit-laporan-id').value=''; document.getElementById('lap-tanggal').valueAsDate=new Date();
+            const s=document.getElementById('lap-hub-select'), t=document.getElementById('lap-hub-text');
+            if(currentUser.role==='admin') { s.classList.remove('hidden'); t.classList.add('hidden'); s.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>s.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="9" class="p-8 text-center text-slate-400">Pilih HUB dulu.</td></tr>'; }
+            else { s.classList.add('hidden'); t.classList.remove('hidden'); t.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
+            ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id=>document.getElementById(id).innerText='0');
         };
         window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
-        
         window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
-            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value;
-            const tb = document.getElementById('attendance-tbody'); tb.innerHTML = '';
-            if(!h) return;
-
-            // Sort Users: Leader first, then Sorters by ID (Oldest first)
-            const users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => {
-                const roleA = (a.posisi==='LEADER'||a.posisi==='Admin') ? 0 : 1;
-                const roleB = (b.posisi==='LEADER'||b.posisi==='Admin') ? 0 : 1;
-                if(roleA !== roleB) return roleA - roleB;
-                return a.id.localeCompare(b.id); // String ID sort (works if IDs are chronological like sorter01, sorter02)
-            });
-
+            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
+            const users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => { const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id); });
             const map = {}; existingData.forEach(x => map[x.userId] = x);
-
-            users.forEach(u => {
-                const isL = u.posisi==='LEADER'||u.posisi==='Admin';
-                const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
-                window.renderRow(tb, u.id, u.nama, u.posisi, isL, sv, false);
-            });
-            // Manuals
+            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); });
             existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
             window.calcMetrics();
         };
-
-        window.renderRow = (tb, id, nm, role, isLeader, sv, isManual) => {
-            const nameHtml = isManual 
-                ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-sm border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">`
-                : `<div class="font-medium text-slate-700">${nm}</div><div class="text-[10px] text-slate-400">${isLeader ? '★ LEADER' : role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
-            
-            const delBtn = isManual ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
-            const bgClass = isLeader ? 'bg-indigo-50/30' : 'bg-white';
-            
+        window.renderRow = (tb, id, nm, role, isL, sv, isM) => {
+            const nmH = isM ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` : `<div class="font-medium text-slate-700">${nm}</div><div class="text-[10px] text-slate-400">${isL?'★ LEADER':role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
+            const del = isM ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
             const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c}" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-
-            const html = `
-                <tr class="${bgClass} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}">
-                    <td class="p-3 text-left">
-                        ${nameHtml}
-                        <input type="hidden" name="user_id[]" value="${id}">
-                        <input type="hidden" name="is_manual[]" value="${isManual}">
-                    </td>
-                    <td class="p-2 bg-blue-50/30 text-center">${chk('s1', sv.s1, 'shift-chk')}</td>
-                    <td class="p-2 bg-blue-50/30 text-center">${chk('s2', sv.s2, 'shift-chk')}</td>
-                    <td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-200">${chk('s3', sv.s3, 'shift-chk')}</td>
-                    <td class="p-2 text-center">${chk('ijin', sv.i, 'status-chk')}</td>
-                    <td class="p-2 text-center">${chk('sakit', sv.s, 'status-chk')}</td>
-                    <td class="p-2 text-center">${chk('alfa', sv.a, 'status-chk')}</td>
-                    <td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500 outline-none"></td>
-                    <td class="p-2 text-center">${delBtn}</td>
-                </tr>
-            `;
-            tb.insertAdjacentHTML('beforeend', html);
+            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/30':'bg-white'} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-200">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500 outline-none"></td><td class="p-2 text-center">${del}</td></tr>`);
         };
-
-        window.handleSingleCheck = (chk) => {
-            if(chk.checked) {
-                const row = chk.closest('tr');
-                row.querySelectorAll('.attendance-checkbox').forEach(c => { if(c!==chk) c.checked=false; });
-            }
-            window.calcMetrics();
-        };
-
-        window.calcMetrics = (el) => {
-            if(el) window.formatCostInput(el);
-            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
-            const s = window.parseFormattedNumber(document.getElementById('lap-staging').value);
-            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
-            const sp = window.parseFormattedNumber(document.getElementById('lap-sap').value);
-            const totalPaket = g+s+j+sp;
-            
-            document.getElementById('disp-total-paket').innerText = window.formatNumber(totalPaket);
-            document.getElementById('val-total-paket').value = totalPaket;
-
-            let mpp = 0;
-            document.querySelectorAll('#attendance-tbody tr').forEach(r => {
-                const role = r.getAttribute('data-role');
-                if(role !== 'LEADER' && role !== 'Admin') {
-                    if(r.querySelector('.shift-chk:checked')) mpp++;
-                }
-            });
-
-            document.getElementById('disp-total-mpp').innerText = mpp;
-            document.getElementById('disp-productivity').innerText = mpp>0 ? window.formatNumber(Math.round(totalPaket/mpp)) : 0;
-        };
-
+        window.handleSingleCheck = (c) => { if(c.checked) c.closest('tr').querySelectorAll('.attendance-checkbox').forEach(x=>{if(x!==c)x.checked=false}); window.calcMetrics(); };
+        window.calcMetrics = (el) => { if(el) window.formatCostInput(el); const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), sa=window.parseFormattedNumber(document.getElementById('lap-sap').value), tot=g+s+j+sa; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot; let mpp=0; document.querySelectorAll('#attendance-tbody tr').forEach(r=>{ if(r.getAttribute('data-role')!=='LEADER'&&r.getAttribute('data-role')!=='Admin'&&r.querySelector('.shift-chk:checked')) mpp++; }); document.getElementById('disp-total-mpp').innerText=mpp; document.getElementById('disp-productivity').innerText=mpp>0?window.formatNumber(Math.round(tot/mpp)):0; };
         window.addManualDWRow = () => window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', false, {}, true);
 
-        // Submit Laporan
         document.getElementById('laporan-form').onsubmit = async (e) => {
             e.preventDefault(); window.notify('Menyimpan...', 'loading');
-            
-            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value;
-            if(!h) return window.notify('Pilih HUB', 'error');
-
-            const att = []; let mpp=0;
-            const rows = document.querySelectorAll('#attendance-tbody tr');
+            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; if(!h) return window.notify('Pilih HUB', 'error');
+            const att=[], rows=document.querySelectorAll('#attendance-tbody tr'); let mpp=0;
             for(let r of rows) {
-                const uid = r.querySelector('input[name="user_id[]"]').value;
-                const nm = r.querySelector('input[name="user_nama[]"]').value;
-                const isMan = r.querySelector('input[name="is_manual[]"]').value === 'true';
-                
-                if(isMan && !nm.trim()) return window.notify('Nama DW Kosong', 'error');
-
+                const uid=r.querySelector('input[name="user_id[]"]').value, nm=r.querySelector('input[name="user_nama[]"]').value, isM=r.querySelector('input[name="is_manual[]"]').value==='true';
+                if(isM && !nm.trim()) return window.notify('Nama DW Kosong', 'error');
                 const s1=r.querySelector('input[name="s1[]"]').checked, s2=r.querySelector('input[name="s2[]"]').checked, s3=r.querySelector('input[name="s3[]"]').checked;
-                
                 if((s1||s2||s3) && r.getAttribute('data-role')!=='LEADER' && r.getAttribute('data-role')!=='Admin') mpp++;
+                att.push({ userId:uid, nama:nm, s1, s2, s3, i:r.querySelector('input[name="ijin[]"]').checked, s:r.querySelector('input[name="sakit[]"]').checked, a:r.querySelector('input[name="alfa[]"]').checked, ket:r.querySelector('input[name="ket[]"]').value });
+            }
+            const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
+            const id=document.getElementById('edit-laporan-id').value||Date.now().toString(), data={id, tanggal:document.getElementById('lap-tanggal').value, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
+            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
+        };
 
-                att.push({
-                    userId: uid, nama: nm, s1, s2, s3,
-                    i: r.querySelector('input[name="ijin[]"]').checked,
-                    s: r.querySelector('input[name="sakit[]"]').checked,
-                    a: r.querySelector('input[name="alfa[]"]').checked,
-                    ket: r.querySelector('input[name="ket[]"]').value
+        window.renderLaporanList = () => {
+            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
+            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
+            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
+            else {
+                document.getElementById('empty-laporan-msg').classList.add('hidden');
+                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.forEach(l => {
+                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 hover:bg-blue-50 p-1 rounded transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 hover:bg-rose-50 p-1 rounded transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
+                    tb.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50"><td class="px-6 py-4 font-medium text-slate-700">${l.tanggal}</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${l.hub}</span></td><td class="px-6 py-4 font-bold text-slate-800">${window.formatNumber(l.total_paket)}</td><td class="px-6 py-4 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-6 py-4 text-emerald-600 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-6 py-4 text-right">${acts}</td></tr>`;
                 });
             }
-
-            const metrics = {
-                gateway: window.parseFormattedNumber(document.getElementById('lap-gateway').value),
-                staging: window.parseFormattedNumber(document.getElementById('lap-staging').value),
-                jne: window.parseFormattedNumber(document.getElementById('lap-jne').value),
-                sap: window.parseFormattedNumber(document.getElementById('lap-sap').value),
-                total_paket: parseInt(document.getElementById('val-total-paket').value)||0
-            };
-            
-            const id = document.getElementById('edit-laporan-id').value || Date.now().toString();
-            const data = { id, tanggal: document.getElementById('lap-tanggal').value, hub: h, ...metrics, total_mpp: mpp, productivity: mpp>0?metrics.total_paket/mpp:0, attendance_data: att };
-
-            try {
-                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data);
-                window.closeLaporanModal(); window.notify('Laporan Tersimpan', 'success');
-            } catch(e) { window.notify('Gagal Simpan', 'error'); }
         };
-
-        // Edit
         window.editLaporan = (id) => {
-            const d = appData.laporan.find(x => x.id === id);
-            window.openLaporanModal();
-            document.getElementById('laporan-modal-title').innerText = 'Edit Laporan';
-            document.getElementById('edit-laporan-id').value = id;
-            document.getElementById('lap-tanggal').value = d.tanggal;
-            if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
-            document.getElementById('lap-gateway').value = window.formatNumber(d.gateway);
-            document.getElementById('lap-staging').value = window.formatNumber(d.staging);
-            document.getElementById('lap-jne').value = window.formatNumber(d.jne);
-            document.getElementById('lap-sap').value = window.formatNumber(d.sap);
-            window.loadHubUsersForAttendance(d.hub, d.attendance_data);
-            window.calcMetrics();
+            const d = appData.laporan.find(x => x.id === id); window.openLaporanModal(); document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; document.getElementById('edit-laporan-id').value = id;
+            document.getElementById('lap-tanggal').value = d.tanggal; if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
+            document.getElementById('lap-gateway').value=window.formatNumber(d.gateway); document.getElementById('lap-staging').value=window.formatNumber(d.staging); document.getElementById('lap-jne').value=window.formatNumber(d.jne); document.getElementById('lap-sap').value=window.formatNumber(d.sap);
+            window.loadHubUsersForAttendance(d.hub, d.attendance_data); window.calcMetrics();
         };
-
-        window.deleteLaporan = (id) => {
-            Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
-        };
-        
+        window.deleteLaporan = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
     </script>

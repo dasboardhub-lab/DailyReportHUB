@@ -124,7 +124,7 @@
         <!-- VIEW: DASHBOARD -->
         <div id="view-dashboard" class="view-content fade-in max-w-7xl mx-auto">
             <!-- Filter Section -->
-            <div class="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200">
+            <div class="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200 relative z-20">
                 <div class="flex justify-between items-center border-b pb-2 mb-3">
                     <h3 class="font-bold text-gray-700 flex items-center"><i class="fas fa-filter mr-2 text-blue-600"></i>Filter Data</h3>
                     <button onclick="window.resetDashboardFilters()" class="text-xs text-red-500 hover:text-red-700 font-semibold border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition"><i class="fas fa-sync-alt mr-1"></i> Reset Filter</button>
@@ -142,7 +142,7 @@
                     <!-- CUSTOM DROPDOWN MULTI-SELECT -->
                     <div class="relative w-64">
                         <label class="block text-xs font-bold text-gray-500 mb-1">Pilih HUB (Multi-Select)</label>
-                        <button id="hub-filter-btn" class="w-full border p-2 rounded text-sm bg-white text-left flex justify-between items-center shadow-sm hover:bg-gray-50" onclick="window.toggleHubDropdown()">
+                        <button type="button" id="hub-filter-btn" class="w-full border p-2 rounded text-sm bg-white text-left flex justify-between items-center shadow-sm hover:bg-gray-50" onclick="window.toggleHubDropdown(event)">
                             <span id="hub-filter-label" class="truncate">Semua HUB</span>
                             <i class="fas fa-chevron-down text-gray-400"></i>
                         </button>
@@ -154,7 +154,7 @@
             </div>
 
             <!-- Charts Area -->
-            <div class="flex flex-col gap-6 mb-8">
+            <div class="flex flex-col gap-6 mb-8 relative z-10">
                 <div class="bg-white p-5 rounded-lg shadow border border-gray-200 w-full">
                     <h4 class="font-bold text-gray-700 mb-4 text-sm uppercase border-l-4 border-blue-500 pl-2">Trend Tahunan</h4>
                     <div class="relative h-72 w-full">
@@ -170,7 +170,7 @@
             </div>
 
             <!-- Tables Area -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 relative z-10">
                 <div class="lg:col-span-2 bg-white rounded-lg shadow overflow-hidden border border-gray-200 flex flex-col">
                     <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                         <h3 class="font-bold text-gray-800">Rincian Data per Tanggal</h3>
@@ -207,7 +207,9 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 z-10">
                                 <tr>
                                     <th class="px-3 py-3 text-left">HUB</th>
-                                    <th class="px-3 py-3 font-bold bg-gray-200">Outbound</th>
+                                    <th class="px-3 py-3 text-blue-700">Total MPP</th>
+                                    <th class="px-3 py-3 font-bold bg-gray-200">Total Outbound</th>
+                                    <th class="px-3 py-3 text-green-700">Prod. HUB</th>
                                     <th class="px-3 py-3 text-right text-red-600">Cost</th>
                                 </tr>
                             </thead>
@@ -599,13 +601,46 @@
         window.togglePasswordField = () => { const c = document.getElementById('is-pic-checkbox'), p = document.getElementById('login-pass-user'); if(c.checked) { p.classList.remove('hidden'); p.setAttribute('required', 'true'); } else { p.classList.add('hidden'); p.removeAttribute('required'); p.value=''; } };
 
         document.getElementById('form-login-admin').addEventListener('submit', (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value === appData.adminPass) { currentUser = { role: 'admin', name: 'Administrator', id: 'admin', kode_hub: 'ALL' }; window.enterApp(); } else Swal.fire('Error', 'Password Admin Salah!', 'error'); });
-        document.getElementById('form-login-user').addEventListener('submit', (e) => { e.preventDefault(); const id = document.getElementById('login-id').value, isPic = document.getElementById('is-pic-checkbox').checked, pass = document.getElementById('login-pass-user').value, u = appData.users.find(u => u.id === id); if (!u) return Swal.fire('Error', 'ID User tidak ditemukan.', 'error'); if (isPic) { if (u.sandi === pass) { currentUser = { role: 'pic', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; window.enterApp(); } else Swal.fire('Error', 'Password Salah!', 'error'); } else { if (u.posisi === 'LEADER' || u.posisi === 'Admin') return Swal.fire('Warning', 'Gunakan login LEADER.', 'warning'); currentUser = { role: 'sorter', name: u.nama, id: u.id, akses_laporan: 'TIDAK', kode_hub: u.kode_hub }; window.enterApp(); } });
+        document.getElementById('form-login-user').addEventListener('submit', (e) => { 
+            e.preventDefault(); 
+            const id = document.getElementById('login-id').value, isPic = document.getElementById('is-pic-checkbox').checked, pass = document.getElementById('login-pass-user').value, u = appData.users.find(u => u.id === id); 
+            if (!u) return Swal.fire('Error', 'ID User tidak ditemukan.', 'error'); 
+            
+            // Logic Auth Baru: Jika akses='YA', dia dianggap punya akses penuh (seperti LEADER)
+            // Tapi tetap login lewat form User
+            if (isPic) { 
+                if (u.sandi === pass) { 
+                    currentUser = { role: 'pic', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; 
+                    window.enterApp(); 
+                } else Swal.fire('Error', 'Password Salah!', 'error'); 
+            } else { 
+                if (u.posisi === 'LEADER' || u.posisi === 'Admin') return Swal.fire('Warning', 'Gunakan login LEADER.', 'warning'); 
+                currentUser = { role: 'sorter', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; // Pass akses
+                window.enterApp(); 
+            } 
+        });
 
         window.enterApp = () => {
             document.getElementById('login-section').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('app-navbar').classList.remove('hidden'); document.getElementById('app-navbar').classList.add('block');
             document.getElementById('user-name-display').innerText = currentUser.name; document.getElementById('user-badge').innerText = currentUser.role.toUpperCase();
+            
             const ns = document.getElementById('nav-pengaturan'), bt = document.getElementById('btn-tambah-laporan');
-            if (currentUser.role === 'admin') { ns.classList.remove('hidden'); bt.classList.remove('hidden'); } else if (currentUser.role === 'pic' && currentUser.akses_laporan === 'YA') { ns.classList.add('hidden'); bt.classList.remove('hidden'); } else { ns.classList.add('hidden'); bt.classList.add('hidden'); }
+            
+            // Logic Tombol & Menu: Cek Akses Laporan 'YA'
+            const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA');
+            
+            if (currentUser.role === 'admin') { 
+                ns.classList.remove('hidden'); 
+            } else {
+                ns.classList.add('hidden');
+            }
+            
+            if (hasEditAccess) {
+                bt.classList.remove('hidden');
+            } else {
+                bt.classList.add('hidden');
+            }
+            
             window.initDashboardFilters(); window.navigate('dashboard');
         };
         window.logout = () => location.reload();
@@ -618,8 +653,15 @@
         window.toggleSidebar = () => {}; 
 
         // -- DASHBOARD --
-        window.toggleHubDropdown = () => document.getElementById('hub-filter-dropdown').classList.toggle('hidden');
-        window.addEventListener('click', (e) => { if (!document.getElementById('hub-filter-btn').contains(e.target) && !document.getElementById('hub-filter-dropdown').contains(e.target)) document.getElementById('hub-filter-dropdown').classList.add('hidden'); });
+        window.toggleHubDropdown = (e) => {
+            e.stopPropagation(); // Stop click from immediately closing it
+            document.getElementById('hub-filter-dropdown').classList.toggle('hidden');
+        };
+        
+        window.addEventListener('click', (e) => { 
+            if (!document.getElementById('hub-filter-btn').contains(e.target) && !document.getElementById('hub-filter-dropdown').contains(e.target)) 
+                document.getElementById('hub-filter-dropdown').classList.add('hidden'); 
+        });
 
         window.renderHubDropdownOptions = () => {
             const c = document.getElementById('hub-filter-dropdown'); if(!c) return; c.innerHTML = '';
@@ -682,7 +724,11 @@
             data.forEach(l => { tbd.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-3 py-2 text-left whitespace-nowrap">${l.tanggal}</td><td class="px-3 py-2 font-semibold">${l.hub}</td><td class="px-3 py-2 text-blue-700 font-bold">${l.total_mpp}</td><td class="px-3 py-2">${window.formatNumber(l.staging)}</td><td class="px-3 py-2">${window.formatNumber(l.gateway)}</td><td class="px-3 py-2">${window.formatNumber(l.jne)}</td><td class="px-3 py-2">${window.formatNumber(l.sap)}</td><td class="px-3 py-2 font-bold bg-gray-50">${window.formatNumber(l.total_paket)}</td><td class="px-3 py-2 text-green-700 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-3 py-2 text-right text-red-600 text-xs">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
             const tbh = document.getElementById('tbody-hub-breakdown'); tbh.innerHTML = ''; const hAg = {};
             data.forEach(l => { if(!hAg[l.hub]) hAg[l.hub] = { mpp: 0, out: 0, cost: 0 }; hAg[l.hub].mpp += l.total_mpp; hAg[l.hub].out += l.total_paket; hAg[l.hub].cost += window.calculateReportCost(l); });
-            Object.keys(hAg).sort((a, b) => hAg[b].out - hAg[a].out).forEach(h => { const d = hAg[h]; tbh.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${h}</td><td class="px-4 py-3 font-bold bg-gray-50 text-blue-800">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`; });
+            Object.keys(hAg).sort((a, b) => hAg[b].out - hAg[a].out).forEach(h => { 
+                const d = hAg[h]; 
+                const avgProd = d.mpp > 0 ? Math.round(d.out / d.mpp) : 0;
+                tbh.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${h}</td><td class="px-4 py-3 text-blue-700">${d.mpp}</td><td class="px-4 py-3 font-bold bg-gray-50 text-blue-800">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-green-700">${window.formatNumber(avgProd)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`; 
+            });
         };
         window.exportTableToCSV = (id, fn) => { const t = document.getElementById(id); let c = []; t.querySelectorAll("tr").forEach(r => { let row = []; r.querySelectorAll("td, th").forEach(z => row.push(z.innerText)); c.push(row.join(",")); }); const b = new Blob([c.join("\n")], {type: "text/csv"}), a = document.createElement("a"); a.download = fn; a.href = window.URL.createObjectURL(b); a.style.display = "none"; document.body.appendChild(a); a.click(); };
 
@@ -774,6 +820,150 @@
         window.addHubToTable = () => { window.updateLocalCosts(); const n = document.getElementById('new-hub-name').value.toUpperCase(), c = window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info', 'Lengkapi Data', 'warning'); appData.costs.push({ hub: n, cost: c }); window.renderCostInputs(); document.getElementById('new-hub-name').value = ''; document.getElementById('new-hub-cost').value = ''; };
         window.removeCostRow = (i) => { window.updateLocalCosts(); appData.costs.splice(i, 1); window.renderCostInputs(); };
         window.saveCosts = async () => { window.updateLocalCosts(); const dw = window.parseFormattedNumber(document.getElementById('global-cost-dw').value); try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { costDW: dw }); for (const i of appData.costs) { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', i.hub), i); } Swal.fire('Sukses', 'Tersimpan', 'success'); } catch(e) { Swal.fire('Error', 'Gagal', 'error'); } };
+
+        // -- LAPORAN CRUD --
+        window.renderLaporanList = () => {
+            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
+            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
+            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
+            else {
+                document.getElementById('empty-laporan-msg').classList.add('hidden');
+                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.forEach(l => {
+                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporanConfirm('${safeId(l.id)}')" class="text-blue-600 hover:underline text-xs"><i class="fas fa-edit"></i> Edit</button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-red-500 hover:underline text-xs"><i class="fas fa-trash"></i> Hapus</button></div>` : '<span class="text-gray-400 text-xs">View Only</span>';
+                    tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${l.tanggal}</td><td class="px-6 py-4 font-bold">${l.hub}</td><td class="px-6 py-4 text-blue-600 font-bold">${window.formatNumber(l.total_paket)}</td><td class="px-6 py-4">${l.total_mpp}</td><td class="px-6 py-4 text-green-600 font-bold">${Math.round(l.productivity)}</td><td class="px-6 py-4 text-right">${acts}</td></tr>`;
+                });
+            }
+        };
+        window.openLaporanModal = () => {
+            document.getElementById('laporan-modal').classList.remove('hidden'); document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText = 'Buat Laporan'; document.getElementById('edit-laporan-id').value = ''; document.getElementById('lap-tanggal').valueAsDate = new Date();
+            const sel = document.getElementById('lap-hub-select'); const txt = document.getElementById('lap-hub-text');
+            if(currentUser.role==='admin') { sel.classList.remove('hidden'); txt.classList.add('hidden'); sel.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>{sel.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`}); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="9" class="p-4 text-gray-400">Pilih HUB dulu.</td></tr>'; }
+            else { sel.classList.add('hidden'); txt.classList.remove('hidden'); txt.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
+            document.getElementById('disp-total-paket').innerText = '0'; document.getElementById('disp-total-mpp').innerText = '0'; document.getElementById('disp-productivity').innerText = '0';
+        };
+        window.closeLaporanModal = () => document.getElementById('laporan-modal').classList.add('hidden');
+        
+        window.editLaporanConfirm = (id) => {
+            Swal.fire({ title: 'Edit Laporan?', text: "Ubah data laporan ini.", icon: 'question', showCancelButton: true, confirmButtonColor: '#3b82f6', cancelButtonColor: '#6b7280', confirmButtonText: 'Ya, Edit' }).then((r) => { if (r.isConfirmed) window.editLaporan(id); });
+        };
+
+        window.editLaporan = (id) => {
+            const d = appData.laporan.find(x => x.id === id); if(!d) return;
+            const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && d.hub === currentUser.kode_hub);
+            if(!hasEditAccess) return Swal.fire('Error', 'No Access', 'error');
+            
+            window.openLaporanModal(); document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; document.getElementById('edit-laporan-id').value = id;
+            document.getElementById('lap-tanggal').value = d.tanggal;
+            if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub; else document.getElementById('lap-hub-text').value = d.hub;
+            document.getElementById('lap-gateway').value = window.formatNumber(d.gateway); document.getElementById('lap-staging').value = window.formatNumber(d.staging); document.getElementById('lap-jne').value = window.formatNumber(d.jne); document.getElementById('lap-sap').value = window.formatNumber(d.sap);
+            window.loadHubUsersForAttendance(d.hub, d.attendance_data); window.calcMetrics();
+        };
+
+        window.loadHubUsersForAttendance = (hName=null, existing=null) => {
+            let h = hName || (document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value);
+            const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
+            const users = appData.users.filter(u => u.kode_hub === h);
+            const map = {}; if(existing) existing.forEach(x => map[x.userId] = x);
+            users.forEach(u => {
+                const isL = (u.posisi==='LEADER'||u.posisi==='Admin'); const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
+                window.renderRow(tb, u.id, u.nama, u.posisi, isL?'<span class="text-xs bg-yellow-200 px-1 rounded ml-1">L</span>':'', isL?'bg-yellow-50':'bg-white', sv, false);
+            });
+            if(existing) existing.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', '<span class="text-xs bg-gray-200 px-1 rounded ml-1">Man</span>', 'bg-white', map[x.userId], true); });
+            window.calcMetrics();
+        };
+        
+        window.renderRow = (tb, id, nm, role, badge, cls, sv, man) => {
+            const nmF = man ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full border p-1 rounded text-sm" placeholder="Nama">` : `${nm} ${badge}<input type="hidden" name="user_nama[]" value="${nm}">`;
+            const del = man ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : '';
+            const chk = (n,v) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${n==='ijin'||n==='sakit'||n==='alfa'?'status-chk':'shift-chk'}" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
+            tb.insertAdjacentHTML('beforeend', `<tr class="border-b ${cls}" data-role="${role}"><td class="p-2 text-left font-medium">${nmF}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${man}"></td><td class="p-2">${chk('s1',sv.s1)}</td><td class="p-2">${chk('s2',sv.s2)}</td><td class="p-2">${chk('s3',sv.s3)}</td><td class="p-2">${chk('ijin',sv.i)}</td><td class="p-2">${chk('sakit',sv.s)}</td><td class="p-2">${chk('alfa',sv.a)}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full border p-1 text-xs rounded" placeholder="..."></td><td class="p-2 text-center">${del}</td></tr>`);
+        };
+        window.addManualDWRow = () => { window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', '', 'bg-white', {}, true); };
+        window.handleSingleCheck = (chk) => { if(chk.checked) { chk.closest('tr').querySelectorAll('.attendance-checkbox').forEach(c => { if(c!==chk) c.checked = false; }); } window.calcMetrics(); };
+        window.calcMetrics = (el=null) => {
+            if(el) window.formatCostInput(el);
+            const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), p=window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            const tot = g+s+j+p; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot;
+            let mpp = 0;
+            document.querySelectorAll('#attendance-tbody tr').forEach(r => {
+                const role = r.getAttribute('data-role');
+                if(role!=='LEADER' && role!=='Admin') { if(r.querySelector('input[name="s1[]"]').checked || r.querySelector('input[name="s2[]"]').checked || r.querySelector('input[name="s3[]"]').checked) mpp++; }
+            });
+            document.getElementById('disp-total-mpp').innerText = mpp;
+            document.getElementById('disp-productivity').innerText = mpp>0 ? window.formatNumber(Math.round(tot/mpp)) : 0;
+        };
+
+        // FIXED SUBMIT LISTENER FOR REPORT
+        document.getElementById('laporan-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; 
+            if(!h) return Swal.fire('Error','Pilih HUB','error');
+            
+            const metrics = { 
+                gateway: window.parseFormattedNumber(document.getElementById('lap-gateway').value), 
+                staging: window.parseFormattedNumber(document.getElementById('lap-staging').value), 
+                jne: window.parseFormattedNumber(document.getElementById('lap-jne').value), 
+                sap: window.parseFormattedNumber(document.getElementById('lap-sap').value), 
+                total_paket: parseInt(document.getElementById('val-total-paket').value)||0 
+            };
+            
+            const att = []; 
+            let mpp=0; 
+            let err=false;
+            
+            // Gather row data manually to avoid empty rows or bad references
+            const rows = document.getElementById('attendance-tbody').querySelectorAll('tr');
+            rows.forEach(r => {
+                const uid=r.querySelector('input[name="user_id[]"]').value;
+                const nmVal=r.querySelector('input[name="user_nama[]"]').value;
+                const isMan=r.querySelector('input[name="is_manual[]"]').value === 'true';
+                
+                if(isMan && !nmVal.trim()) { err = true; return; }
+
+                const s1=r.querySelector('input[name="s1[]"]').checked;
+                const s2=r.querySelector('input[name="s2[]"]').checked;
+                const s3=r.querySelector('input[name="s3[]"]').checked;
+                
+                // Recalc MPP Logic just in case
+                if((s1||s2||s3) && r.getAttribute('data-role')!=='LEADER' && r.getAttribute('data-role')!=='Admin') mpp++;
+                
+                att.push({ 
+                    userId: uid, 
+                    nama: nmVal, 
+                    s1: s1, s2: s2, s3: s3, 
+                    i: r.querySelector('input[name="ijin[]"]').checked, 
+                    s: r.querySelector('input[name="sakit[]"]').checked, 
+                    a: r.querySelector('input[name="alfa[]"]').checked, 
+                    ket: r.querySelector('input[name="ket[]"]').value 
+                });
+            });
+
+            if(err) return Swal.fire('Error', 'Nama DW Manual tidak boleh kosong', 'warning');
+            
+            const prod = mpp > 0 ? metrics.total_paket/mpp : 0;
+            const idx = document.getElementById('edit-laporan-id').value; 
+            const docId = idx || Date.now().toString();
+            
+            const newData = { id: docId, tanggal: document.getElementById('lap-tanggal').value, hub: h, ...metrics, total_mpp: mpp, productivity: prod, attendance_data: att };
+            
+            try {
+                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', docId), newData);
+                window.closeLaporanModal(); 
+                Swal.fire('Sukses', 'Laporan berhasil disimpan!', 'success');
+            } catch (error) { 
+                console.error(error); 
+                Swal.fire('Error', 'Gagal menyimpan laporan: ' + error.message, 'error'); 
+            }
+        });
+
+        window.deleteLaporan = async (id) => {
+            const r = appData.laporan.find(x => x.id === id); if(currentUser.role!=='admin' && r.hub!==currentUser.kode_hub) return;
+            const del = async () => { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); Swal.fire('Terhapus','','success'); };
+            if(currentUser.role==='pic') { Swal.fire({title: 'Kode Akses', input: 'password', showCancelButton: true, preConfirm: (c) => c!==appData.accessCode?Swal.showValidationMessage('Salah'):true}).then((res) => { if(res.isConfirmed) del(); }); }
+            else Swal.fire({title: 'Hapus Laporan?', text: 'Data tidak bisa dikembalikan.', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Ya, Hapus'}).then(res=>{if(res.isConfirmed) del();});
+        };
 
     </script>
 </body>

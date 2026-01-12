@@ -447,28 +447,20 @@
         import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // ==========================================
-        // KONFIGURASI FIREBASE
+        // KONFIGURASI FIREBASE (PRODUCTION/GITHUB)
         // ==========================================
         
-        let firebaseConfig;
-        let APP_ID;
-
-        if (typeof __firebase_config !== 'undefined') {
-            console.log("Mode Preview: Menggunakan Sandbox Database");
-            firebaseConfig = JSON.parse(__firebase_config);
-            APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'daily-report-app-v2'; 
-        } else {
-            console.log("Mode Live: Menggunakan Database Production");
-            firebaseConfig = {
-                apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
-                authDomain: "dailyreport-cfc8f.firebaseapp.com",
-                projectId: "dailyreport-cfc8f",
-                storageBucket: "dailyreport-cfc8f.firebasestorage.app",
-                messagingSenderId: "963104518926",
-                appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
-            };
-            APP_ID = "daily-report-app-v2"; 
-        }
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
+            authDomain: "dailyreport-cfc8f.firebaseapp.com",
+            projectId: "dailyreport-cfc8f",
+            storageBucket: "dailyreport-cfc8f.firebasestorage.app",
+            messagingSenderId: "963104518926",
+            appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
+        };
+        
+        // Pastikan APP_ID sama dengan saat data dibuat (v2)
+        const APP_ID = "daily-report-app-v2";
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -564,10 +556,6 @@
         // --- INITIALIZATION ---
         async function init() {
             try { lucide.createIcons(); } catch(e) {}
-
-            if (typeof __initial_auth_token !== 'undefined') {
-                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
-            }
 
             onAuthStateChanged(auth, (currentUser) => {
                 state.user = currentUser;
@@ -859,6 +847,7 @@
                 }
 
             } catch (err) {
+                console.error("Login Error:", err); // Tambahkan ini untuk debug
                 els.loginError.textContent = 'NIK atau Password salah. Silakan coba lagi.';
                 els.loginError.classList.remove('hidden');
                 els.btnLogin.disabled = false;

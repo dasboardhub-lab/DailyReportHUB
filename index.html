@@ -65,7 +65,7 @@
         .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); font-weight: 600; }
         
         /* Bottom Mobile Nav */
-        .mobile-nav-item { color: #64748b; transition: all 0.3s; }
+        .mobile-nav-item { color: #94a3b8; transition: all 0.3s; }
         .mobile-nav-item.active { color: #4f46e5; font-weight: 600; }
         .mobile-nav-item.active i { transform: translateY(-2px); }
 
@@ -124,30 +124,35 @@
     </nav>
 
     <!-- MOBILE TOP BAR (Logo + User) -->
-    <div id="mobile-topbar" class="md:hidden bg-slate-900 text-white px-4 py-3 flex justify-between items-center shadow-md z-40 hidden">
+    <div id="mobile-topbar" class="md:hidden bg-slate-900 text-white px-4 py-3 flex justify-between items-center shadow-md z-40 hidden sticky top-0">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                 <i class="fas fa-chart-bar text-white text-sm"></i>
             </div>
             <span class="font-bold text-base tracking-tight">DAILY REPORT</span>
         </div>
-        <button onclick="window.doLogout()" class="text-slate-400 hover:text-white">
-            <i class="fas fa-power-off"></i>
-        </button>
+        <div class="flex items-center gap-3">
+             <div class="text-right">
+                <div class="text-[10px] font-bold text-white truncate max-w-[80px]" id="mob-user-name">User</div>
+            </div>
+            <button onclick="window.doLogout()" class="text-slate-400 hover:text-white">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
     </div>
 
     <!-- MOBILE BOTTOM NAV -->
     <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden">
         <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-3 flex flex-col items-center gap-1">
-            <i class="fas fa-chart-pie text-lg"></i>
+            <i class="fas fa-chart-pie text-xl"></i>
             <span class="text-[10px] font-medium">Dashboard</span>
         </button>
         <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1">
-            <i class="fas fa-table text-lg"></i>
+            <i class="fas fa-table text-xl"></i>
             <span class="text-[10px] font-medium">Laporan</span>
         </button>
         <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1 hidden">
-            <i class="fas fa-sliders-h text-lg"></i>
+            <i class="fas fa-sliders-h text-xl"></i>
             <span class="text-[10px] font-medium">Atur</span>
         </button>
     </div>
@@ -201,7 +206,7 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
-        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4 transition-all duration-300"></i>
+        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-5xl text-indigo-600 mb-4 transition-all duration-300"></i>
         <div id="loading-logs" class="hidden"></div>
     </div>
 
@@ -602,6 +607,7 @@
             document.getElementById('app-content').classList.remove('hidden');
             
             document.getElementById('user-name-display').innerText = name;
+            document.getElementById('mob-user-name').innerText = name;
             document.getElementById('user-badge').innerText = role.toUpperCase();
             
             const isAdm = role==='admin', isAcc = role==='pic'||access==='YA';
@@ -771,8 +777,19 @@
         window.addManualDWRow = () => window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', false, {}, true);
 
         document.getElementById('laporan-form').onsubmit = async (e) => {
-            e.preventDefault(); window.notify('Menyimpan...', 'loading');
+            e.preventDefault(); 
             const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; if(!h) return window.notify('Pilih HUB', 'error');
+            const dateInput = document.getElementById('lap-tanggal').value;
+            const editId = document.getElementById('edit-laporan-id').value;
+
+            // Check Duplicate (Only for New Entry)
+            if (!editId) {
+                const exists = appData.laporan.some(l => l.hub === h && l.tanggal === dateInput);
+                if (exists) return window.notify('Laporan Tgl/HUB ini sudah ada!', 'error');
+            }
+
+            window.notify('Menyimpan...', 'loading');
+            
             const att=[], rows=document.querySelectorAll('#attendance-tbody tr'); let mpp=0;
             for(let r of rows) {
                 const uid=r.querySelector('input[name="user_id[]"]').value, nm=r.querySelector('input[name="user_nama[]"]').value, isM=r.querySelector('input[name="is_manual[]"]').value==='true';
@@ -782,7 +799,7 @@
                 att.push({ userId:uid, nama:nm, s1, s2, s3, i:r.querySelector('input[name="ijin[]"]').checked, s:r.querySelector('input[name="sakit[]"]').checked, a:r.querySelector('input[name="alfa[]"]').checked, ket:r.querySelector('input[name="ket[]"]').value });
             }
             const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
-            const id=document.getElementById('edit-laporan-id').value||Date.now().toString(), data={id, tanggal:document.getElementById('lap-tanggal').value, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
+            const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
             try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
         };
 

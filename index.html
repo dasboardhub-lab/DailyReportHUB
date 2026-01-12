@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Report Team - Fixed</title>
+    <title>Daily Report Team</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,400 +15,602 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Modern Font */
-        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
-        
-        /* Utilities */
+        body { font-family: 'Inter', sans-serif; }
         .hidden { display: none !important; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Smooth Transitions */
-        .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Styles untuk Tab Navigasi */
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
+        .tab-inactive:hover { color: #334155; }
 
-        /* Dynamic Island Notification */
-        #dynamic-island {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translate(-50%, -150%) scale(0.9);
+        /* Style Checkbox & Radio */
+        .custom-radio { width: 1.15rem; height: 1.15rem; cursor: pointer; }
+        .custom-checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; }
+        
+        /* Table Sticky Header */
+        thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; }
+        
+        /* Login Tabs */
+        .login-tab-active { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; }
+        .login-tab-inactive { color: #64748b; border-color: transparent; }
+        .login-tab-inactive:hover { background-color: #f8fafc; }
+
+        /* Hide Number Input Spinner */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* DYNAMIC ISLAND NOTIFICATION */
+        .dynamic-island {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background-color: #000;
+            color: white;
+            border-radius: 30px;
+            padding: 0;
+            width: 0;
+            height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
             opacity: 0;
+            z-index: 100;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        #dynamic-island.active {
-            transform: translate(-50%, 20px) scale(1);
+        .dynamic-island.active {
+            width: auto;
+            min-width: 180px;
+            height: 48px;
+            padding: 0 24px;
+            transform: translateX(-50%) scale(1);
             opacity: 1;
         }
+        .dynamic-island.error { background-color: #ef4444; }
+        .dynamic-island-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
 
-        /* Tab Styles */
-        .login-tab-active { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .login-tab-inactive { color: #64748b; background-color: transparent; }
-        .login-tab-inactive:hover { background-color: #f1f5f9; color: #334155; }
-
-        input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        /* CONFIRMATION MODAL TRANSITION */
+        .modal-enter { opacity: 0; transform: scale(0.9); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.2s, transform 0.2s; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.9); transition: opacity 0.2s, transform 0.2s; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- NOTIFIKASI -->
-    <div id="dynamic-island" class="fixed top-0 left-1/2 z-[100] bg-slate-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 min-w-[300px] justify-center border border-slate-700/50">
-        <div id="di-icon-container" class="flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white">
-            <i id="di-icon" data-lucide="check" class="w-4 h-4"></i>
+    <!-- DYNAMIC ISLAND NOTIFICATION -->
+    <div id="dynamic-island" class="dynamic-island">
+        <div class="dynamic-island-content">
+            <span id="di-icon"></span>
+            <span id="di-text"></span>
         </div>
-        <span id="di-msg" class="text-sm font-medium tracking-wide">Pesan Sistem</span>
     </div>
 
-    <!-- KONFIRMASI MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 transform transition-all scale-100 animate-in zoom-in-95 duration-200">
-            <div class="text-center mb-4">
-                <div class="bg-yellow-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 text-yellow-600">
-                    <i data-lucide="alert-circle" class="w-7 h-7"></i>
+    <!-- GENERIC CONFIRMATION MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden transition-opacity duration-200">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 max-w-[90%] transform transition-all scale-100">
+            <div class="text-center mb-5">
+                <div class="bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="help-circle" class="text-blue-600 w-8 h-8"></i>
                 </div>
-                <h3 id="confirm-title" class="font-bold text-lg text-slate-800">Konfirmasi</h3>
-                <p id="confirm-desc" class="text-sm text-slate-500 mt-1">Lanjutkan tindakan ini?</p>
+                <h3 id="confirm-title" class="font-bold text-lg text-slate-800 mb-1">Konfirmasi</h3>
+                <p id="confirm-desc" class="text-sm text-slate-500">Apakah Anda yakin ingin melanjutkan?</p>
             </div>
             <div class="flex gap-3">
-                <button id="btn-confirm-no" class="flex-1 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-medium">Batal</button>
-                <button id="btn-confirm-yes" class="flex-1 py-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-sm font-medium shadow-lg shadow-blue-200">Ya</button>
+                <button id="btn-confirm-no" class="flex-1 py-2.5 text-slate-600 font-medium bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">Batal</button>
+                <button id="btn-confirm-yes" class="flex-1 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-colors">Ya, Lanjutkan</button>
             </div>
         </div>
     </div>
 
-    <!-- SECURITY MODAL -->
-    <div id="security-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 animate-in zoom-in-95 duration-200">
-            <div class="text-center mb-5">
-                <div class="bg-red-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 text-red-600 border border-red-100">
-                    <i data-lucide="shield-lock" class="w-7 h-7"></i>
+    <!-- SECURITY MODAL (For Authorization) -->
+    <div id="security-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 transform transition-all scale-100">
+            <div class="text-center mb-4">
+                <div class="bg-red-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="shield-alert" class="text-red-600 w-7 h-7"></i>
                 </div>
                 <h3 class="font-bold text-lg text-slate-800">Butuh Otorisasi</h3>
-                <p class="text-xs text-slate-500 mt-1">Masukkan Kode Keamanan Admin</p>
+                <p class="text-xs text-slate-500">Masukkan Kode Keamanan Admin.</p>
             </div>
-            <input type="password" id="input-secure-code" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl mb-4 text-center tracking-[0.5em] font-bold text-lg focus:bg-white" placeholder="••••">
-            <div id="secure-error" class="text-xs text-red-500 text-center mb-3 hidden">Kode salah!</div>
+            <input type="password" id="input-secure-code" class="w-full border border-slate-300 p-3 rounded-xl mb-4 text-center tracking-widest font-bold focus:ring-2 focus:ring-red-500 outline-none text-lg" placeholder="****">
+            <div id="secure-error" class="text-xs text-red-500 text-center mb-2 hidden">Kode salah!</div>
             <div class="flex gap-2">
-                <button id="btn-cancel-secure" class="flex-1 py-2 text-slate-500 bg-slate-100 rounded-xl text-sm font-medium">Batal</button>
-                <button id="btn-confirm-secure" class="flex-1 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 font-medium text-sm shadow-md">Verifikasi</button>
+                <button id="btn-cancel-secure" class="flex-1 py-2 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50">Batal</button>
+                <button id="btn-confirm-secure" class="flex-1 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 font-medium">Verifikasi</button>
             </div>
         </div>
     </div>
 
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center transition-opacity duration-500">
+    <div id="loading-screen" class="fixed inset-0 bg-white z-40 flex items-center justify-center">
         <div class="flex flex-col items-center">
-            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-500 text-sm font-medium animate-pulse">Menghubungkan Database...</p>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-slate-500 text-sm">Memuat Sistem...</p>
         </div>
     </div>
 
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="min-h-screen bg-slate-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100 fade-in-up">
-            <div class="text-center mb-8">
-                <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200 text-white transform -rotate-3">
-                    <i data-lucide="bar-chart-2" class="w-8 h-8"></i>
+    <div id="login-screen" class="min-h-screen bg-slate-100 flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+            <div class="text-center mb-6">
+                <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                    <i data-lucide="file-text" class="text-white w-8 h-8"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-900">Daily Report</h1>
-                <p class="text-slate-500 text-sm mt-1">Masuk untuk mengelola laporan</p>
+                <h1 class="text-2xl font-bold text-slate-800">Daily Report Team</h1>
+                <p class="text-slate-500 text-sm mt-1">Sistem Laporan Operasional</p>
             </div>
 
-            <!-- Tabs Login -->
-            <div class="grid grid-cols-3 gap-1 mb-6 p-1 bg-slate-100 rounded-xl border border-slate-200">
-                <button onclick="window.switchLoginTab('sorter')" id="tab-login-sorter" class="py-2 text-xs font-medium rounded-lg transition-all login-tab-inactive">Sorter</button>
-                <button onclick="window.switchLoginTab('leader')" id="tab-login-leader" class="py-2 text-xs font-medium rounded-lg transition-all login-tab-active">Leader</button>
-                <button onclick="window.switchLoginTab('admin')" id="tab-login-admin" class="py-2 text-xs font-medium rounded-lg transition-all login-tab-inactive">Admin</button>
+            <!-- Login Tabs -->
+            <div class="grid grid-cols-3 gap-1 mb-6 p-1 bg-slate-100 rounded-xl">
+                <button onclick="switchLoginTab('sorter')" id="tab-login-sorter" class="py-2 text-sm font-medium rounded-lg transition-all text-center login-tab-inactive">Sorter</button>
+                <button onclick="switchLoginTab('leader')" id="tab-login-leader" class="py-2 text-sm font-medium rounded-lg transition-all text-center login-tab-active bg-white shadow-sm text-blue-600">Leader</button>
+                <button onclick="switchLoginTab('admin')" id="tab-login-admin" class="py-2 text-sm font-medium rounded-lg transition-all text-center login-tab-inactive">Admin</button>
             </div>
 
-            <form id="login-form" class="space-y-4">
+            <form id="login-form" class="space-y-5">
                 <div id="field-nik">
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Username / NIK</label>
-                    <input type="text" id="login-nik" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white transition-all" placeholder="Masukkan NIK">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Username / NIK</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="login-nik" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Masukan NIK">
+                    </div>
                 </div>
+
                 <div id="field-pass">
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
-                    <input type="password" id="login-pass" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white transition-all" placeholder="Masukkan Password">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <input type="password" id="login-pass" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Masukan Password">
+                    </div>
                 </div>
-                <div id="login-error" class="bg-red-50 text-red-600 text-xs p-3 rounded-lg border border-red-100 hidden flex items-center gap-2">
-                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> <span id="login-error-text">Login Gagal</span>
-                </div>
-                <button type="submit" id="btn-login" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 flex justify-center items-center gap-2">
-                    <span>Masuk Aplikasi</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+
+                <button type="submit" id="btn-login" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-200 disabled:opacity-50 flex justify-center items-center gap-2">
+                    <span>Masuk Aplikasi</span>
                 </button>
+                
+                <p class="text-xs text-center text-slate-400 mt-4" id="login-hint">
+                    Akses Leader & Staff
+                </p>
             </form>
         </div>
     </div>
 
-    <!-- APP SCREEN -->
-    <div id="app-screen" class="flex h-screen overflow-hidden hidden bg-slate-50">
+    <!-- MAIN APP SCREEN -->
+    <div id="app-screen" class="flex h-screen overflow-hidden hidden">
         
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col h-full shadow-2xl">
-            <div class="p-6 flex justify-between items-center">
-                <span class="font-bold text-xl tracking-tight flex items-center gap-2"><i data-lucide="activity" class="text-blue-400"></i> DailyReport</span>
-                <button id="close-sidebar" class="lg:hidden text-slate-400"><i data-lucide="x" class="w-6 h-6"></i></button>
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col h-full">
+            <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">DR</div>
+                    <span class="font-bold text-lg tracking-wide">DailyReport</span>
+                </div>
+                <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
-            <nav class="flex-1 px-4 space-y-2 py-4">
-                <button onclick="window.navigateTo('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-all text-sm font-medium" data-target="dashboard">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+
+            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+                <button onclick="navigateTo('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white" data-target="dashboard">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="font-medium">Dashboard</span>
                 </button>
-                <button onclick="window.navigateTo('reports')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-all text-sm font-medium" data-target="reports">
-                    <i data-lucide="file-text" class="w-5 h-5"></i> Laporan
+                <button onclick="navigateTo('reports')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white" data-target="reports">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-medium">Laporan Harian</span>
                 </button>
-                <button onclick="window.navigateTo('settings')" id="menu-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-all text-sm font-medium hidden" data-target="settings">
-                    <i data-lucide="settings" class="w-5 h-5"></i> Pengaturan
+                <button onclick="navigateTo('settings')" id="menu-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white hidden" data-target="settings">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="font-medium">Pengaturan</span>
                 </button>
             </nav>
+
             <div class="p-4 border-t border-slate-800">
-                <div class="flex items-center gap-3 mb-4 px-2">
-                    <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-blue-400">U</div>
-                    <div class="overflow-hidden">
-                        <p id="user-name-display" class="text-sm font-bold truncate">User</p>
-                        <p id="user-role-display" class="text-[10px] text-slate-400 uppercase font-bold">Role</p>
+                <div class="bg-slate-800 rounded-lg p-4 mb-4">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="user-circle" class="text-slate-400 w-8 h-8"></i>
+                        <div class="overflow-hidden">
+                            <p id="user-name-display" class="text-sm font-medium text-white truncate">User</p>
+                            <p id="user-role-display" class="text-xs text-blue-400 uppercase font-bold tracking-wider">ROLE</p>
+                        </div>
                     </div>
                 </div>
-                <button onclick="window.handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition-colors text-xs font-bold">
-                    <i data-lucide="log-out" class="w-3 h-3"></i> KELUAR
+                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all text-sm">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Keluar</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content -->
+        <!-- MAIN CONTENT AREA -->
         <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
-            <header class="bg-white border-b border-slate-200 p-4 flex justify-between items-center lg:hidden sticky top-0 z-20">
-                <div class="flex items-center gap-3">
-                    <button id="open-sidebar" class="text-slate-600"><i data-lucide="menu" class="w-6 h-6"></i></button>
-                    <span class="font-bold text-slate-800">Daily Report</span>
+            <!-- Mobile Header -->
+            <header class="bg-white shadow-sm border-b border-slate-200 lg:hidden flex-shrink-0">
+                <div class="px-4 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button id="open-sidebar" class="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                        <span class="font-bold text-slate-800">Daily Report</span>
+                    </div>
                 </div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth">
-                <div class="max-w-6xl mx-auto pb-20">
+            <!-- Content Views -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
+                <div class="max-w-[1400px] mx-auto">
                     
-                    <!-- DASHBOARD -->
-                    <div id="view-dashboard" class="content-view hidden fade-in-up space-y-6">
-                        <div class="flex justify-between items-end">
-                            <div><h2 class="text-2xl font-bold text-slate-800">Dashboard</h2><p class="text-slate-500 text-sm">Ringkasan performa tim.</p></div>
+                    <!-- VIEW: DASHBOARD -->
+                    <div id="view-dashboard" class="content-view hidden space-y-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-slate-800 mb-2 md:mb-0">Dashboard Overview</h2>
                         </div>
 
-                        <!-- Filter -->
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                            <div><label class="text-xs font-bold text-slate-500 uppercase">Dari</label><input type="date" id="dash-start-date" class="w-full p-2 border rounded-lg text-sm"></div>
-                            <div><label class="text-xs font-bold text-slate-500 uppercase">Sampai</label><input type="date" id="dash-end-date" class="w-full p-2 border rounded-lg text-sm"></div>
-                            <div><label class="text-xs font-bold text-slate-500 uppercase">Hub</label><div id="dash-hub-container"><input disabled class="w-full p-2 bg-slate-100 border rounded-lg text-sm" value="Loading..."></div></div>
-                            <button onclick="window.loadDashboardStats()" id="btn-filter-dash" class="bg-blue-600 text-white p-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors">Terapkan Filter</button>
+                        <!-- Filter Section -->
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Mulai Tanggal</label>
+                                    <input type="date" id="dash-start-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Sampai Tanggal</label>
+                                    <input type="date" id="dash-end-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Filter HUB</label>
+                                    <div id="dash-hub-container">
+                                        <select disabled class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-100"><option>Loading...</option></select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button onclick="loadDashboardStats()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-lucide="filter" class="w-4 h-4"></i> Terapkan
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- KPI -->
-                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-bold uppercase">Total Paket</div><div id="kpi-total-paket" class="text-2xl font-bold text-blue-600 mt-1">0</div></div>
-                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-bold uppercase">Total MPP</div><div id="kpi-total-mpp" class="text-2xl font-bold text-indigo-600 mt-1">0</div></div>
-                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-bold uppercase">Produktivitas</div><div id="kpi-productivity" class="text-2xl font-bold text-green-600 mt-1">0</div></div>
-                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-bold uppercase">Est. Cost</div><div id="kpi-total-cost" class="text-2xl font-bold text-red-600 mt-1">0</div></div>
+                        <!-- KPI Cards -->
+                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
+                                <div class="text-xs font-medium text-slate-500 mb-1">TOTAL PAKET</div>
+                                <div id="kpi-total-paket" class="text-2xl font-bold text-blue-600">0</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
+                                <div class="text-xs font-medium text-slate-500 mb-1">TOTAL MPP</div>
+                                <div id="kpi-total-mpp" class="text-2xl font-bold text-slate-700">0</div>
+                                <div class="text-[10px] text-slate-400">Sorter + DW Only</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
+                                <div class="text-xs font-medium text-slate-500 mb-1">PRODUKTIVITAS</div>
+                                <div id="kpi-productivity" class="text-2xl font-bold text-green-600">0</div>
+                                <div class="text-[10px] text-slate-400">Avg (Paket/Orang)</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
+                                <div class="text-xs font-medium text-slate-500 mb-1">TOTAL COST</div>
+                                <div id="kpi-total-cost" class="text-xl font-bold text-red-600">0</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
+                                <div class="text-xs font-medium text-slate-500 mb-1">CPP (AVG)</div>
+                                <div id="kpi-cpp" class="text-xl font-bold text-purple-600">0</div>
+                                <div class="text-[10px] text-slate-400">Cost Per Packet</div>
+                            </div>
                         </div>
 
-                        <!-- Charts -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-64"><canvas id="dailyChart"></canvas></div>
-                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-64"><canvas id="annualChart"></canvas></div>
+                        <!-- Chart Annual Section -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-700 mb-4">Tren Performa Tahunan (Bulanan)</h3>
+                            <div class="relative h-64 w-full">
+                                <canvas id="annualChart"></canvas>
+                            </div>
                         </div>
 
-                        <!-- Table -->
-                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div class="p-4 border-b border-slate-100 font-bold text-slate-700 bg-slate-50">Rincian Harian</div>
+                        <!-- Chart Daily Section -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-700 mb-4">Tren Harian (Sesuai Filter)</h3>
+                            <div class="relative h-64 w-full">
+                                <canvas id="dailyChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Tables Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            
+                            <!-- Detailed Daily Table -->
+                            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                                    <h3 class="font-bold text-slate-700">Rincian Pertanggal</h3>
+                                </div>
+                                <div class="overflow-x-auto max-h-96">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                                            <tr>
+                                                <th class="p-3">Tanggal</th>
+                                                <th class="p-3 text-right">MPP</th>
+                                                <th class="p-3 text-right">Gateway</th>
+                                                <th class="p-3 text-right">Staging</th>
+                                                <th class="p-3 text-right">SAP</th>
+                                                <th class="p-3 text-right">JNE</th>
+                                                <th class="p-3 text-right font-bold text-blue-600">Total Outbound</th>
+                                                <th class="p-3 text-right font-bold text-green-600">Prod. HUB</th>
+                                                <th class="p-3 text-right">Cost Mitra</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-table-daily" class="divide-y divide-slate-100">
+                                            <tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Breakdown Per HUB Table -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                                    <h3 class="font-bold text-slate-700">Breakdown Performance per HUB</h3>
+                                </div>
+                                <div class="overflow-x-auto max-h-96">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                                            <tr>
+                                                <th class="p-3">HUB</th>
+                                                <th class="p-3 text-right">Total MPP</th>
+                                                <th class="p-3 text-right">Total Outbound</th>
+                                                <th class="p-3 text-right">Prod. HUB</th>
+                                                <th class="p-3 text-right">Cost</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-table-hub" class="divide-y divide-slate-100">
+                                            <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW: REPORTS -->
+                    <div id="view-reports" class="content-view hidden space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
+                            <span id="current-date-display" class="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200"></span>
+                        </div>
+                        
+                        <!-- Form Input (Hanya untuk Admin & Leader) -->
+                        <div id="section-input-report" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> <span id="form-report-title">Input Laporan Operasional</span>
+                            </h3>
+                            
+                            <form id="form-daily-report" class="space-y-6">
+                                <input type="hidden" id="edit-report-id"> 
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Laporan</label>
+                                        <input type="date" id="rpt-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">HUB Operasional</label>
+                                        <div id="rpt-hub-container">
+                                            <input type="text" id="rpt-hub-static" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Metric Inputs -->
+                                <div>
+                                    <h4 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i> Metrik Operasional
+                                    </h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Gateway</label>
+                                            <input type="number" id="rpt-gateway" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">Staging</label>
+                                            <input type="number" id="rpt-staging" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">SAP</label>
+                                            <input type="number" id="rpt-sap" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-500 mb-1">JNE</label>
+                                            <input type="number" id="rpt-jne" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
+                                        </div>
+                                        <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                                            <label class="block text-xs font-bold text-blue-700 mb-1">TOTAL PAKET</label>
+                                            <input type="text" id="rpt-total-paket" class="w-full bg-transparent font-bold text-xl text-blue-700 text-right outline-none" value="0" readonly>
+                                        </div>
+                                        <div class="bg-green-50 p-2 rounded-lg border border-green-100 col-span-2 md:col-span-5 mt-2 flex justify-between items-center">
+                                            <div>
+                                                <label class="block text-xs font-bold text-green-700">PRODUKTIVITAS</label>
+                                                <span class="text-xs text-green-600">(Total Paket / MPP Sorter+DW)</span>
+                                            </div>
+                                            <input type="text" id="rpt-productivity" class="bg-transparent font-bold text-lg text-green-700 text-right outline-none w-32" value="0" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Attendance -->
+                                <div>
+                                    <div class="flex justify-between items-end mb-3">
+                                        <h4 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> Kehadiran Tim (MPP)
+                                        </h4>
+                                        <div class="text-right">
+                                            <span class="text-xs text-slate-500 uppercase">Total MPP (Working)</span>
+                                            <div id="display-total-mpp" class="text-2xl font-bold text-green-600 leading-none">0</div>
+                                            <p class="text-[10px] text-slate-400">*Hanya Sorter & DW</p>
+                                        </div>
+                                    </div>
+                                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-white">
+                                        <div class="max-h-80 overflow-y-auto">
+                                            <table class="w-full text-sm text-left">
+                                                <thead class="bg-slate-100 text-slate-600 font-medium">
+                                                    <tr>
+                                                        <th class="p-3 w-1/3 min-w-[150px]">Nama Karyawan</th>
+                                                        <th class="p-3 text-center w-12 bg-blue-50">S1</th>
+                                                        <th class="p-3 text-center w-12 bg-blue-50">S2</th>
+                                                        <th class="p-3 text-center w-12 bg-blue-50">S3</th>
+                                                        <th class="p-3 text-center w-12 bg-yellow-50">I</th>
+                                                        <th class="p-3 text-center w-12 bg-red-50">S</th>
+                                                        <th class="p-3 text-center w-12 bg-red-100">A</th>
+                                                        <th class="p-3 w-1/4">Keterangan</th>
+                                                        <th class="p-3 w-8"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="sorter-attendance-list" class="divide-y divide-slate-100">
+                                                    <!-- List Sorter Akan Digenerate Disini -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 border-t border-slate-200">
+                                            <button type="button" onclick="addDwRow()" class="text-sm text-blue-600 font-medium flex items-center gap-2 hover:text-blue-800">
+                                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah DW Manual
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-2">*Pilih satu status per nama (S1/S2/S3 = Shift, I=Ijin, S=Sakit, A=Alfa).</p>
+                                </div>
+
+                                <div class="flex items-center justify-end pt-4 gap-3 border-t border-slate-100">
+                                    <button type="button" id="btn-cancel-report-edit" class="hidden text-slate-500 px-4 py-2 hover:bg-slate-100 rounded-lg text-sm" onclick="resetReportForm()">Batal Edit</button>
+                                    <button type="submit" id="btn-save-report" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-sm">
+                                        <i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Table History -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                <h3 class="font-semibold text-slate-800">Riwayat Laporan</h3>
+                                <button onclick="loadMyReports()" class="text-blue-600 text-xs hover:text-blue-800 font-medium">Refresh Data</button>
+                            </div>
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left">
-                                    <thead class="bg-slate-50 text-slate-500 font-semibold text-xs uppercase"><tr><th class="p-4">Tanggal</th><th class="p-4 text-right">Paket</th><th class="p-4 text-right">MPP</th><th class="p-4 text-right">Prod</th><th class="p-4 text-right">Cost</th></tr></thead>
-                                    <tbody id="dash-table-daily" class="divide-y divide-slate-100"><tr><td colspan="5" class="p-4 text-center text-slate-400">Klik "Terapkan Filter" untuk memuat data.</td></tr></tbody>
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 font-medium">
+                                        <tr>
+                                            <th class="p-3">Tanggal</th>
+                                            <th class="p-3">HUB</th>
+                                            <th class="p-3 text-right">Total Paket</th>
+                                            <th class="p-3 text-right">Total MPP</th>
+                                            <th class="p-3 text-right">Prod.</th>
+                                            <th class="p-3 text-right">Cost</th>
+                                            <th class="p-3 text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rpt-history-body" class="divide-y divide-slate-100">
+                                        <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
 
-                    <!-- REPORTS -->
-                    <div id="view-reports" class="content-view hidden fade-in-up space-y-6">
-                        <div class="flex justify-between items-center">
-                            <div><h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2></div>
-                            <button onclick="window.loadMyReports()" class="text-blue-600 text-xs font-bold hover:bg-blue-50 px-3 py-1 rounded"><i data-lucide="refresh-cw" class="w-3 h-3 inline"></i> Refresh</button>
+                    <!-- VIEW: SETTINGS -->
+                    <div id="view-settings" class="content-view hidden space-y-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
                         </div>
-
-                        <!-- Input Form -->
-                        <div id="section-input-report" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600"></div>
-                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="plus-circle" class="text-blue-600 w-5 h-5"></i> <span id="form-report-title">Input Laporan</span></h3>
-                            
-                            <form id="form-daily-report" class="space-y-5">
-                                <input type="hidden" id="edit-report-id">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div><label class="text-xs font-bold text-slate-500 uppercase">Tanggal</label><input type="date" id="rpt-date" class="w-full p-2.5 border rounded-xl text-sm" required></div>
-                                    <div><label class="text-xs font-bold text-slate-500 uppercase">HUB</label><div id="rpt-hub-container"><input type="text" disabled class="w-full p-2.5 bg-slate-100 border rounded-xl text-sm" value="Auto"></div></div>
-                                </div>
-
-                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-3">Volume Paket</h4>
-                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                                        <div><label class="text-[10px] font-bold text-slate-400">GATEWAY</label><input type="number" id="rpt-gateway" class="metric-input w-full p-2 border rounded-lg text-sm text-right" placeholder="0"></div>
-                                        <div><label class="text-[10px] font-bold text-slate-400">STAGING</label><input type="number" id="rpt-staging" class="metric-input w-full p-2 border rounded-lg text-sm text-right" placeholder="0"></div>
-                                        <div><label class="text-[10px] font-bold text-slate-400">SAP</label><input type="number" id="rpt-sap" class="metric-input w-full p-2 border rounded-lg text-sm text-right" placeholder="0"></div>
-                                        <div><label class="text-[10px] font-bold text-slate-400">JNE</label><input type="number" id="rpt-jne" class="metric-input w-full p-2 border rounded-lg text-sm text-right" placeholder="0"></div>
-                                        <div class="bg-blue-100/50 p-2 rounded-lg border border-blue-100"><label class="text-[10px] font-bold text-blue-600">TOTAL</label><input type="text" id="rpt-total-paket" class="w-full bg-transparent font-bold text-lg text-blue-700 text-right outline-none" value="0" readonly></div>
-                                    </div>
-                                </div>
-
-                                <div class="border border-slate-200 rounded-xl overflow-hidden">
-                                    <div class="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
-                                        <span class="text-xs font-bold text-slate-600 uppercase">Kehadiran Tim</span>
-                                        <span class="text-xs bg-white px-2 py-1 rounded border border-slate-200">Total MPP: <strong id="display-total-mpp">0</strong></span>
-                                    </div>
-                                    <div class="max-h-64 overflow-y-auto">
-                                        <table class="w-full text-sm text-left">
-                                            <thead class="bg-slate-50 text-slate-500 font-semibold text-xs sticky top-0">
-                                                <tr><th class="p-2">Nama</th><th class="p-2 text-center bg-blue-50/50">S1</th><th class="p-2 text-center bg-blue-50/50">S2</th><th class="p-2 text-center bg-blue-50/50">S3</th><th class="p-2 text-center">Ket</th><th class="p-2"></th></tr>
-                                            </thead>
-                                            <tbody id="sorter-attendance-list" class="divide-y divide-slate-100"></tbody>
-                                        </table>
-                                    </div>
-                                    <div class="p-2 bg-slate-50 border-t border-slate-200">
-                                        <button type="button" onclick="window.addDwRow()" class="w-full py-2 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg text-xs font-bold hover:bg-white hover:border-blue-400 hover:text-blue-500 transition-all">+ Tambah DW Manual</button>
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end gap-3 pt-2">
-                                    <button type="button" id="btn-cancel-report-edit" onclick="window.resetReportForm()" class="hidden text-slate-500 text-sm font-bold px-4 hover:bg-slate-100 rounded-lg">Batal</button>
-                                    <button type="submit" id="btn-save-report" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 shadow-md transition-all active:scale-95">Simpan Laporan</button>
-                                </div>
-                            </form>
+                        <div class="flex border-b border-slate-200 mb-6 gap-6 overflow-x-auto">
+                            <button onclick="switchSettingsTab('hubs')" id="tab-btn-hubs" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-active transition-colors">Data HUB</button>
+                            <button onclick="switchSettingsTab('employees')" id="tab-btn-employees" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">Data Karyawan</button>
+                            <button onclick="switchSettingsTab('config')" id="tab-btn-config" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2"><i data-lucide="settings-2" class="w-3 h-3"></i> Konfigurasi Umum</button>
                         </div>
-
-                        <!-- History Table -->
-                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <table class="w-full text-left text-sm">
-                                <thead class="bg-slate-50 text-slate-500 font-semibold text-xs uppercase">
-                                    <tr><th class="p-4">Tanggal</th><th class="p-4">HUB</th><th class="p-4 text-right">Paket</th><th class="p-4 text-right">MPP</th><th class="p-4 text-right">Prod</th><th class="p-4 text-right">Aksi</th></tr>
-                                </thead>
-                                <tbody id="rpt-history-body" class="divide-y divide-slate-100">
-                                    <tr><td colspan="6" class="p-6 text-center text-slate-400">Memuat data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- SETTINGS -->
-                    <div id="view-settings" class="content-view hidden fade-in-up space-y-6">
-                        <div class="flex gap-2 border-b border-slate-200 overflow-x-auto">
-                            <button onclick="window.switchSettingsTab('hubs')" id="tab-btn-hubs" class="px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">Data HUB</button>
-                            <button onclick="window.switchSettingsTab('employees')" id="tab-btn-employees" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Data Karyawan</button>
-                            <button onclick="window.switchSettingsTab('config')" id="tab-btn-config" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Konfigurasi</button>
-                        </div>
-
-                        <!-- Hubs Content -->
-                        <div id="tab-content-hubs" class="settings-tab-content">
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                                <h3 class="font-bold text-lg mb-4">Kelola HUB</h3>
-                                <form id="form-add-hub" class="flex flex-col md:flex-row gap-3 items-end">
+                        <div id="tab-content-hubs" class="settings-tab-content space-y-6">
+                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i> Tambah / Edit HUB</h3>
+                                <form id="form-add-hub" class="flex flex-col md:flex-row gap-4 items-end">
                                     <input type="hidden" id="edit-hub-id">
-                                    <div class="flex-1 w-full"><label class="text-xs font-bold text-slate-500 uppercase">Kode</label><input id="hub-code" type="text" class="w-full p-2 border rounded-lg text-sm uppercase" required></div>
-                                    <div class="flex-[2] w-full"><label class="text-xs font-bold text-slate-500 uppercase">Nama HUB</label><input id="hub-name" type="text" class="w-full p-2 border rounded-lg text-sm" required></div>
-                                    <div class="flex-1 w-full"><label class="text-xs font-bold text-slate-500 uppercase">Rate</label><input id="hub-rate" type="number" class="w-full p-2 border rounded-lg text-sm text-right"></div>
-                                    <div class="flex gap-2">
-                                        <button type="submit" id="btn-save-hub" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Simpan</button>
-                                        <button type="button" id="btn-cancel-hub" onclick="window.resetHubForm()" class="hidden bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-sm">Batal</button>
-                                    </div>
+                                    <div class="w-full md:w-1/4"><label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB</label><input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required></div>
+                                    <div class="w-full md:w-2/4"><label class="block text-xs font-medium text-slate-500 mb-1">Nama HUB</label><input type="text" id="hub-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lokasi HUB" required></div>
+                                    <div class="w-full md:w-1/4"><label class="block text-xs font-medium text-slate-500 mb-1">Rate Sorter (Rp)</label><input type="number" id="hub-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0"></div>
+                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[80px]">Simpan</button>
+                                    <button type="button" id="btn-cancel-hub" class="hidden text-slate-500 text-sm" onclick="resetHubForm()">Batal</button>
                                 </form>
                             </div>
-                            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                                <table class="w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 text-xs font-bold uppercase"><tr><th class="p-3">Kode</th><th class="p-3">Nama</th><th class="p-3 text-right">Rate</th><th class="p-3 text-right">Aksi</th></tr></thead><tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody></table>
-                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Rate Sorter</th><th class="p-4 text-right">Aksi</th></tr></thead><tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody></table></div>
                         </div>
-
-                        <!-- Employees Content -->
-                        <div id="tab-content-employees" class="settings-tab-content hidden">
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                                <h3 class="font-bold text-lg mb-4" id="form-user-title">Tambah Karyawan</h3>
-                                <form id="form-add-user" class="space-y-4">
-                                    <input type="hidden" id="edit-user-id">
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">NIK</label><input id="user-nik" type="text" class="w-full p-2 border rounded-lg text-sm" required></div>
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">Nama</label><input id="user-name" type="text" class="w-full p-2 border rounded-lg text-sm" required></div>
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">HUB</label><select id="user-hub" class="w-full p-2 border rounded-lg text-sm bg-white" required><option>Loading...</option></select></div>
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">Role</label><select id="user-role" class="w-full p-2 border rounded-lg text-sm bg-white"><option value="sorter">Sorter</option><option value="leader">Leader</option><option value="dw">DW</option></select></div>
-                                    </div>
-                                    <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                        <div class="flex items-center gap-2"><input type="checkbox" id="user-can-login" onchange="window.togglePasswordInput()" class="custom-checkbox"><label for="user-can-login" class="text-sm font-medium">Bisa Login?</label></div>
-                                        <input type="text" id="user-pass" class="flex-1 p-2 border rounded-lg text-sm hidden" placeholder="Set Password Login">
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button type="submit" id="btn-save-user" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold">Simpan Data</button>
-                                        <button type="button" id="btn-cancel-edit" onclick="window.resetUserForm()" class="hidden bg-slate-100 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium">Batal</button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                                <div class="p-3 bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-100" id="user-count">Total: 0</div>
-                                <table class="w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 text-xs font-bold uppercase"><tr><th class="p-3">Nama</th><th class="p-3">HUB</th><th class="p-3">Role</th><th class="p-3">Login</th><th class="p-3 text-right">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-100"></tbody></table>
-                            </div>
+                        <div id="tab-content-employees" class="settings-tab-content hidden space-y-6">
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="user-plus" class="w-5 h-5 text-blue-600"></i> <span id="form-user-title">Tambah Data Karyawan</span></h3><form id="form-add-user" class="space-y-4"><input type="hidden" id="edit-user-id"><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">NIK</label><input type="text" id="user-nik" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nomor Induk" required></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label><input type="text" id="user-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama" required></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Penempatan HUB</label><select id="user-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required><option value="">Pilih HUB...</option></select></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Status / Jabatan</label><select id="user-role" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required><option value="leader">Leader</option><option value="sorter">Sorter</option><option value="dw">DW</option></select></div></div><div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col md:flex-row gap-4 items-center"><div class="flex items-center gap-2"><input type="checkbox" id="user-can-login" class="custom-checkbox accent-blue-600" onchange="togglePasswordInput()"><label for="user-can-login" class="text-sm font-medium text-slate-700 cursor-pointer">Beri Akses Login Aplikasi?</label></div><div id="password-container" class="flex-1 hidden"><input type="text" id="user-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Set Password Login"></div></div><div class="flex gap-2"><button type="submit" id="btn-save-user" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Simpan Data</button><button type="button" id="btn-cancel-edit" class="hidden bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300" onclick="resetUserForm()">Batal Edit</button></div></form></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Nama</th><th class="p-4">HUB</th><th class="p-4">Status</th><th class="p-4">Pass Login</th><th class="p-4">Aktif/Tdk</th><th class="p-4 text-right">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-100"></tbody></table></div>
                         </div>
-
-                        <!-- Config Content -->
-                        <div id="tab-content-config" class="settings-tab-content hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                    <h3 class="font-bold text-lg mb-4">Keamanan</h3>
-                                    <form id="form-config-security" class="space-y-4">
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">Pass Admin</label><input id="config-admin-pass" type="text" class="w-full p-2 border rounded-lg text-sm"></div>
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">Kode Otorisasi</label><input id="config-secure-code" type="text" class="w-full p-2 border rounded-lg text-sm font-mono tracking-widest"></div>
-                                        <button type="submit" class="w-full bg-slate-800 text-white py-2 rounded-lg text-sm font-bold">Update</button>
-                                    </form>
-                                </div>
-                                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                    <h3 class="font-bold text-lg mb-4">Biaya</h3>
-                                    <form id="form-config-cost" class="space-y-4">
-                                        <div><label class="text-xs font-bold text-slate-500 uppercase">Rate DW</label><input id="config-dw-rate" type="number" class="w-full p-2 border rounded-lg text-sm text-right"></div>
-                                        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-bold">Update Biaya</button>
-                                    </form>
-                                </div>
-                            </div>
+                        <div id="tab-content-config" class="settings-tab-content hidden space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i> Akun & Keamanan</h3><form id="form-config-security" class="space-y-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">Ganti Password Admin</label><input type="text" id="config-admin-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Password Baru"></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Delete/Edit)</label><input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456"></div><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 w-full">Update Keamanan</button></form></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="wallet" class="w-5 h-5 text-green-600"></i> Biaya Operasional Global</h3><form id="form-config-cost" class="space-y-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">Biaya DW per Kehadiran (Rp)</label><input type="number" id="config-dw-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0"><p class="text-xs text-slate-400 mt-1">*Berlaku sama untuk semua HUB</p></div><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 w-full">Update Biaya</button></form></div></div>
                         </div>
                     </div>
 
                 </div>
             </main>
         </div>
-        <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 z-20 hidden lg:hidden backdrop-blur-sm"></div>
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
     </div>
 
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT LOGIC -->
     <script type="module">
-        // Import Firebase Version 11.6.1 (Stable for this env)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIG & INIT
-        let firebaseConfig, APP_ID;
+        // ==========================================
+        // KONFIGURASI FIREBASE
+        // ==========================================
+        
+        let firebaseConfig;
+        let APP_ID;
+
         if (typeof __firebase_config !== 'undefined') {
+            console.log("Mode Preview: Menggunakan Sandbox Database");
             firebaseConfig = JSON.parse(__firebase_config);
-            APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'daily-report-v3'; 
+            APP_ID = 'daily-report-app-v2'; 
         } else {
-            // Fallback for visual testing only
-            firebaseConfig = { apiKey: "AIzaSy...", authDomain: "test.firebaseapp.com", projectId: "test" }; 
-            APP_ID = 'daily-report-local';
+            console.log("Mode Live: Menggunakan Database Production");
+            firebaseConfig = {
+                apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
+                authDomain: "dailyreport-cfc8f.firebaseapp.com",
+                projectId: "dailyreport-cfc8f",
+                storageBucket: "dailyreport-cfc8f.firebasestorage.app",
+                messagingSenderId: "963104518926",
+                appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
+            };
+            APP_ID = "daily-report-app-v2"; 
         }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // STATE
+        // --- STATE MANAGEMENT ---
         let state = {
             user: null, role: null, userData: null, loginTab: 'leader',
             currentView: 'dashboard', hubs: [], employees: [],
@@ -416,417 +618,717 @@
             chartAnnual: null, chartDaily: null
         };
 
-        // --- GLOBAL WINDOW FUNCTIONS (To make buttons click work) ---
-        
-        window.switchLoginTab = (tab) => {
-            state.loginTab = tab;
-            ['sorter', 'leader', 'admin'].forEach(t => { 
-                const el = document.getElementById(`tab-login-${t}`); 
-                el.className = (t===tab) ? "py-2 text-xs font-medium rounded-lg transition-all login-tab-active" : "py-2 text-xs font-medium rounded-lg transition-all login-tab-inactive"; 
-            });
-            document.getElementById('login-error').classList.add('hidden'); 
-            document.getElementById('login-nik').value = ''; 
-            document.getElementById('login-pass').value = '';
-            document.getElementById('field-nik').classList.toggle('hidden', tab === 'admin'); 
-            document.getElementById('field-pass').classList.toggle('hidden', tab === 'sorter');
+        // --- DOM ELEMENTS ---
+        const els = {
+            loading: document.getElementById('loading-screen'),
+            loginScreen: document.getElementById('login-screen'),
+            appScreen: document.getElementById('app-screen'),
+            // Login
+            loginForm: document.getElementById('login-form'),
+            loginNik: document.getElementById('login-nik'),
+            loginPass: document.getElementById('login-pass'),
+            fieldNik: document.getElementById('field-nik'),
+            fieldPass: document.getElementById('field-pass'),
+            loginError: document.getElementById('login-error'),
+            btnLogin: document.getElementById('btn-login'),
+            loginHint: document.getElementById('login-hint'),
+            tabLoginSorter: document.getElementById('tab-login-sorter'),
+            tabLoginLeader: document.getElementById('tab-login-leader'),
+            tabLoginAdmin: document.getElementById('tab-login-admin'),
+            sidebar: document.getElementById('sidebar'),
+            sidebarOverlay: document.getElementById('sidebar-overlay'),
+            openSidebarBtn: document.getElementById('open-sidebar'),
+            closeSidebarBtn: document.getElementById('close-sidebar'),
+            menuSettings: document.getElementById('menu-settings'),
+            userNameDisplay: document.getElementById('user-name-display'),
+            userRoleDisplay: document.getElementById('user-role-display'),
+            
+            // Notification Elements
+            dynamicIsland: document.getElementById('dynamic-island'),
+            diIcon: document.getElementById('di-icon'),
+            diText: document.getElementById('di-text'),
+            
+            // Confirm Modal
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmTitle: document.getElementById('confirm-title'),
+            confirmDesc: document.getElementById('confirm-desc'),
+            btnConfirmNo: document.getElementById('btn-confirm-no'),
+            btnConfirmYes: document.getElementById('btn-confirm-yes'),
+
+            // Security Modal
+            securityModal: document.getElementById('security-modal'),
+            inputSecureCode: document.getElementById('input-secure-code'),
+            btnCancelSecure: document.getElementById('btn-cancel-secure'),
+            btnConfirmSecure: document.getElementById('btn-confirm-secure'),
+            secureError: document.getElementById('secure-error'),
+
+            views: {
+                dashboard: document.getElementById('view-dashboard'),
+                reports: document.getElementById('view-reports'),
+                settings: document.getElementById('view-settings')
+            },
+            
+            dashName: document.getElementById('dash-name'),
+            dashRole: document.getElementById('dash-role'),
+            dashInfo: document.getElementById('dash-info'),
+            
+            // Dashboard Elements
+            dashStartDate: document.getElementById('dash-start-date'),
+            dashEndDate: document.getElementById('dash-end-date'),
+            dashHubContainer: document.getElementById('dash-hub-container'),
+            // KPI Elements
+            kpiTotalPaket: document.getElementById('kpi-total-paket'),
+            kpiTotalMpp: document.getElementById('kpi-total-mpp'),
+            kpiProductivity: document.getElementById('kpi-productivity'),
+            kpiTotalCost: document.getElementById('kpi-total-cost'),
+            kpiCpp: document.getElementById('kpi-cpp'),
+            canvasAnnual: document.getElementById('annualChart'),
+            canvasDaily: document.getElementById('dailyChart'),
+            dashTableDaily: document.getElementById('dash-table-daily'),
+            dashTableHub: document.getElementById('dash-table-hub'),
+
+            // Reports
+            sectionInputReport: document.getElementById('section-input-report'),
+            formDailyReport: document.getElementById('form-daily-report'),
+            formReportTitle: document.getElementById('form-report-title'),
+            editReportId: document.getElementById('edit-report-id'),
+            rptDate: document.getElementById('rpt-date'),
+            rptHubContainer: document.getElementById('rpt-hub-container'), 
+            rptHub: document.getElementById('rpt-hub'),
+            rptGateway: document.getElementById('rpt-gateway'),
+            rptStaging: document.getElementById('rpt-staging'),
+            rptSap: document.getElementById('rpt-sap'),
+            rptJne: document.getElementById('rpt-jne'),
+            rptTotalPaket: document.getElementById('rpt-total-paket'),
+            rptProductivity: document.getElementById('rpt-productivity'),
+            btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'),
+            sorterAttendanceList: document.getElementById('sorter-attendance-list'),
+            displayTotalMpp: document.getElementById('display-total-mpp'),
+            btnSaveReport: document.getElementById('btn-save-report'),
+            rptHistoryBody: document.getElementById('rpt-history-body'),
+            
+            // Settings - Hubs
+            formAddHub: document.getElementById('form-add-hub'),
+            editHubId: document.getElementById('edit-hub-id'),
+            hubCode: document.getElementById('hub-code'),
+            hubName: document.getElementById('hub-name'),
+            hubRate: document.getElementById('hub-rate'),
+            btnSaveHub: document.getElementById('btn-save-hub'),
+            btnCancelHub: document.getElementById('btn-cancel-hub'),
+            hubTableBody: document.getElementById('hub-table-body'),
+
+            // Settings - Users
+            formAddUser: document.getElementById('form-add-user'),
+            formUserTitle: document.getElementById('form-user-title'),
+            editUserId: document.getElementById('edit-user-id'),
+            userNik: document.getElementById('user-nik'),
+            userName: document.getElementById('user-name'),
+            userHub: document.getElementById('user-hub'),
+            userRole: document.getElementById('user-role'),
+            userCanLogin: document.getElementById('user-can-login'),
+            userPass: document.getElementById('user-pass'),
+            passContainer: document.getElementById('password-container'),
+            btnSaveUser: document.getElementById('btn-save-user'),
+            btnCancelEdit: document.getElementById('btn-cancel-edit'),
+            userTableBody: document.getElementById('user-table-body'),
+            userCount: document.getElementById('user-count'),
+
+            // Config
+            formConfigSecurity: document.getElementById('form-config-security'),
+            configAdminPass: document.getElementById('config-admin-pass'),
+            configSecureCode: document.getElementById('config-secure-code'),
+            formConfigCost: document.getElementById('form-config-cost'),
+            configDwRate: document.getElementById('config-dw-rate'),
         };
 
-        window.handleLogout = () => {
-            if(confirm('Yakin ingin keluar?')) {
-                localStorage.removeItem('userRole'); localStorage.removeItem('userData'); window.location.reload();
-            }
+        // --- UTILS ---
+        function formatNumber(num) {
+            return Number(num).toLocaleString('id-ID');
+        }
+
+        // --- NOTIFICATION SYSTEM (DYNAMIC ISLAND) ---
+        let notificationTimeout;
+        window.showNotification = (message, type = 'success') => {
+            clearTimeout(notificationTimeout);
+            const icon = type === 'success' ? '<i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>' : 
+                         (type === 'error' ? '<i data-lucide="x-circle" class="w-5 h-5 text-red-400"></i>' : '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i>');
+            
+            els.diIcon.innerHTML = icon;
+            els.diText.textContent = message;
+            
+            els.dynamicIsland.className = `dynamic-island active ${type === 'error' ? 'error' : ''}`;
+            lucide.createIcons();
+
+            notificationTimeout = setTimeout(() => {
+                els.dynamicIsland.className = 'dynamic-island';
+            }, 3000);
         };
+
+        // --- CONFIRMATION MODAL SYSTEM ---
+        let pendingConfirmAction = null;
+        window.showConfirm = (title, desc, callback) => {
+            els.confirmTitle.textContent = title;
+            els.confirmDesc.textContent = desc;
+            pendingConfirmAction = callback;
+            els.confirmModal.classList.remove('hidden');
+        };
+
+        els.btnConfirmNo.addEventListener('click', () => {
+            els.confirmModal.classList.add('hidden');
+            pendingConfirmAction = null;
+        });
+
+        els.btnConfirmYes.addEventListener('click', () => {
+            els.confirmModal.classList.add('hidden');
+            if (pendingConfirmAction) pendingConfirmAction();
+        });
+
+        // --- INITIALIZATION ---
+        async function init() {
+            try { lucide.createIcons(); } catch(e) {}
+            if (typeof __initial_auth_token !== 'undefined') { try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {} }
+            loadGlobalConfig();
+            onAuthStateChanged(auth, (currentUser) => {
+                state.user = currentUser;
+                const savedRole = localStorage.getItem('userRole');
+                const savedUserData = localStorage.getItem('userData');
+                if (currentUser && savedRole) {
+                    state.role = savedRole;
+                    if (savedUserData) state.userData = JSON.parse(savedUserData);
+                    showApp();
+                } else { state.role = null; state.userData = null; showLogin(); }
+                els.loading.classList.add('hidden');
+            });
+        }
+
+        async function loadGlobalConfig() {
+            try {
+                const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'));
+                if (snap.exists()) state.config = { ...state.config, ...snap.data() };
+            } catch(e) { console.error("Config Load Error", e); }
+        }
+
+        // --- SECURITY LOGIC ---
+        let pendingSecureAction = null;
+        function secureCheck(callback) {
+            if (state.role === 'admin') { callback(); return; }
+            pendingSecureAction = callback;
+            els.inputSecureCode.value = ''; els.secureError.classList.add('hidden'); els.securityModal.classList.remove('hidden'); els.inputSecureCode.focus();
+        }
+        function closeSecureModal() { els.securityModal.classList.add('hidden'); pendingSecureAction = null; }
+        els.btnCancelSecure.addEventListener('click', closeSecureModal);
+        els.btnConfirmSecure.addEventListener('click', () => {
+            if (els.inputSecureCode.value.trim() === state.config.secure_code) { closeSecureModal(); if(pendingSecureAction) pendingSecureAction(); } 
+            else { els.secureError.textContent = "Kode salah!"; els.secureError.classList.remove('hidden'); }
+        });
+
+        // Config Save
+        async function saveConfig(data) {
+            showNotification("Menyimpan konfigurasi...", "loading");
+            try { await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), data, { merge: true }); state.config = { ...state.config, ...data }; showNotification("Konfigurasi tersimpan!", "success"); } 
+            catch(e) { showNotification("Gagal menyimpan.", "error"); }
+        }
+        els.formConfigSecurity.addEventListener('submit', (e) => { e.preventDefault(); showConfirm('Update Keamanan?', 'Password admin dan kode otorisasi akan diubah.', () => { const p = els.configAdminPass.value.trim(); const c = els.configSecureCode.value.trim(); const u={}; if(p)u.admin_password=p; if(c)u.secure_code=c; if(Object.keys(u).length) saveConfig(u); }); });
+        els.formConfigCost.addEventListener('submit', (e) => { e.preventDefault(); showConfirm('Update Biaya DW?', 'Perubahan ini akan mempengaruhi perhitungan cost laporan baru.', () => saveConfig({ dw_rate: Number(els.configDwRate.value) })); });
+
+        // --- LOGIN LOGIC ---
+        window.switchLoginTab = (tab) => {
+            state.loginTab = tab;
+            ['sorter', 'leader', 'admin'].forEach(t => { const el = document.getElementById(`tab-login-${t}`); if(t === tab) el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600"; else el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive"; });
+            els.loginError.classList.add('hidden'); els.loginNik.value = ''; els.loginPass.value = '';
+            if (tab === 'sorter') { els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.add('hidden'); els.loginHint.textContent = "Masuk sebagai Sorter (View Only)"; els.loginNik.required = true; els.loginPass.required = false; } 
+            else if (tab === 'leader') { els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.remove('hidden'); els.loginHint.textContent = "Masuk sebagai Leader/Staf"; els.loginNik.required = true; els.loginPass.required = true; } 
+            else if (tab === 'admin') { els.fieldNik.classList.add('hidden'); els.fieldPass.classList.remove('hidden'); els.loginHint.textContent = "Masuk sebagai Administrator"; els.loginNik.required = false; els.loginPass.required = true; }
+        };
+
+        els.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); const tab = state.loginTab; const nik = els.loginNik.value.trim(); const pass = els.loginPass.value.trim();
+            els.loginError.classList.add('hidden'); els.btnLogin.disabled = true; els.btnLogin.textContent = 'Memeriksa...';
+            try {
+                if (!auth.currentUser) { try { if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token); else await signInAnonymously(auth); } catch(e) {} }
+                if(!state.config.admin_password) await loadGlobalConfig();
+
+                if (tab === 'admin') {
+                    if (pass === state.config.admin_password) updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
+                    else throw new Error('Password Admin Salah');
+                } else if (tab === 'leader') {
+                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) { const u = snap.docs[0].data(); if (u.can_login) updateLocalState('leader', u); else throw new Error('Akun ini tidak memiliki akses login.'); } 
+                    else throw new Error('NIK atau Password Salah');
+                } else if (tab === 'sorter') {
+                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) updateLocalState('sorter', snap.docs[0].data()); else throw new Error('NIK tidak ditemukan.');
+                }
+            } catch (err) { els.loginError.textContent = err.message || 'Login Gagal'; els.loginError.classList.remove('hidden'); els.btnLogin.disabled = false; els.btnLogin.textContent = 'Masuk'; }
+        });
+
+        function updateLocalState(role, userData) {
+            state.role = role; state.userData = userData;
+            localStorage.setItem('userRole', role); localStorage.setItem('userData', JSON.stringify(userData)); showApp();
+        }
+
+        function showLogin() { els.loginScreen.classList.remove('hidden'); els.appScreen.classList.add('hidden'); switchLoginTab('leader'); }
+        function showApp() {
+            els.loginScreen.classList.add('hidden'); els.appScreen.classList.remove('hidden');
+            els.userNameDisplay.textContent = state.userData?.name || 'User'; els.userRoleDisplay.textContent = state.userData?.role || state.role;
+            if (state.role === 'admin') els.menuSettings.classList.remove('hidden'); else els.menuSettings.classList.add('hidden');
+            if (state.role === 'sorter') els.sectionInputReport.classList.add('hidden'); else els.sectionInputReport.classList.remove('hidden');
+            navigateTo('dashboard');
+        }
 
         window.navigateTo = (viewId) => {
             state.currentView = viewId;
             document.querySelectorAll('.nav-item').forEach(el => {
-                const isActive = el.dataset.target === viewId;
-                el.classList.toggle('bg-slate-800', isActive); el.classList.toggle('text-white', isActive);
-                el.classList.toggle('text-slate-300', !isActive);
+                if(el.dataset.target === viewId) { el.classList.add('bg-blue-600', 'text-white', 'shadow-lg'); el.classList.remove('text-slate-400', 'hover:bg-slate-800'); } 
+                else { el.classList.remove('bg-blue-600', 'text-white', 'shadow-lg'); el.classList.add('text-slate-400', 'hover:bg-slate-800'); }
             });
-            document.querySelectorAll('.content-view').forEach(el => el.classList.add('hidden'));
-            const view = document.getElementById(`view-${viewId}`);
-            if(view) { view.classList.remove('hidden'); view.classList.remove('fade-in-up'); void view.offsetWidth; view.classList.add('fade-in-up'); }
-            
-            if (viewId === 'dashboard') window.loadDashboardStats(); 
-            if (viewId === 'reports') window.loadReportsView(); 
-            if (viewId === 'settings' && state.role === 'admin') window.loadSettings();
-            
-            // Close mobile menu
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.add('hidden');
+            Object.values(els.views).forEach(el => el.classList.add('hidden'));
+            if (els.views[viewId]) els.views[viewId].classList.remove('hidden');
+            if (viewId === 'dashboard') loadDashboard(); if (viewId === 'reports') loadReportsView(); if (viewId === 'settings' && state.role === 'admin') loadSettings();
+            els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden');
         };
 
-        window.showToast = (msg, type='success') => {
-            const el = document.getElementById('dynamic-island');
-            document.getElementById('di-msg').textContent = msg;
-            const ic = document.getElementById('di-icon-container');
-            const icon = document.getElementById('di-icon');
-            if(type==='success') { ic.className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white"; icon.setAttribute('data-lucide', 'check'); }
-            else { ic.className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white"; icon.setAttribute('data-lucide', 'x'); }
-            try{lucide.createIcons();}catch(e){}
-            el.classList.add('active'); setTimeout(()=>{el.classList.remove('active')}, 3000);
-        };
-
-        // --- DASHBOARD LOGIC ---
-        window.loadDashboardStats = async () => {
-            const btn = document.getElementById('btn-filter-dash');
-            const originalText = btn.innerHTML;
-            btn.textContent = "Loading..."; btn.disabled = true;
-            
-            const start = document.getElementById('dash-start-date').value;
-            const end = document.getElementById('dash-end-date').value;
-            let hubFilter = state.role === 'admin' ? document.getElementById('dash-hub-select')?.value : state.userData?.hub_code;
-
-            try {
-                if(!start || !end) throw new Error("Pilih tanggal");
-                const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), where("date", ">=", start), where("date", "<=", end));
-                const snap = await getDocs(q);
-                let reports = []; snap.forEach(d => { const r=d.data(); if(!hubFilter || hubFilter==="" || r.hub === hubFilter) reports.push(r); });
-                
-                // Calc stats
-                let tPaket=0, tMpp=0, tCost=0;
-                const daily={};
-                reports.forEach(r => {
-                    tPaket += (r.total_paket||0); tMpp += (r.total_mpp||0); tCost += (r.est_cost||0);
-                    const d = r.date; if(!daily[d]) daily[d]={date:d, mpp:0, paket:0, cost:0};
-                    daily[d].mpp+=r.total_mpp; daily[d].paket+=r.total_paket; daily[d].cost+=r.est_cost;
-                });
-
-                document.getElementById('kpi-total-paket').textContent = tPaket.toLocaleString('id-ID');
-                document.getElementById('kpi-total-mpp').textContent = tMpp.toLocaleString('id-ID');
-                document.getElementById('kpi-productivity').textContent = tMpp > 0 ? Math.round(tPaket/tMpp).toLocaleString('id-ID') : 0;
-                document.getElementById('kpi-total-cost').textContent = "Rp " + tCost.toLocaleString('id-ID');
-
-                // Render Table
-                const tbody = document.getElementById('dash-table-daily');
-                tbody.innerHTML = Object.values(daily).sort((a,b)=>b.date.localeCompare(a.date)).map(d => 
-                    `<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="p-4 font-medium">${d.date}</td><td class="p-4 text-right text-blue-600 font-bold">${d.paket.toLocaleString('id-ID')}</td><td class="p-4 text-right">${d.mpp}</td><td class="p-4 text-right text-green-600 font-bold">${d.mpp>0?Math.round(d.paket/d.mpp):0}</td><td class="p-4 text-right text-slate-500 text-xs">Rp ${d.cost.toLocaleString('id-ID')}</td></tr>`
-                ).join('');
-                if(!tbody.innerHTML) tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Tidak ada data di rentang tanggal ini.</td></tr>';
-
-                // Chart dummy render (simplified)
-                renderChart(document.getElementById('annualChart'), Object.keys(daily), Object.values(daily).map(x=>x.paket), 'chartAnnual');
-                renderChart(document.getElementById('dailyChart'), Object.keys(daily), Object.values(daily).map(x=>x.mpp), 'chartDaily');
-
-            } catch(e) { window.showToast("Gagal memuat: " + e.message, "error"); }
-            finally { btn.innerHTML = originalText; btn.disabled = false; }
-        };
-
-        function renderChart(canvas, labels, data, key) {
-            const ctx = canvas.getContext('2d'); if(state[key]) state[key].destroy();
-            state[key] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Data', data: data, backgroundColor: '#3b82f6', borderRadius:4 }] }, options: { maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{display:false}} } });
+        function loadDashboard() {
+            els.dashName.textContent = state.userData?.name || state.role; els.dashRole.textContent = state.userData?.role || state.role; els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only' : 'User Mode');
+            if(!els.dashStartDate.value) { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); els.dashStartDate.valueAsDate = start; els.dashEndDate.valueAsDate = now; }
+            if (state.role === 'admin') {
+                if (state.hubs.length === 0) {
+                    getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs')).then(snap => {
+                        state.hubs = snap.docs.map(d => d.data());
+                        let options = `<option value="">Semua HUB</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
+                        els.dashHubContainer.innerHTML = `<select id="dash-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">${options}</select>`;
+                    });
+                } else {
+                    let options = `<option value="">Semua HUB</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
+                    els.dashHubContainer.innerHTML = `<select id="dash-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">${options}</select>`;
+                }
+            } else {
+                els.dashHubContainer.innerHTML = `<input type="text" value="${state.userData?.hub_code || '-'}" readonly class="w-full p-2 bg-slate-100 border border-slate-300 rounded-lg text-sm text-slate-500 font-bold">`;
+            }
+            loadDashboardStats();
         }
 
-        // --- REPORT LOGIC ---
-        window.loadReportsView = async () => {
-            const d = new Date(); document.getElementById('rpt-date').valueAsDate = d;
-            let hCode = state.userData?.hub_code;
-            const container = document.getElementById('rpt-hub-container');
+        window.loadDashboardStats = async () => {
+            const start = els.dashStartDate.value; const end = els.dashEndDate.value;
+            let hubFilter = state.role === 'admin' ? (document.getElementById('dash-hub-select')?.value || '') : state.userData?.hub_code;
             
-            if(state.role === 'admin') {
-                if(state.hubs.length === 0) {
-                    const snap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'));
-                    state.hubs = snap.docs.map(d => d.data());
-                }
-                const opts = `<option value="">Pilih HUB...</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
-                container.innerHTML = `<select id="rpt-hub-select" class="w-full p-2.5 border rounded-xl text-sm" onchange="window.loadReportsView()">${opts}</select>`;
-                hCode = document.getElementById('rpt-hub-select')?.value;
-            } else {
-                container.innerHTML = `<input type="text" id="rpt-hub-static" value="${hCode}" class="w-full p-2.5 bg-slate-100 border rounded-xl text-sm font-bold text-slate-500" readonly>`;
-            }
-
-            const tbody = document.getElementById('sorter-attendance-list');
-            if(hCode) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center">Memuat karyawan...</td></tr>';
-                const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("hub_code", "==", hCode));
+            try {
+                const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
+                const q = query(reportsRef, where("date", ">=", start), where("date", "<=", end)); 
                 const snap = await getDocs(q);
-                tbody.innerHTML = '';
-                snap.forEach(d => {
-                    const u = d.data(); if(u.role === 'admin') return;
-                    const row = document.createElement('tr'); row.className = "border-b border-slate-50 hover:bg-slate-50";
-                    row.innerHTML = `<td class="p-2 font-medium text-slate-700" data-name="${u.name}" data-is-db="true">${u.name} <span class="text-[10px] text-slate-400">(${u.role})</span></td>${window.generateAttCols(d.id)}<td class="p-2"></td>`;
-                    tbody.appendChild(row);
+                
+                let reports = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if (!hubFilter || d.hub === hubFilter) { reports.push(d); }
                 });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Pilih HUB terlebih dahulu.</td></tr>';
-            }
-            window.loadMyReports();
+
+                reports.sort((a, b) => a.date.localeCompare(b.date));
+
+                let totalPaket = 0; let totalMpp = 0; let totalCost = 0;
+                const monthlyData = {}; const dailyData = {}; const hubData = {};
+
+                reports.forEach(r => {
+                    totalPaket += (r.total_paket || 0);
+                    // Filter MPP for dashboard calc as well to be consistent
+                    totalMpp += (r.total_mpp || 0); 
+                    totalCost += (r.est_cost || 0);
+
+                    // Monthly
+                    const monthKey = r.date.substring(0, 7);
+                    if(!monthlyData[monthKey]) monthlyData[monthKey] = { paket: 0, mpp: 0 };
+                    monthlyData[monthKey].paket += (r.total_paket || 0);
+                    monthlyData[monthKey].mpp += (r.total_mpp || 0);
+
+                    // Daily (Date)
+                    const dateKey = r.date;
+                    if(!dailyData[dateKey]) dailyData[dateKey] = { date: r.date, mpp: 0, staging: 0, gateway: 0, jne: 0, sap: 0, outbound: 0, cost: 0 };
+                    dailyData[dateKey].mpp += (r.total_mpp || 0);
+                    dailyData[dateKey].staging += (r.staging || 0);
+                    dailyData[dateKey].gateway += (r.gateway || 0);
+                    dailyData[dateKey].jne += (r.jne || 0);
+                    dailyData[dateKey].sap += (r.sap || 0);
+                    dailyData[dateKey].outbound += (r.total_paket || 0);
+                    dailyData[dateKey].cost += (r.est_cost || 0);
+
+                    // Hub
+                    const hKey = r.hub;
+                    if(!hubData[hKey]) hubData[hKey] = { hub: r.hub, mpp: 0, outbound: 0, cost: 0 };
+                    hubData[hKey].mpp += (r.total_mpp || 0);
+                    hubData[hKey].outbound += (r.total_paket || 0);
+                    hubData[hKey].cost += (r.est_cost || 0);
+                });
+
+                // Calculate Aggregates for KPI
+                const avgProd = totalMpp > 0 ? Math.round(totalPaket / totalMpp) : 0;
+                const avgCpp = totalPaket > 0 ? Math.round(totalCost / totalPaket) : 0;
+
+                // Render KPI
+                els.kpiTotalPaket.textContent = formatNumber(totalPaket);
+                els.kpiTotalMpp.textContent = formatNumber(totalMpp);
+                els.kpiProductivity.textContent = formatNumber(avgProd);
+                els.kpiTotalCost.textContent = "Rp " + formatNumber(totalCost);
+                els.kpiCpp.textContent = "Rp " + formatNumber(avgCpp);
+
+                // Render Charts
+                const monthLabels = Object.keys(monthlyData).sort();
+                renderChart(els.canvasAnnual, 
+                    monthLabels.map(k => new Date(k+"-01").toLocaleDateString('id-ID', {month:'short', year:'2-digit'})), 
+                    monthLabels.map(k => monthlyData[k].paket), 
+                    monthLabels.map(k => monthlyData[k].mpp > 0 ? Math.round(monthlyData[k].paket / monthlyData[k].mpp) : 0), 
+                    'chartAnnual'
+                );
+
+                const dateLabels = Object.keys(dailyData).sort();
+                renderChart(els.canvasDaily, 
+                    dateLabels.map(d => new Date(d).toLocaleDateString('id-ID', {day:'numeric', month:'short'})),
+                    dateLabels.map(k => dailyData[k].outbound),
+                    dateLabels.map(k => dailyData[k].mpp > 0 ? Math.round(dailyData[k].outbound / dailyData[k].mpp) : 0),
+                    'chartDaily'
+                );
+
+                // Render Tables
+                els.dashTableDaily.innerHTML = dateLabels.reverse().map(k => {
+                    const d = dailyData[k];
+                    const prod = d.mpp > 0 ? Math.round(d.outbound / d.mpp) : 0;
+                    return `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-3">${d.date}</td><td class="p-3 text-right">${d.mpp}</td><td class="p-3 text-right">${formatNumber(d.gateway)}</td><td class="p-3 text-right">${formatNumber(d.staging)}</td><td class="p-3 text-right">${formatNumber(d.sap)}</td><td class="p-3 text-right">${formatNumber(d.jne)}</td><td class="p-3 text-right font-bold text-blue-600">${formatNumber(d.outbound)}</td><td class="p-3 text-right font-bold text-green-600">${formatNumber(prod)}</td><td class="p-3 text-right">Rp ${formatNumber(d.cost)}</td></tr>`;
+                }).join('');
+
+                els.dashTableHub.innerHTML = Object.keys(hubData).sort().map(k => {
+                    const h = hubData[k];
+                    const prod = h.mpp > 0 ? Math.round(h.outbound / h.mpp) : 0;
+                    return `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-3 font-medium">${h.hub}</td><td class="p-3 text-right">${h.mpp}</td><td class="p-3 text-right text-blue-600">${formatNumber(h.outbound)}</td><td class="p-3 text-right text-green-600">${formatNumber(prod)}</td><td class="p-3 text-right">Rp ${formatNumber(h.cost)}</td></tr>`;
+                }).join('');
+
+            } catch (e) { console.error("Dash Error", e); }
         };
 
-        window.generateAttCols = (uid) => {
-            return ['s1','s2','s3','i','s','a'].map(v => `<td class="p-2 text-center"><input type="radio" name="att_${uid}" value="${v}" class="custom-radio attendance-radio" onclick="window.calculateReportTotals()"></td>`).join('') + `<td class="p-2"><input type="text" class="w-full p-1 border rounded text-xs att-remarks"></td>`;
-        };
-
-        window.calculateReportTotals = () => {
-            const vals = ['gateway','staging','sap','jne'].map(k => Number(document.getElementById(`rpt-${k}`).value)||0);
-            const total = vals.reduce((a,b)=>a+b,0);
-            document.getElementById('rpt-total-paket').value = total.toLocaleString('id-ID');
-            
-            let mpp = 0;
-            document.querySelectorAll('.attendance-radio:checked').forEach(r => {
-                if(['s1','s2','s3'].includes(r.value)) {
-                    // Check if row is leader
-                    const row = r.closest('tr');
-                    if(!row.textContent.toLowerCase().includes('leader')) mpp++;
+        function renderChart(canvas, labels, dataBar, dataLine, stateKey) {
+            const ctx = canvas.getContext('2d');
+            if (state[stateKey]) state[stateKey].destroy();
+            state[stateKey] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Total Paket', data: dataBar, backgroundColor: '#3b82f6', order: 2, yAxisID: 'y' },
+                        { type: 'line', label: 'Produktivitas', data: dataLine, borderColor: '#22c55e', borderWidth: 2, tension: 0.3, pointRadius: 3, order: 1, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { display: false }, y1: { display: false, position: 'right', grid: { drawOnChartArea: false } }, x: { grid: { display: false } } }
                 }
             });
-            document.getElementById('display-total-mpp').textContent = mpp;
-            document.getElementById('rpt-productivity').value = mpp>0 ? Math.round(total/mpp).toLocaleString('id-ID') : 0;
-        };
+        }
+
+        window.handleLogout = async () => { localStorage.removeItem('userRole'); localStorage.removeItem('userData'); window.location.reload(); };
+
+        // --- REPORTS LOGIC ---
+        document.querySelectorAll('.metric-input').forEach(input => { input.addEventListener('input', calculateReportTotals); });
+        function setupHubListener() {
+            const hubSelect = document.getElementById('rpt-hub-select');
+            if (hubSelect) hubSelect.addEventListener('change', () => loadReportsView());
+        }
+
+        function calculateReportTotals() {
+            const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
+            const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
+            const totalPaket = g+s+sa+j; els.rptTotalPaket.value = formatNumber(totalPaket);
+            let workingCount = 0; let sorterDwCount = 0;
+            document.querySelectorAll('#sorter-attendance-list tr').forEach(row => {
+                const checked = row.querySelector('.attendance-radio:checked');
+                if(checked && ['s1','s2','s3'].includes(checked.value)) {
+                    const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
+                    if(!role.includes('leader')) { workingCount++; sorterDwCount++; }
+                }
+            });
+            els.displayTotalMpp.textContent = workingCount;
+            const prod = sorterDwCount > 0 ? Math.round(totalPaket / sorterDwCount) : 0;
+            els.rptProductivity.value = formatNumber(prod);
+        }
+        window.calculateReportTotals = calculateReportTotals;
 
         window.addDwRow = () => {
             const uid = 'dw_' + Date.now();
-            const tbody = document.getElementById('sorter-attendance-list');
-            const row = document.createElement('tr'); row.className = "border-b border-slate-50 animate-in fade-in";
-            row.innerHTML = `<td class="p-2"><input type="text" class="w-full p-1 border rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uid}"></td>${window.generateAttCols(uid)}<td class="p-2 text-center"><button onclick="this.closest('tr').remove();window.calculateReportTotals()" class="text-red-400 hover:text-red-600"><i data-lucide="x-circle" class="w-4 h-4"></i></button></td>`;
-            tbody.appendChild(row);
-            lucide.createIcons();
-        };
-
-        window.loadMyReports = async () => {
-            const tbody = document.getElementById('rpt-history-body');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center"><div class="animate-spin w-4 h-4 border-2 border-blue-500 rounded-full border-t-transparent inline-block"></div> Memuat...</td></tr>';
-            try {
-                const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), orderBy("date", "desc"), limit(10));
-                const snap = await getDocs(q);
-                if(snap.empty) { tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada laporan.</td></tr>'; return; }
-                tbody.innerHTML = '';
-                snap.forEach(d => {
-                    const r = d.data();
-                    const tr = document.createElement('tr'); tr.className = "border-b border-slate-50 hover:bg-slate-50";
-                    // Logic tombol delete/edit
-                    let aksi = '';
-                    if(state.role === 'admin' || (state.userData && r.hub === state.userData.hub_code)) {
-                        aksi = `<button onclick='window.deleteReport("${d.id}")' class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
-                    }
-                    tr.innerHTML = `<td class="p-4 font-medium">${r.date}</td><td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">${r.hub}</span></td><td class="p-4 text-right font-bold text-blue-600">${r.total_paket.toLocaleString('id-ID')}</td><td class="p-4 text-right">${r.total_mpp}</td><td class="p-4 text-right text-green-600 font-bold">${r.productivity.toLocaleString('id-ID')}</td><td class="p-4 text-right">${aksi}</td>`;
-                    tbody.appendChild(tr);
-                });
-                lucide.createIcons();
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-400">Error: ${e.message}</td></tr>`; }
-        };
-
-        window.deleteReport = (id) => {
-            if(confirm("Hapus laporan ini permanen?")) {
-                deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id))
-                .then(() => { window.showToast("Terhapus"); window.loadMyReports(); })
-                .catch(e => window.showToast("Gagal: " + e.message, "error"));
-            }
-        };
-
-        // --- SETTINGS LOGIC ---
-        window.switchSettingsTab = (tab) => {
-            document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
-            ['hubs', 'employees', 'config'].forEach(k => {
-                const btn = document.getElementById(`tab-btn-${k}`);
-                btn.className = (k===tab) ? "px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600 transition-colors" : "px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors";
-            });
-            document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
-        };
-
-        window.loadSettings = () => {
-            // Load Hubs Table
-            onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), snap => {
-                state.hubs = snap.docs.map(d => ({id:d.id, ...d.data()}));
-                const tbody = document.getElementById('hub-table-body');
-                tbody.innerHTML = state.hubs.map(h => `<tr class="border-b border-slate-50"><td class="p-3 font-mono font-bold">${h.code}</td><td class="p-3">${h.name}</td><td class="p-3 text-right">${h.sorter_rate}</td><td class="p-3 text-right"><button onclick="window.deleteDocItem('hubs','${h.id}')" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
-                lucide.createIcons();
-            });
-            // Load Employees
-            onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), snap => {
-                state.employees = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(u => u.role !== 'admin');
-                document.getElementById('user-count').textContent = `Total: ${state.employees.length}`;
-                const tbody = document.getElementById('user-table-body');
-                tbody.innerHTML = state.employees.map(u => `<tr class="border-b border-slate-50"><td class="p-3"><div class="font-bold">${u.name}</div><div class="text-xs text-slate-400 font-mono">${u.nik}</div></td><td class="p-3"><span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-xs font-bold">${u.hub_code}</span></td><td class="p-3 capitalize">${u.role}</td><td class="p-3">${u.can_login?'✅':'❌'}</td><td class="p-3 text-right"><button onclick="window.deleteDocItem('users','${u.id}')" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
-                lucide.createIcons();
-            });
-        };
-
-        window.deleteDocItem = (col, id) => {
-            if(confirm("Hapus data ini?")) deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', col, id));
-        };
-
-        window.togglePasswordInput = () => {
-            const chk = document.getElementById('user-can-login');
-            const pass = document.getElementById('user-pass');
-            if(chk.checked) { pass.classList.remove('hidden'); pass.required = true; } 
-            else { pass.classList.add('hidden'); pass.required = false; }
-        };
-
-        window.resetHubForm = () => { document.getElementById('form-add-hub').reset(); document.getElementById('edit-hub-id').value=''; document.getElementById('btn-cancel-hub').classList.add('hidden'); document.getElementById('btn-save-hub').textContent="Simpan"; };
-        window.resetUserForm = () => { document.getElementById('form-add-user').reset(); document.getElementById('edit-user-id').value=''; document.getElementById('btn-cancel-edit').classList.add('hidden'); document.getElementById('btn-save-user').textContent="Simpan Data"; window.togglePasswordInput(); };
-
-        // --- FORM SUBMISSIONS ---
-        document.getElementById('form-daily-report').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-save-report'); btn.disabled=true; btn.textContent="Menyimpan...";
-            try {
-                const hub = state.role === 'admin' ? document.getElementById('rpt-hub-select').value : document.getElementById('rpt-hub-static').value;
-                if(!hub) throw new Error("Pilih HUB");
-                
-                const att = []; let mpp=0;
-                document.querySelectorAll('#sorter-attendance-list tr').forEach(row => {
-                    const chk = row.querySelector('.attendance-radio:checked');
-                    if(chk) {
-                        const nameEl = row.querySelector('td[data-name]');
-                        const name = nameEl ? nameEl.dataset.name : row.querySelector('.dw-name-input').value;
-                        const remarks = row.querySelector('.att-remarks').value;
-                        att.push({ name, status: chk.value, remarks });
-                        if(['s1','s2','s3'].includes(chk.value) && !row.textContent.toLowerCase().includes('leader')) mpp++;
-                    }
-                });
-
-                const total = parseInt(document.getElementById('rpt-total-paket').value.replace(/\./g,'')) || 0;
-                const data = {
-                    date: document.getElementById('rpt-date').value,
-                    hub: hub,
-                    gateway: Number(document.getElementById('rpt-gateway').value)||0,
-                    staging: Number(document.getElementById('rpt-staging').value)||0,
-                    sap: Number(document.getElementById('rpt-sap').value)||0,
-                    jne: Number(document.getElementById('rpt-jne').value)||0,
-                    total_paket: total,
-                    total_mpp: mpp,
-                    productivity: mpp>0 ? Math.round(total/mpp) : 0,
-                    attendance_data: att,
-                    est_cost: 0, // Simplified for brevity
-                    created_at: new Date().toISOString()
-                };
-
-                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), data);
-                window.showToast("Laporan Tersimpan");
-                document.getElementById('form-daily-report').reset();
-                window.loadMyReports();
-            } catch(e) { window.showToast(e.message, "error"); }
-            finally { btn.disabled=false; btn.textContent="Simpan Laporan"; }
-        });
-
-        document.getElementById('form-add-hub').addEventListener('submit', async(e) => {
-            e.preventDefault();
-            const data = { 
-                code: document.getElementById('hub-code').value.toUpperCase(),
-                name: document.getElementById('hub-name').value,
-                sorter_rate: Number(document.getElementById('hub-rate').value)||0
-            };
-            await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data);
-            window.resetHubForm(); window.showToast("HUB Ditambah");
-        });
-
-        document.getElementById('form-add-user').addEventListener('submit', async(e) => {
-            e.preventDefault();
-            const data = {
-                nik: document.getElementById('user-nik').value,
-                name: document.getElementById('user-name').value,
-                hub_code: document.getElementById('user-hub').value,
-                role: document.getElementById('user-role').value,
-                can_login: document.getElementById('user-can-login').checked,
-                password: document.getElementById('user-pass').value
-            };
-            await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data);
-            window.resetUserForm(); window.showToast("Karyawan Ditambah");
-        });
-
-        // --- AUTH ---
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nik = document.getElementById('login-nik').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            const tab = state.loginTab;
-            const errDiv = document.getElementById('login-error');
-            const btn = document.getElementById('btn-login');
-            
-            btn.disabled = true; btn.innerHTML = "Memproses..."; errDiv.classList.add('hidden');
-
-            try {
-                // Check if Anonymous Auth is enabled in Firebase Console (Crucial step often missed)
-                if(!auth.currentUser) await signInAnonymously(auth);
-                
-                // Admin Login
-                if(tab === 'admin') {
-                    if(!state.config.admin_password) {
-                        const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'));
-                        if(snap.exists()) state.config = snap.data();
-                    }
-                    if(pass === state.config.admin_password) {
-                        state.role = 'admin'; state.userData = { name: 'Administrator', role: 'admin' };
-                        saveSession(); window.showApp();
-                    } else throw new Error("Password Admin Salah");
-                } 
-                // User Login
-                else {
-                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
-                    const snap = await getDocs(q);
-                    if(snap.empty) throw new Error("NIK tidak ditemukan");
-                    const user = snap.docs[0].data();
-                    if(tab === 'leader') {
-                        if(!user.can_login) throw new Error("User tidak punya akses login");
-                        if(user.password !== pass) throw new Error("Password salah");
-                    }
-                    state.role = tab; state.userData = user;
-                    saveSession(); window.showApp();
-                }
-            } catch(e) {
-                errDiv.classList.remove('hidden');
-                document.getElementById('login-error-text').textContent = e.code === 'auth/configuration-not-found' ? "Aktifkan Anonymous Auth di Firebase Console" : e.message;
-            } finally {
-                btn.disabled = false; btn.innerHTML = '<span>Masuk Aplikasi</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>';
-            }
-        });
-
-        function saveSession() {
-            localStorage.setItem('userRole', state.role);
-            localStorage.setItem('userData', JSON.stringify(state.userData));
+            const row = document.createElement('tr');
+            row.className = 'border-b border-slate-50 hover:bg-slate-50';
+            row.innerHTML = `<td class="p-3"><input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uid}"></td>${generateAttendanceColumns(uid)}<td class="p-3 text-center"><button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600"><i data-lucide="x-circle" class="w-4 h-4"></i></button></td>`;
+            els.sorterAttendanceList.appendChild(row); lucide.createIcons();
         }
 
-        window.showApp = () => {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('user-name-display').textContent = state.userData?.name || 'Admin';
-            document.getElementById('user-role-display').textContent = state.role;
-            
-            const isAdmin = state.role === 'admin';
-            document.getElementById('menu-settings').classList.toggle('hidden', !isAdmin);
-            // Auto setup dates
-            const now = new Date();
-            document.getElementById('dash-end-date').valueAsDate = now;
-            document.getElementById('dash-start-date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), 1);
-            
-            window.navigateTo('dashboard');
-        };
+        function generateAttendanceColumns(rowId) {
+            return `<td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s1" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s2" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s3" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-yellow-50/30"><input type="radio" name="att_${rowId}" value="i" class="attendance-radio custom-radio accent-yellow-500" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-red-50/30"><input type="radio" name="att_${rowId}" value="s" class="attendance-radio custom-radio accent-red-500" onclick="calculateReportTotals()"></td>
+                <td class="p-3 text-center bg-red-100/30"><input type="radio" name="att_${rowId}" value="a" class="attendance-radio custom-radio accent-red-800" onclick="calculateReportTotals()"></td>
+                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-200 rounded text-xs att-remarks" placeholder="..."></td>`;
+        }
 
-        // Init Auth Listener
-        onAuthStateChanged(auth, (u) => {
-            state.user = u;
-            // Auto login logic
-            const savedRole = localStorage.getItem('userRole');
-            if(u && savedRole) {
-                state.role = savedRole;
-                state.userData = JSON.parse(localStorage.getItem('userData'));
-                window.showApp();
-            } else {
-                document.getElementById('login-screen').classList.remove('hidden');
+        async function loadReportsView() {
+            if(els.editReportId.value) return; 
+            els.rptDate.valueAsDate = new Date();
+            
+            let currentHubCode = '';
+            if (state.hubs.length === 0) {
+                const hubsSnap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'));
+                state.hubs = hubsSnap.docs.map(doc => doc.data());
             }
-            // Hide loading
-            setTimeout(() => document.getElementById('loading-screen').classList.add('hidden'), 500);
-        });
 
-        // Setup Sidebar Mobile
-        document.getElementById('open-sidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.remove('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.remove('hidden');
-        });
-        const closeMenu = () => {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.add('hidden');
-        };
-        document.getElementById('close-sidebar').addEventListener('click', closeMenu);
-        document.getElementById('sidebar-overlay').addEventListener('click', closeMenu);
+            if (state.role === 'admin') {
+                const existingSelect = document.getElementById('rpt-hub-select');
+                if (!existingSelect) {
+                    let options = `<option value="">Pilih HUB...</option>` + 
+                        state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
+                    els.rptHubContainer.innerHTML = `<select id="rpt-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-blue-500 focus:border-blue-500 outline-none">${options}</select>`;
+                    setupHubListener();
+                } 
+            } else {
+                currentHubCode = state.userData?.hub_code || 'UNKNOWN';
+                els.rptHubContainer.innerHTML = `<input type="text" id="rpt-hub-static" value="${currentHubCode}" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" readonly>`;
+            }
+
+            const getSelectedHub = () => state.role === 'admin' ? (document.getElementById('rpt-hub-select')?.value || '') : currentHubCode;
+            const hubCode = getSelectedHub();
+            
+            if (state.role !== 'sorter' && (hubCode || state.role !== 'admin')) {
+                loadEmployeesForReport(hubCode);
+            } else if (state.role === 'admin' && !hubCode) {
+                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB untuk memuat karyawan.</td></tr>';
+            }
+
+            loadMyReports(); calculateReportTotals();
+        }
+
+        async function loadEmployeesForReport(hubCode) {
+            if (!hubCode) return;
+            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
+            try {
+                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
+                let qSorter = query(usersRef, where("hub_code", "==", hubCode));
+                const snap = await getDocs(qSorter);
+                els.sorterAttendanceList.innerHTML = '';
+                snap.forEach(doc => {
+                    const s = doc.data();
+                    if(s.role === 'admin') return;
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                    row.innerHTML = `<td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>${generateAttendanceColumns(doc.id)}<td class="p-3"></td>`;
+                    els.sorterAttendanceList.appendChild(row);
+                });
+            } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
+        }
         
-        // Listen to metric inputs
-        document.querySelectorAll('.metric-input').forEach(i => i.addEventListener('input', window.calculateReportTotals));
+        window.loadMyReports = async () => {
+            els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
+            try {
+                const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
+                let q = query(reportsRef, orderBy("date", "desc"), limit(20));
+                let querySnapshot;
+                try { querySnapshot = await getDocs(q); } catch(err) { const q2 = query(reportsRef, limit(20)); querySnapshot = await getDocs(q2); }
 
-        // Initial Load icons
-        lucide.createIcons();
+                if (querySnapshot.empty) { els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>'; return; }
+
+                els.rptHistoryBody.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const d = doc.data();
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
+                    let btns = '';
+                    if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === d.hub)) {
+                        btns = `<button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...d})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick='confirmDeleteReport("${doc.id}", "${d.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
+                    }
+                    tr.innerHTML = `<td class="p-3 whitespace-nowrap">${d.date}</td><td class="p-3 font-medium">${d.hub}</td><td class="p-3 text-right text-blue-600 font-mono">${formatNumber(d.total_paket || 0)}</td><td class="p-3 text-right font-mono font-bold">${d.total_mpp || 0}</td><td class="p-3 text-right text-purple-600 font-mono text-xs font-bold">${formatNumber(d.productivity || 0)}</td><td class="p-3 text-right text-green-600 font-mono text-xs">Rp ${formatNumber(d.est_cost || 0)}</td><td class="p-3 text-right flex gap-2 justify-end">${btns}</td>`;
+                    els.rptHistoryBody.appendChild(tr);
+                });
+                lucide.createIcons();
+            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
+        };
+
+        window.confirmDeleteReport = (id, hub) => {
+            showConfirm('Hapus Laporan?', 'Tindakan ini tidak dapat dibatalkan.', async () => {
+                secureCheck(async () => {
+                    if(state.role !== 'admin' && hub !== state.userData.hub_code) { showNotification("Akses Ditolak.", "error"); return; }
+                    showNotification("Menghapus...", "loading");
+                    try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); showNotification("Terhapus!", "success"); } 
+                    catch(e) { showNotification("Gagal hapus.", "error"); }
+                });
+            });
+        };
+
+        window.confirmEditReport = (rpt) => {
+            showConfirm('Edit Laporan?', 'Pastikan data yang diubah sudah benar.', () => {
+                secureCheck(() => {
+                    if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) { showNotification("Akses Ditolak.", "error"); return; }
+                    els.editReportId.value = rpt.id; els.rptDate.value = rpt.date; 
+                    
+                    if (state.role === 'admin') {
+                        const select = document.getElementById('rpt-hub-select');
+                        if(select) { select.value = rpt.hub; loadEmployeesForReport(rpt.hub).then(() => { restoreAttendanceData(rpt); }); }
+                    } else {
+                        document.getElementById('rpt-hub-static').value = rpt.hub; restoreAttendanceData(rpt);
+                    }
+
+                    els.rptGateway.value = rpt.gateway; els.rptStaging.value = rpt.staging; els.rptSap.value = rpt.sap; els.rptJne.value = rpt.jne;
+                    els.formReportTitle.textContent = "Edit Laporan"; els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
+                    els.btnCancelReportEdit.classList.remove('hidden');
+                    els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        };
+
+        function restoreAttendanceData(rpt) {
+             document.querySelectorAll('.attendance-radio').forEach(r => r.checked = false);
+             document.querySelectorAll('.att-remarks').forEach(i => i.value = '');
+             if(rpt.attendance_data) {
+                rpt.attendance_data.forEach(att => {
+                    const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
+                    let row;
+                    if(nameCell) row = nameCell.closest('tr');
+                    else { addDwRow(); row = els.sorterAttendanceList.lastElementChild; row.querySelector('.dw-name-input').value = att.name; }
+                    if(row) {
+                        const radio = row.querySelector(`input[value="${att.status}"]`); if(radio) radio.checked = true;
+                        const remarkInput = row.querySelector('.att-remarks'); if(remarkInput) remarkInput.value = att.remarks || '';
+                    }
+                });
+            }
+            calculateReportTotals();
+        }
+
+        window.resetReportForm = () => {
+            els.formDailyReport.reset(); els.editReportId.value = ''; els.formReportTitle.textContent = "Input Laporan Operasional";
+            els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan'; els.btnCancelReportEdit.classList.add('hidden');
+            els.rptHub.value = state.userData?.hub_code || ''; loadReportsView();
+        };
+
+        els.formDailyReport.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showConfirm('Simpan Laporan?', 'Pastikan semua data sudah sesuai.', async () => {
+                els.btnSaveReport.disabled = true; els.btnSaveReport.textContent = 'Menyimpan...'; 
+                showNotification("Menyimpan data...", "loading");
+
+                try {
+                    let selectedHub = state.role === 'admin' ? document.getElementById('rpt-hub-select').value : document.getElementById('rpt-hub-static').value;
+                    if(!selectedHub && state.role === 'admin') throw new Error("Pilih HUB.");
+
+                    let sorterRate = 0; const hubData = state.hubs.find(h => h.code === selectedHub);
+                    if(hubData) sorterRate = Number(hubData.sorter_rate) || 0;
+                    const dwRate = Number(state.config.dw_rate) || 0;
+
+                    const att = []; let sCnt = 0; let dCnt = 0; let wCnt = 0;
+                    els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
+                        const chk = row.querySelector('.attendance-radio:checked');
+                        if(chk) {
+                            const isDb = row.querySelector('td[data-is-db="true"]');
+                            let name = isDb ? isDb.dataset.name : row.querySelector('.dw-name-input')?.value || 'Unknown';
+                            const status = chk.value;
+                            att.push({ name: name, status: status, remarks: row.querySelector('.att-remarks').value });
+                            
+                            if(['s1','s2','s3'].includes(status)) {
+                                const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
+                                if(!role.includes('leader')) {
+                                    wCnt++;
+                                    if(isDb) sCnt++; else dCnt++;
+                                }
+                            }
+                        }
+                    });
+
+                    const g = Number(els.rptGateway.value)||0; const s = Number(els.rptStaging.value)||0;
+                    const sa = Number(els.rptSap.value)||0; const j = Number(els.rptJne.value)||0;
+                    const totalPaket = g+s+sa+j;
+                    const estCost = (sCnt * sorterRate) + (dCnt * dwRate);
+                    const productivity = wCnt > 0 ? Math.round(totalPaket / wCnt) : 0;
+
+                    const rData = {
+                        date: els.rptDate.value, hub: selectedHub, nik: state.userData?.nik || 'UNKNOWN',
+                        reporter_name: state.userData?.name || 'UNKNOWN', gateway: g, staging: s, sap: sa, jne: j, total_paket: totalPaket,
+                        total_mpp: wCnt, productivity: productivity, attendance_data: att, est_cost: estCost, created_at: new Date().toISOString()
+                    };
+
+                    if(els.editReportId.value) { await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', els.editReportId.value), rData); showNotification("Laporan berhasil diupdate!", "success"); } 
+                    else { await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), rData); showNotification("Laporan berhasil disimpan!", "success"); }
+                    
+                    resetReportForm(); loadMyReports();
+                } catch (err) { showNotification("Gagal: " + err.message, "error"); } 
+                finally { els.btnSaveReport.disabled = false; if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan'; lucide.createIcons(); }
+            });
+        });
+
+        // --- SETTINGS LOGIC ---
+        let unsubscribeHubs = null; let unsubscribeEmployees = null;
+        window.switchSettingsTab = (tabName) => {
+            document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
+            ['hubs', 'employees', 'config'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tabName) { btn.classList.remove('tab-inactive'); btn.classList.add('tab-active'); } 
+                else { btn.classList.add('tab-inactive'); btn.classList.remove('tab-active'); }
+            });
+            document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+        }
+
+        function loadSettings() {
+            if (!unsubscribeHubs) { unsubscribeHubs = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), (snap) => { state.hubs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderHubsTable(); populateHubDropdowns(); }); }
+            if (!unsubscribeEmployees) { unsubscribeEmployees = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => { state.employees = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.role !== 'admin'); renderEmployeesTable(); }); }
+            if(state.config) { els.configSecureCode.value = state.config.secure_code || ''; els.configDwRate.value = state.config.dw_rate || 0; }
+        }
+
+        function populateHubDropdowns() {
+            const options = `<option value="">Pilih HUB...</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
+            if(els.userHub) els.userHub.innerHTML = options;
+        }
+
+        els.formAddHub.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            showConfirm(els.editHubId.value ? 'Update HUB?' : 'Tambah HUB?', 'Pastikan kode HUB unik.', async () => {
+                const id = els.editHubId.value;
+                const data = { code: els.hubCode.value.toUpperCase().trim(), name: els.hubName.value.trim(), sorter_rate: Number(els.hubRate.value) || 0, created_at: new Date().toISOString() };
+                secureCheck(async () => {
+                    showNotification("Menyimpan...", "loading");
+                    try { if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'hubs', id), data); else { if(state.hubs.find(h => h.code === data.code)) throw new Error("Kode sudah ada!"); await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data); } resetHubForm(); showNotification("Berhasil!", "success"); } catch(err) { showNotification(err.message, "error"); }
+                });
+            });
+        });
+
+        window.editHub = (h) => { if(typeof h === 'string') h = JSON.parse(h); secureCheck(() => { els.editHubId.value = h.id; els.hubCode.value = h.code; els.hubName.value = h.name; els.hubRate.value = h.sorter_rate || 0; els.btnSaveHub.textContent = 'Update'; els.btnCancelHub.classList.remove('hidden'); els.formAddHub.scrollIntoView({ behavior: 'smooth' }); }); }
+        window.resetHubForm = () => { els.formAddHub.reset(); els.editHubId.value = ''; els.btnSaveHub.textContent = 'Simpan'; els.btnCancelHub.classList.add('hidden'); }
+        function renderHubsTable() { els.hubTableBody.innerHTML = state.hubs.map(hub => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td><td class="p-4 font-medium">${hub.name}</td><td class="p-4 text-right">Rp ${formatNumber(hub.sorter_rate||0)}</td><td class="p-4 text-right"><button onclick='editHub(${JSON.stringify(hub)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); lucide.createIcons(); }
+
+        els.formAddUser.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            showConfirm(els.editUserId.value ? 'Update Karyawan?' : 'Tambah Karyawan?', 'Data login akan berpengaruh.', async () => {
+                const id = els.editUserId.value;
+                const data = { nik: els.userNik.value.trim(), name: els.userName.value.trim(), hub_code: els.userHub.value, role: els.userRole.value, can_login: els.userCanLogin.checked, password: els.userPass.value.trim(), created_at: new Date().toISOString() };
+                secureCheck(async () => {
+                    showNotification("Menyimpan...", "loading");
+                    try { if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id), data); else { if(state.employees.find(e => e.nik === data.nik)) throw new Error("NIK Terdaftar!"); await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data); } resetUserForm(); showNotification("Berhasil!", "success"); } catch(err) { showNotification(err.message, "error"); }
+                });
+            });
+        });
+
+        window.togglePasswordInput = () => { if(els.userCanLogin.checked) { els.passContainer.classList.remove('hidden'); els.userPass.required = true; } else { els.passContainer.classList.add('hidden'); els.userPass.required = false; els.userPass.value = ''; } }
+        window.resetUserForm = () => { els.formAddUser.reset(); els.editUserId.value = ''; els.formUserTitle.textContent = 'Tambah Data Karyawan'; els.btnSaveUser.textContent = 'Simpan Data'; els.btnCancelEdit.classList.add('hidden'); els.userNik.disabled = false; togglePasswordInput(); }
+        function renderEmployeesTable() { els.userCount.textContent = `Total: ${state.employees.length}`; els.userTableBody.innerHTML = state.employees.map(u => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-4"><div class="font-medium text-slate-800">${u.name}</div><div class="text-xs text-slate-500 font-mono">${u.nik}</div></td><td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${u.hub_code || '-'}</span></td><td class="p-4 capitalize text-slate-600">${u.role}</td><td class="p-4 font-mono text-slate-500 text-xs">${u.can_login ? u.password : '-'}</td><td class="p-4">${u.can_login ? '<span class="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Aktif</span>' : '<span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded-full">Tidak</span>'}</td><td class="p-4 text-right flex gap-2 justify-end"><button onclick='editUser(${JSON.stringify(u)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDocItem('users', '${u.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); lucide.createIcons(); }
+        window.editUser = (u) => { if(typeof u === 'string') u = JSON.parse(u); secureCheck(() => { els.editUserId.value = u.id; els.userNik.value = u.nik; els.userNik.disabled = true; els.userName.value = u.name; els.userHub.value = u.hub_code; els.userRole.value = u.role; els.userCanLogin.checked = u.can_login; els.userPass.value = u.password || ''; togglePasswordInput(); els.formUserTitle.textContent = 'Edit Data Karyawan'; els.btnSaveUser.textContent = 'Update Data'; els.btnCancelEdit.classList.remove('hidden'); els.formAddUser.scrollIntoView({ behavior: 'smooth' }); }); }
+        window.deleteDocItem = async (colName, id) => { 
+            showConfirm('Hapus Data?', 'Tindakan ini tidak bisa dibatalkan.', () => {
+                secureCheck(async () => {
+                    showNotification("Menghapus...", "loading");
+                    try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); showNotification("Terhapus!", "success"); } catch(e) { showNotification("Gagal hapus.", "error"); } 
+                });
+            });
+        };
+
+        els.openSidebarBtn.addEventListener('click', () => { els.sidebar.classList.remove('-translate-x-full'); els.sidebarOverlay.classList.remove('hidden'); });
+        els.closeSidebarBtn.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
+        els.sidebarOverlay.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
+
+        init();
     </script>
 </body>
 </html>

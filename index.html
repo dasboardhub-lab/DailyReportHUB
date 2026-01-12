@@ -39,6 +39,16 @@
         .login-tab-active { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; }
         .login-tab-inactive { color: #64748b; border-color: transparent; }
         .login-tab-inactive:hover { background-color: #f8fafc; }
+
+        /* Hide Number Input Spinner */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -228,7 +238,10 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-slate-500 mb-1">HUB Operasional</label>
-                                        <input type="text" id="rpt-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
+                                        <!-- Untuk Admin: Select dari DB, Leader: Readonly Input -->
+                                        <div id="rpt-hub-container">
+                                            <input type="text" id="rpt-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -256,6 +269,12 @@
                                         <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
                                             <label class="block text-xs font-bold text-blue-700 mb-1">TOTAL PAKET</label>
                                             <input type="text" id="rpt-total-paket" class="w-full bg-transparent font-bold text-xl text-blue-700 text-right outline-none" value="0" readonly>
+                                        </div>
+                                        <div class="bg-green-50 p-2 rounded-lg border border-green-100 col-span-2 md:col-span-5 mt-2">
+                                            <div class="flex justify-between items-center">
+                                                <label class="block text-xs font-bold text-green-700">PRODUKTIVITAS <span class="font-normal text-green-600">(Total Paket / MPP Sorter+DW)</span></label>
+                                                <input type="text" id="rpt-productivity" class="bg-transparent font-bold text-lg text-green-700 text-right outline-none w-32" value="0" readonly>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -314,7 +333,7 @@
                         <!-- Table History (Untuk Semua User) -->
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                <h3 class="font-semibold text-slate-800">Riwayat Semua Laporan</h3>
+                                <h3 class="font-semibold text-slate-800">Riwayat Laporan</h3>
                                 <button onclick="loadMyReports()" class="text-blue-600 text-xs hover:text-blue-800 font-medium">Refresh Data</button>
                             </div>
                             <div class="overflow-x-auto">
@@ -325,12 +344,13 @@
                                             <th class="p-3">HUB</th>
                                             <th class="p-3 text-right">Total Paket</th>
                                             <th class="p-3 text-right">Total MPP</th>
-                                            <th class="p-3 text-right">Est. Biaya</th>
+                                            <th class="p-3 text-right">Prod.</th>
+                                            <th class="p-3 text-right">Cost</th>
                                             <th class="p-3 text-right">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="rpt-history-body" class="divide-y divide-slate-100">
-                                        <tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -472,7 +492,7 @@
                             </div>
                         </div>
 
-                        <!-- TAB: KONFIGURASI UMUM (NEW) -->
+                        <!-- TAB: KONFIGURASI UMUM -->
                         <div id="tab-content-config" class="settings-tab-content hidden space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Keamanan Admin -->
@@ -622,12 +642,14 @@
             formReportTitle: document.getElementById('form-report-title'),
             editReportId: document.getElementById('edit-report-id'),
             rptDate: document.getElementById('rpt-date'),
+            rptHubContainer: document.getElementById('rpt-hub-container'), // Container for dynamic input/select
             rptHub: document.getElementById('rpt-hub'),
             rptGateway: document.getElementById('rpt-gateway'),
             rptStaging: document.getElementById('rpt-staging'),
             rptSap: document.getElementById('rpt-sap'),
             rptJne: document.getElementById('rpt-jne'),
             rptTotalPaket: document.getElementById('rpt-total-paket'),
+            rptProductivity: document.getElementById('rpt-productivity'),
             btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'),
             
             sorterAttendanceList: document.getElementById('sorter-attendance-list'),
@@ -896,17 +918,53 @@
             input.addEventListener('input', calculateReportTotals);
         });
 
+        // Function to listen change event for Select HUB
+        function setupHubListener() {
+            const hubSelect = document.getElementById('rpt-hub-select');
+            if (hubSelect) {
+                hubSelect.addEventListener('change', () => {
+                    // Reload attendance list when HUB changes for Admin
+                    loadReportsView();
+                });
+            }
+        }
+
         function calculateReportTotals() {
             const g = Number(els.rptGateway.value) || 0;
             const s = Number(els.rptStaging.value) || 0;
             const sa = Number(els.rptSap.value) || 0;
             const j = Number(els.rptJne.value) || 0;
-            els.rptTotalPaket.value = (g + s + sa + j).toLocaleString('id-ID');
+            const totalPaket = g + s + sa + j;
+            els.rptTotalPaket.value = totalPaket.toLocaleString('id-ID');
+            
             let workingCount = 0;
             document.querySelectorAll('.attendance-radio:checked').forEach(radio => {
                 if(['s1', 's2', 's3'].includes(radio.value)) workingCount++;
             });
             els.displayTotalMpp.textContent = workingCount;
+
+            // Productivity: Total Paket / Total MPP (Sorter+DW)
+            // Note: workingCount includes Sorters (DB) and DWs. 
+            // We need to exclude Leaders if they are in the list. The current attendance generation logic excludes admins. 
+            // Leaders might be in the list if they are regular users. 
+            // The requirement says: "(Total paket/total MPP sorter+DW) leader tidak termaksud"
+            // We need to check role.
+            
+            let sorterDwWorkingCount = 0;
+            document.querySelectorAll('tr').forEach(row => {
+                const checked = row.querySelector('.attendance-radio:checked');
+                if(checked && ['s1', 's2', 's3'].includes(checked.value)) {
+                    // Check if leader
+                    const roleSpan = row.querySelector('.text-slate-400'); // (role)
+                    const roleText = roleSpan ? roleSpan.textContent : '';
+                    if (!roleText.includes('leader')) {
+                        sorterDwWorkingCount++;
+                    }
+                }
+            });
+
+            const productivity = sorterDwWorkingCount > 0 ? Math.round(totalPaket / sorterDwWorkingCount) : 0;
+            els.rptProductivity.value = productivity.toLocaleString('id-ID');
         }
         window.calculateReportTotals = calculateReportTotals;
 
@@ -938,42 +996,93 @@
         async function loadReportsView() {
             if(els.editReportId.value) return; 
             els.rptDate.valueAsDate = new Date();
-            const hubCode = state.userData?.hub_code || 'UNKNOWN';
-            els.rptHub.value = hubCode;
             
-            if (state.role !== 'sorter') {
-                els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
-                try {
-                    const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                    let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", hubCode));
-                    const snap = await getDocs(qSorter);
-                    
-                    els.sorterAttendanceList.innerHTML = '';
-                    if (snap.empty) {
-                        els.sorterAttendanceList.innerHTML = '';
-                    } else {
-                        snap.forEach(doc => {
-                            const s = doc.data();
-                            if(s.role === 'admin') return;
-                            const row = document.createElement('tr');
-                            row.className = 'border-b border-slate-50 hover:bg-slate-50';
-                            const rowId = doc.id;
-                            row.innerHTML = `
-                                <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
-                                ${generateAttendanceColumns(rowId)}
-                                <td class="p-3"></td>
-                            `;
-                            els.sorterAttendanceList.appendChild(row);
-                        });
-                    }
-                } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
+            // SETUP HUB INPUT
+            const hubContainer = els.rptHubContainer;
+            let currentHubCode = '';
+
+            // Ensure hubs are loaded (might need fetch if not yet)
+            if (state.hubs.length === 0) {
+                const hubsSnap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'));
+                state.hubs = hubsSnap.docs.map(doc => doc.data());
             }
+
+            if (state.role === 'admin') {
+                // Admin: Create Select Box
+                let options = `<option value="">Pilih HUB...</option>` + 
+                    state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
+                
+                hubContainer.innerHTML = `<select id="rpt-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-blue-500 focus:border-blue-500 outline-none">${options}</select>`;
+                
+                // Add listener to reload employees on change
+                setupHubListener();
+            } else {
+                // Leader: Readonly Input
+                currentHubCode = state.userData?.hub_code || 'UNKNOWN';
+                hubContainer.innerHTML = `<input type="text" id="rpt-hub-static" value="${currentHubCode}" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" readonly>`;
+            }
+
+            // Function to get current selected HUB
+            const getSelectedHub = () => {
+                if (state.role === 'admin') {
+                    const sel = document.getElementById('rpt-hub-select');
+                    return sel ? sel.value : '';
+                }
+                return currentHubCode;
+            };
+
+            const hubCode = getSelectedHub();
+            
+            // Only load employees if a hub is selected (or pre-set)
+            if (state.role !== 'sorter' && (hubCode || state.role !== 'admin')) {
+                loadEmployeesForReport(hubCode);
+            } else if (state.role === 'admin') {
+                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB untuk memuat karyawan.</td></tr>';
+            }
+
             loadMyReports();
             calculateReportTotals();
         }
 
+        // Helper to load employees table content
+        async function loadEmployeesForReport(hubCode) {
+            if (!hubCode) {
+                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB.</td></tr>';
+                 return;
+            }
+
+            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
+            try {
+                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
+                let qSorter = query(usersRef, where("hub_code", "==", hubCode));
+                const snap = await getDocs(qSorter);
+                
+                els.sorterAttendanceList.innerHTML = '';
+                if (snap.empty) {
+                    els.sorterAttendanceList.innerHTML = ''; // Empty for DWs
+                } else {
+                    snap.forEach(doc => {
+                        const s = doc.data();
+                        if(s.role === 'admin') return;
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                        const rowId = doc.id;
+                        row.innerHTML = `
+                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
+                            ${generateAttendanceColumns(rowId)}
+                            <td class="p-3"></td>
+                        `;
+                        els.sorterAttendanceList.appendChild(row);
+                    });
+                }
+            } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
+        }
+
+        // Hook into Admin Select Change to reload employees
+        // This is handled in setupHubListener but we need to call loadEmployeesForReport
+        
         window.loadMyReports = async () => {
-            els.rptHistoryBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
+            els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
             try {
                 const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
                 let q = query(reportsRef, orderBy("date", "desc"), limit(20));
@@ -986,7 +1095,7 @@
                 }
 
                 if (querySnapshot.empty) {
-                    els.rptHistoryBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
+                    els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
                     return;
                 }
 
@@ -1009,6 +1118,7 @@
                         <td class="p-3 font-medium">${data.hub}</td>
                         <td class="p-3 text-right text-blue-600 font-mono">${(data.total_paket || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right font-mono font-bold">${data.total_mpp || 0}</td>
+                        <td class="p-3 text-right text-purple-600 font-mono text-xs font-bold">${(data.productivity || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right text-green-600 font-mono text-xs">Rp ${(data.est_cost || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right flex gap-2 justify-end">
                             ${actionButtons}
@@ -1017,7 +1127,7 @@
                     els.rptHistoryBody.appendChild(tr);
                 });
                 lucide.createIcons();
-            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
+            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
         };
 
         window.confirmDeleteReport = (id, hub) => {
@@ -1032,47 +1142,59 @@
         window.confirmEditReport = (rpt) => {
             secureCheck(() => {
                 if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) { alert("Akses Ditolak."); return; }
-                els.editReportId.value = rpt.id; els.rptDate.value = rpt.date; els.rptHub.value = rpt.hub;
+                els.editReportId.value = rpt.id; els.rptDate.value = rpt.date; 
+                
+                // Set HUB
+                if (state.role === 'admin') {
+                    // Force set select value
+                    const select = document.getElementById('rpt-hub-select');
+                    if(select) {
+                        select.value = rpt.hub;
+                        // Reload employees for this hub
+                        loadEmployeesForReport(rpt.hub).then(() => {
+                            restoreAttendanceData(rpt);
+                        });
+                    }
+                } else {
+                    // Leader static input
+                    document.getElementById('rpt-hub-static').value = rpt.hub;
+                    // Employees already loaded for leader's hub, just restore data
+                    restoreAttendanceData(rpt);
+                }
+
                 els.rptGateway.value = rpt.gateway; els.rptStaging.value = rpt.staging; els.rptSap.value = rpt.sap; els.rptJne.value = rpt.jne;
                 
                 els.formReportTitle.textContent = "Edit Laporan"; els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
                 els.btnCancelReportEdit.classList.remove('hidden');
                 
-                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", rpt.hub));
-                getDocs(qSorter).then(snap => {
-                    els.sorterAttendanceList.innerHTML = '';
-                    snap.forEach(doc => {
-                        const s = doc.data(); if(s.role === 'admin') return;
-                        const row = document.createElement('tr');
-                        row.className = 'border-b border-slate-50 hover:bg-slate-50';
-                        const rowId = doc.id;
-                        row.innerHTML = `<td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>${generateAttendanceColumns(rowId)}<td class="p-3"></td>`;
-                        els.sorterAttendanceList.appendChild(row);
-                    });
-                    
-                    if(rpt.attendance_data) {
-                        rpt.attendance_data.forEach(att => {
-                            const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
-                            let row;
-                            if(nameCell) row = nameCell.closest('tr');
-                            else { addDwRow(); row = els.sorterAttendanceList.lastElementChild; row.querySelector('.dw-name-input').value = att.name; }
-                            if(row) {
-                                const radio = row.querySelector(`input[value="${att.status}"]`); if(radio) radio.checked = true;
-                                const remarkInput = row.querySelector('.att-remarks'); if(remarkInput) remarkInput.value = att.remarks || '';
-                            }
-                        });
-                    }
-                    calculateReportTotals();
-                });
                 els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
             });
         };
 
+        function restoreAttendanceData(rpt) {
+             // Clear existing radios first
+             document.querySelectorAll('.attendance-radio').forEach(r => r.checked = false);
+             document.querySelectorAll('.att-remarks').forEach(i => i.value = '');
+
+             if(rpt.attendance_data) {
+                rpt.attendance_data.forEach(att => {
+                    const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
+                    let row;
+                    if(nameCell) row = nameCell.closest('tr');
+                    else { addDwRow(); row = els.sorterAttendanceList.lastElementChild; row.querySelector('.dw-name-input').value = att.name; }
+                    if(row) {
+                        const radio = row.querySelector(`input[value="${att.status}"]`); if(radio) radio.checked = true;
+                        const remarkInput = row.querySelector('.att-remarks'); if(remarkInput) remarkInput.value = att.remarks || '';
+                    }
+                });
+            }
+            calculateReportTotals();
+        }
+
         window.resetReportForm = () => {
             els.formDailyReport.reset(); els.editReportId.value = ''; els.formReportTitle.textContent = "Input Laporan Operasional";
             els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan'; els.btnCancelReportEdit.classList.add('hidden');
-            els.rptHub.value = state.userData?.hub_code || ''; loadReportsView();
+            loadReportsView();
         };
 
         els.formDailyReport.addEventListener('submit', async (e) => {
@@ -1080,9 +1202,18 @@
             els.btnSaveReport.disabled = true; els.btnSaveReport.textContent = 'Menyimpan...'; els.rptMsg.classList.add('hidden');
 
             try {
+                // Get Selected HUB Code
+                let selectedHub = '';
+                if (state.role === 'admin') {
+                    selectedHub = document.getElementById('rpt-hub-select').value;
+                    if(!selectedHub) throw new Error("Pilih HUB terlebih dahulu.");
+                } else {
+                    selectedHub = document.getElementById('rpt-hub-static').value;
+                }
+
                 // Get rates
                 let sorterRate = 0;
-                const hubData = state.hubs.find(h => h.code === els.rptHub.value);
+                const hubData = state.hubs.find(h => h.code === selectedHub);
                 if(hubData) sorterRate = Number(hubData.sorter_rate) || 0;
                 
                 const dwRate = Number(state.config.dw_rate) || 0;
@@ -1090,6 +1221,7 @@
                 const attendanceDetails = [];
                 let sorterCount = 0;
                 let dwCount = 0;
+                let sorterDwWorkingCount = 0; // For productivity
 
                 els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
                     const checked = row.querySelector('.attendance-radio:checked');
@@ -1104,23 +1236,35 @@
                         if(isWorking) {
                             if(isDb) sorterCount++;
                             else dwCount++;
+
+                            // Check role for productivity
+                            const roleSpan = row.querySelector('.text-slate-400');
+                            const roleText = roleSpan ? roleSpan.textContent : '';
+                            if (!roleText.includes('leader')) {
+                                sorterDwWorkingCount++;
+                            }
                         }
                     }
                 });
 
                 const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
                 const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
+                const totalPaket = g+s+sa+j;
                 
                 // Calculate Cost
                 const estCost = (sorterCount * sorterRate) + (dwCount * dwRate);
+                
+                // Calculate Productivity
+                const productivity = sorterDwWorkingCount > 0 ? Math.round(totalPaket / sorterDwWorkingCount) : 0;
 
                 const reportData = {
-                    date: els.rptDate.value, hub: els.rptHub.value, nik: state.userData?.nik || 'UNKNOWN',
+                    date: els.rptDate.value, hub: selectedHub, nik: state.userData?.nik || 'UNKNOWN',
                     reporter_name: state.userData?.name || 'UNKNOWN',
-                    gateway: g, staging: s, sap: sa, jne: j, total_paket: g+s+sa+j,
+                    gateway: g, staging: s, sap: sa, jne: j, total_paket: totalPaket,
                     total_mpp: sorterCount + dwCount,
+                    productivity: productivity,
                     attendance_data: attendanceDetails,
-                    est_cost: estCost, // Save cost
+                    est_cost: estCost, 
                     created_at: new Date().toISOString()
                 };
 

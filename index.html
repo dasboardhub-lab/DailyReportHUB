@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DailyReport (Online)</title>
+    <title>DailyReport</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -14,477 +16,586 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#4f46e5', // Indigo 600
+                        secondary: '#64748b', // Slate 500
+                        success: '#10b981', // Emerald 500
+                        danger: '#ef4444', // Red 500
+                        dark: '#0f172a', // Slate 900
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .nav-item-active { border-bottom: 3px solid #3b82f6; color: #ffffff; background-color: rgba(255,255,255,0.1); }
-        .nav-item { color: #d1d5db; transition: all 0.3s; }
-        .nav-item:hover { color: #ffffff; background-color: rgba(255,255,255,0.05); }
+        body { background-color: #f8fafc; }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+        /* Dynamic Island Animations */
+        #dynamic-island {
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .island-loading { width: 48px; height: 32px; border-radius: 9999px; background: #000; }
+        .island-expanded { width: auto; min-width: 200px; height: 48px; border-radius: 9999px; padding: 0 20px; background: #000; }
+        .island-error { background: #ef4444 !important; }
+        .island-success { background: #10b981 !important; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .attendance-checkbox { 
+            width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: #4f46e5; 
+            border-radius: 4px; transition: transform 0.1s;
+        }
+        .attendance-checkbox:active { transform: scale(0.9); }
+
+        /* Navbar & Nav Items */
+        .nav-link { position: relative; color: #94a3b8; transition: color 0.3s; }
+        .nav-link:hover { color: #f8fafc; }
+        .nav-link.active { color: #fff; font-weight: 600; }
+        .nav-link.active::after {
+            content: ''; position: absolute; bottom: -24px; left: 0; width: 100%; height: 3px;
+            background: #6366f1; border-radius: 3px 3px 0 0;
+            box-shadow: 0 -4px 10px rgba(99, 102, 241, 0.5);
+        }
         
-        .attendance-checkbox { width: 1.2rem; height: 1.2rem; cursor: pointer; accent-color: #2563eb; }
-        
-        /* Dropdown Multi-Select Custom */
-        .dropdown-content { display: none; }
-        .dropdown-content.show { display: block; }
-        
-        /* Loading Overlay */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,0.98); transition: opacity 0.5s ease; }
-        .hidden-fade { opacity: 0; pointer-events: none; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-800 flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col h-screen overflow-hidden text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700">
 
-    <!-- LOADING OVERLAY -->
-    <div id="loading-overlay">
-        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-5xl text-blue-600"></i>
-        <!-- Status Text Hidden as requested -->
-        <div id="loading-logs" class="hidden"></div>
-        <button onclick="location.reload()" class="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm hidden shadow" id="btn-reload">Muat Ulang</button>
-    </div>
-
-    <!-- LOGIN SECTION -->
-    <div id="login-section" class="fixed inset-0 z-50 bg-gray-900 flex items-center justify-center hidden">
-        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">DAILY REPORT</h1>
-                <p class="text-gray-500 text-sm">Dashboard Monitoring System</p>
+    <!-- DYNAMIC ISLAND (Notification Center) -->
+    <div class="fixed top-4 left-0 right-0 flex justify-center pointer-events-none z-[100]">
+        <div id="dynamic-island" class="island-loading pointer-events-auto flex items-center justify-center overflow-hidden text-white group">
+            <!-- Spinner -->
+            <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                <i class="fas fa-circle-notch fa-spin text-white text-xs"></i>
             </div>
-
-            <div class="flex mb-6 bg-gray-100 rounded p-1">
-                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2 rounded shadow bg-white text-blue-600 font-semibold text-sm transition">User (LEADER)</button>
-                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2 rounded text-gray-500 font-semibold text-sm transition">Admin</button>
-            </div>
-
-            <form id="form-login-user">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">ID User</label>
-                    <input type="text" id="login-id" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan ID User" required>
-                </div>
-                <div class="mb-4">
-                    <div class="flex items-center mb-2">
-                        <input type="checkbox" id="is-pic-checkbox" class="mr-2" onchange="window.togglePasswordField()">
-                        <label for="is-pic-checkbox" class="text-sm text-gray-600 cursor-pointer">Saya adalah LEADER (Input Password)</label>
-                    </div>
-                    <input type="password" id="login-pass-user" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 hidden" placeholder="Kata Sandi">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition font-bold">Masuk</button>
-            </form>
-
-            <form id="form-login-admin" class="hidden">
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password Admin</label>
-                    <input type="password" id="login-pass-admin" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Masukkan Password Admin" required>
-                </div>
-                <button type="submit" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 transition font-bold">Masuk Admin</button>
-            </form>
             
-             <!-- ERROR CONTAINER -->
-            <div id="init-error-container" class="mt-6 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded hidden">
-                <div class="font-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Gagal Terhubung:</div>
-                <span id="init-error-text">Unknown Error</span>
-                <button onclick="location.reload()" class="block mt-2 text-blue-600 underline hover:text-blue-800">Coba Muat Ulang</button>
+            <!-- Content (Icon + Text) -->
+            <div id="island-content" class="flex items-center gap-3 opacity-0 transition-opacity duration-300 transform scale-90">
+                <i id="island-icon" class="fas fa-check text-lg"></i>
+                <span id="island-message" class="text-sm font-medium whitespace-nowrap">Memuat...</span>
             </div>
         </div>
     </div>
 
     <!-- APP NAVBAR -->
-    <nav id="app-navbar" class="bg-gray-900 text-white shadow-md z-30 hidden">
+    <nav id="app-navbar" class="bg-dark/95 backdrop-blur-md text-white shadow-lg z-40 hidden border-b border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-blue-500 text-2xl mr-3"></i>
-                    <span class="font-bold text-xl tracking-tight">DAILY REPORT</span>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i class="fas fa-cube text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-tight leading-none">HUB REPORT</h1>
+                        <p class="text-[10px] text-slate-400 font-medium tracking-wide">DAILY DASHBOARD</p>
+                    </div>
                 </div>
                 
                 <!-- Menu Items -->
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#" onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-item-active px-3 py-2 rounded-md text-sm font-medium"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
-                        <a href="#" onclick="window.navigate('laporan')" id="nav-laporan" class="nav-item px-3 py-2 rounded-md text-sm font-medium"><i class="fas fa-file-alt mr-2"></i>Laporan</a>
-                        <a href="#" onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-item px-3 py-2 rounded-md text-sm font-medium hidden"><i class="fas fa-cogs mr-2"></i>Pengaturan</a>
-                    </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active h-16 flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
+                    <a href="#" onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link h-16 flex items-center gap-2"><i class="fas fa-table text-xs"></i> Laporan</a>
+                    <a href="#" onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link h-16 flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-xs"></i> Pengaturan</a>
                 </div>
 
-                <!-- User Profile & Logout -->
-                <div class="flex items-center">
-                    <div class="text-right mr-4 hidden sm:block">
-                        <div class="text-sm font-bold" id="user-name-display">User</div>
-                        <div class="text-xs text-gray-400 bg-gray-800 px-2 rounded inline-block" id="user-badge">Role</div>
+                <!-- User Profile -->
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-xs font-semibold text-white" id="user-name-display">User</div>
+                        <div class="text-[10px] text-indigo-300 font-mono" id="user-badge">ROLE</div>
                     </div>
-                    <button onclick="window.logout()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition shadow">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <button onclick="window.logout()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition flex items-center justify-center">
+                        <i class="fas fa-power-off text-xs"></i>
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- CONTENT AREA -->
-    <main id="app-content" class="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-6 hidden relative">
+    <!-- LOGIN SECTION -->
+    <div id="login-section" class="fixed inset-0 z-30 bg-slate-900 flex items-center justify-center hidden bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-800/90"></div>
         
-        <!-- VIEW: DASHBOARD -->
-        <div id="view-dashboard" class="view-content fade-in max-w-7xl mx-auto">
-            <!-- Filter Section -->
-            <div class="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200 relative z-20">
-                <div class="flex justify-between items-center border-b pb-2 mb-3">
-                    <h3 class="font-bold text-gray-700 flex items-center"><i class="fas fa-filter mr-2 text-blue-600"></i>Filter Data</h3>
-                    <button onclick="window.resetDashboardFilters()" class="text-xs text-red-500 hover:text-red-700 font-semibold border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition"><i class="fas fa-sync-alt mr-1"></i> Reset Filter</button>
+        <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-white/20 relative fade-in">
+            <div class="text-center mb-8">
+                <div class="w-12 h-12 bg-indigo-500 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/40 mb-4">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
                 </div>
-                <div class="flex flex-wrap gap-4 items-end">
+                <h2 class="text-2xl font-bold text-white mb-1">Selamat Datang</h2>
+                <p class="text-slate-400 text-sm">Silakan login untuk melanjutkan</p>
+            </div>
+
+            <!-- Login Tabs -->
+            <div class="flex p-1 bg-slate-900/50 rounded-xl mb-6 border border-white/5">
+                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all shadow-md bg-indigo-600 text-white">User</button>
+                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">Admin</button>
+            </div>
+
+            <!-- Forms -->
+            <form id="form-login-user" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1 ml-1">ID User</label>
+                    <input type="text" id="login-id" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Masukkan ID" required>
+                </div>
+                <div>
+                    <label class="flex items-center cursor-pointer mb-2 ml-1">
+                        <input type="checkbox" id="is-pic-checkbox" class="w-4 h-4 rounded border-slate-600 text-indigo-600 focus:ring-indigo-500 bg-slate-700" onchange="window.togglePasswordField()">
+                        <span class="ml-2 text-xs text-indigo-300 font-medium">Saya adalah LEADER</span>
+                    </label>
+                    <input type="password" id="login-pass-user" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition hidden" placeholder="Kata Sandi">
+                </div>
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/30 transition transform active:scale-95">Masuk Aplikasi</button>
+            </form>
+
+            <form id="form-login-admin" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1 ml-1">Password Admin</label>
+                    <input type="password" id="login-pass-admin" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition" required>
+                </div>
+                <button type="submit" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold shadow-lg transition transform active:scale-95">Masuk sebagai Admin</button>
+            </form>
+
+            <!-- Error Hint -->
+            <div id="init-error-container" class="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl hidden">
+                <p id="init-error-text" class="text-xs text-red-400 text-center font-medium"></p>
+                <button onclick="location.reload()" class="block mx-auto mt-2 text-[10px] text-white bg-red-500/20 px-3 py-1 rounded-full hover:bg-red-500/40">Muat Ulang</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 hidden">
+        <div class="max-w-7xl mx-auto space-y-8">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-content fade-in space-y-6">
+                <!-- Filter Bar -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-end md:items-center gap-4 relative z-20">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Mulai Tanggal</label>
-                        <input type="date" id="dash-start-date" class="border p-2 rounded text-sm w-40 shadow-sm focus:ring-blue-500 focus:border-blue-500" onchange="window.loadDashboardData()">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Sampai Tanggal</label>
-                        <input type="date" id="dash-end-date" class="border p-2 rounded text-sm w-40 shadow-sm focus:ring-blue-500 focus:border-blue-500" onchange="window.loadDashboardData()">
+                        <h2 class="text-lg font-bold text-slate-800">Ringkasan Kinerja</h2>
+                        <p class="text-xs text-slate-500">Filter data berdasarkan tanggal dan HUB</p>
                     </div>
                     
-                    <!-- CUSTOM DROPDOWN MULTI-SELECT -->
-                    <div class="relative w-64">
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Pilih HUB (Multi-Select)</label>
-                        <button type="button" id="hub-filter-btn" class="w-full border p-2 rounded text-sm bg-white text-left flex justify-between items-center shadow-sm hover:bg-gray-50" onclick="window.toggleHubDropdown(event)">
-                            <span id="hub-filter-label" class="truncate">Semua HUB</span>
-                            <i class="fas fa-chevron-down text-gray-400"></i>
+                    <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                            <i class="far fa-calendar text-slate-400 text-xs"></i>
+                            <input type="date" id="dash-start-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600" onchange="window.loadDashboardData()">
+                            <span class="text-slate-300">-</span>
+                            <input type="date" id="dash-end-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600" onchange="window.loadDashboardData()">
+                        </div>
+
+                        <!-- Custom Dropdown -->
+                        <div class="relative w-48">
+                            <button id="hub-filter-btn" type="button" class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2.5 flex justify-between items-center hover:bg-white transition" onclick="window.toggleHubDropdown(event)">
+                                <span id="hub-filter-label" class="truncate font-medium">Semua HUB</span>
+                                <i class="fas fa-chevron-down text-xs text-slate-400"></i>
+                            </button>
+                            <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto">
+                                <!-- JS Populated -->
+                            </div>
+                        </div>
+
+                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition" title="Reset Filter">
+                            <i class="fas fa-undo-alt"></i>
                         </button>
-                        <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border rounded shadow-xl z-50 max-h-60 overflow-y-auto mt-1 p-2">
-                            <!-- Checkboxes populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Charts (Stacked) -->
+                <div class="space-y-6 relative z-10">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="w-1 h-4 bg-indigo-500 rounded-full"></div>
+                            <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Tahunan</h3>
+                        </div>
+                        <div class="h-64"><canvas id="chart-annual"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="w-1 h-4 bg-emerald-500 rounded-full"></div>
+                            <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Harian (Periode Terpilih)</h3>
+                        </div>
+                        <div class="h-64"><canvas id="chart-daily"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Tables Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+                    <!-- Daily Details -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                        <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <h3 class="font-bold text-slate-700">Rincian Data</h3>
+                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition"><i class="fas fa-download mr-1"></i> CSV</button>
+                        </div>
+                        <div class="overflow-x-auto flex-1">
+                            <table id="table-daily-detail" class="w-full text-sm text-center whitespace-nowrap">
+                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-semibold">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left">Tanggal</th>
+                                        <th class="px-4 py-3">HUB</th>
+                                        <th class="px-4 py-3 text-blue-600">MPP</th>
+                                        <th class="px-4 py-3 text-slate-400">Stg</th>
+                                        <th class="px-4 py-3 text-slate-400">Gtw</th>
+                                        <th class="px-4 py-3 text-slate-400">JNE</th>
+                                        <th class="px-4 py-3 text-slate-400">SAP</th>
+                                        <th class="px-4 py-3 font-bold text-slate-700 bg-slate-100">Total</th>
+                                        <th class="px-4 py-3 text-emerald-600">Prod.</th>
+                                        <th class="px-4 py-3 text-right text-rose-500">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-daily-detail" class="text-slate-600 divide-y divide-slate-50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- HUB Performance -->
+                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-fit">
+                        <div class="p-5 border-b border-slate-50 bg-slate-50/50">
+                            <h3 class="font-bold text-slate-700">Performa HUB</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Top Outbound</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-center">
+                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-semibold">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left">HUB</th>
+                                        <th class="px-3 py-3">MPP</th>
+                                        <th class="px-4 py-3 text-indigo-600 font-bold">Out.</th>
+                                        <th class="px-3 py-3 text-emerald-600">Prod</th>
+                                        <th class="px-4 py-3 text-right text-slate-400">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-hub-breakdown" class="text-slate-600 divide-y divide-slate-50"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts Area -->
-            <div class="flex flex-col gap-6 mb-8 relative z-10">
-                <div class="bg-white p-5 rounded-lg shadow border border-gray-200 w-full">
-                    <h4 class="font-bold text-gray-700 mb-4 text-sm uppercase border-l-4 border-blue-500 pl-2">Trend Tahunan</h4>
-                    <div class="relative h-72 w-full">
-                        <canvas id="chart-annual"></canvas>
+            <!-- VIEW: LAPORAN -->
+            <div id="view-laporan" class="view-content hidden fade-in max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
+                        <p class="text-sm text-slate-500">Rekapitulasi data harian dari semua HUB</p>
                     </div>
+                    <button onclick="window.openLaporanModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/20 font-medium transition hidden flex items-center gap-2" id="btn-tambah-laporan">
+                        <i class="fas fa-plus"></i> <span>Buat Laporan</span>
+                    </button>
                 </div>
-                <div class="bg-white p-5 rounded-lg shadow border border-gray-200 w-full">
-                    <h4 class="font-bold text-gray-700 mb-4 text-sm uppercase border-l-4 border-green-500 pl-2">Trend Daily</h4>
-                    <div class="relative h-72 w-full">
-                        <canvas id="chart-daily"></canvas>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4">Tanggal</th>
+                                    <th class="px-6 py-4">HUB</th>
+                                    <th class="px-6 py-4">Total Paket</th>
+                                    <th class="px-6 py-4">MPP</th>
+                                    <th class="px-6 py-4">Productivity</th>
+                                    <th class="px-6 py-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="laporan-list-body" class="divide-y divide-slate-50"></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-laporan-msg" class="hidden text-center py-20">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 mb-4">
+                            <i class="fas fa-folder-open text-2xl text-slate-300"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium">Belum ada laporan.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Tables Area -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 relative z-10">
-                <div class="lg:col-span-2 bg-white rounded-lg shadow overflow-hidden border border-gray-200 flex flex-col">
-                    <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
-                        <h3 class="font-bold text-gray-800">Rincian Data per Tanggal</h3>
-                        <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian_harian.csv')" class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition"><i class="fas fa-download mr-1"></i> CSV</button>
-                    </div>
-                    <div class="overflow-x-auto flex-1 max-h-96">
-                        <table id="table-daily-detail" class="w-full text-sm text-center whitespace-nowrap">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 z-10">
+            <!-- VIEW: PENGATURAN -->
+            <div id="view-pengaturan" class="view-content hidden fade-in max-w-5xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800">Pengaturan</h2>
+                    <p class="text-sm text-slate-500">Kelola user, akses, dan biaya</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex space-x-1 bg-slate-100 p-1 rounded-xl mb-8 w-fit">
+                    <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="px-6 py-2 rounded-lg text-sm font-medium transition bg-white text-indigo-600 shadow-sm">User</button>
+                    <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition">Akses</button>
+                    <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition">Cost</button>
+                </div>
+
+                <!-- Panel User -->
+                <div id="settings-users" class="settings-panel">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800">Daftar Pengguna</h3>
+                            <button onclick="window.openUserModal()" class="text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold transition flex items-center gap-2">
+                                <i class="fas fa-user-plus"></i> Tambah
+                            </button>
+                        </div>
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-400 uppercase bg-slate-50/50">
                                 <tr>
-                                    <th class="px-3 py-3 text-left">Tanggal</th>
-                                    <th class="px-3 py-3">HUB</th>
-                                    <th class="px-3 py-3 text-blue-700">MPP</th>
-                                    <th class="px-3 py-3">Staging</th>
-                                    <th class="px-3 py-3">Gateway</th>
-                                    <th class="px-3 py-3">JNE</th>
-                                    <th class="px-3 py-3">SAP</th>
-                                    <th class="px-3 py-3 font-bold bg-gray-200">Total</th>
-                                    <th class="px-3 py-3 text-green-700">Prod.</th>
-                                    <th class="px-3 py-3 text-right text-red-600">Cost</th>
+                                    <th class="px-6 py-3">Nama</th>
+                                    <th class="px-6 py-3">ID</th>
+                                    <th class="px-6 py-3">HUB</th>
+                                    <th class="px-6 py-3">Posisi</th>
+                                    <th class="px-6 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbody-daily-detail" class="text-gray-600 divide-y"></tbody>
+                            <tbody id="user-table-body" class="divide-y divide-slate-50"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="lg:col-span-1 bg-white rounded-lg shadow overflow-hidden border border-gray-200 flex flex-col h-fit">
-                    <div class="p-4 bg-gray-50 border-b">
-                        <h3 class="font-bold text-gray-800">Performa HUB</h3>
-                        <p class="text-[10px] text-gray-500">Urut: Total Outbound Tertinggi</p>
-                    </div>
-                    <div class="overflow-x-auto flex-1 max-h-96">
-                        <table class="w-full text-sm text-center">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-3 py-3 text-left">HUB</th>
-                                    <th class="px-3 py-3 text-blue-700">Total MPP</th>
-                                    <th class="px-3 py-3 font-bold bg-gray-200">Total Outbound</th>
-                                    <th class="px-3 py-3 text-green-700">Prod. HUB</th>
-                                    <th class="px-3 py-3 text-right text-red-600">Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-hub-breakdown" class="text-gray-600 divide-y"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="h-10"></div>
-        </div>
-
-        <!-- VIEW: LAPORAN -->
-        <div id="view-laporan" class="view-content hidden fade-in max-w-7xl mx-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Laporan Harian</h2>
-                <button onclick="window.openLaporanModal()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 hidden transition" id="btn-tambah-laporan"><i class="fas fa-plus mr-2"></i> Buat Laporan</button>
-            </div>
-            <div class="bg-white rounded-lg shadow overflow-x-auto border border-gray-200">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
-                        <tr>
-                            <th class="px-6 py-3">Tanggal</th>
-                            <th class="px-6 py-3">HUB</th>
-                            <th class="px-6 py-3">Total Paket</th>
-                            <th class="px-6 py-3">MPP</th>
-                            <th class="px-6 py-3">Productivity</th>
-                            <th class="px-6 py-3 text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="laporan-list-body"></tbody>
-                </table>
-            </div>
-            <div id="empty-laporan-msg" class="hidden text-center py-20 text-gray-400 bg-white rounded-lg border border-dashed mt-4">
-                <i class="fas fa-folder-open text-4xl mb-2 text-gray-300"></i>
-                <p>Belum ada laporan yang dibuat.</p>
-            </div>
-        </div>
-
-        <!-- VIEW: PENGATURAN -->
-        <div id="view-pengaturan" class="view-content hidden fade-in max-w-5xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan</h2>
-            <div class="mb-6 border-b border-gray-200">
-                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
-                    <li class="mr-2"><button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 active hover:bg-gray-50 rounded-t-lg transition">Manajemen User</button></li>
-                    <li class="mr-2"><button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg transition">Akses & Admin</button></li>
-                    <li class="mr-2"><button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg transition">Cost Mitra</button></li>
-                </ul>
-            </div>
-            
-            <!-- Panel User -->
-            <div id="settings-users" class="settings-panel">
-                <div class="flex justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700">Daftar Pengguna</h3>
-                    <button onclick="window.openUserModal()" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm shadow transition"><i class="fas fa-user-plus mr-1"></i> Tambah User</button>
-                </div>
-                <div class="bg-white rounded shadow overflow-x-auto border border-gray-200">
-                    <table class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
-                            <tr>
-                                <th class="px-6 py-3">Nama</th>
-                                <th class="px-6 py-3">ID</th>
-                                <th class="px-6 py-3">HUB</th>
-                                <th class="px-6 py-3">Posisi</th>
-                                <th class="px-6 py-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Panel General -->
-            <div id="settings-general" class="settings-panel hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded shadow border border-gray-200">
-                        <h3 class="font-bold text-gray-700 mb-4 border-b pb-2"><i class="fas fa-key mr-2"></i>Password Admin</h3>
-                        <div class="mb-4">
-                            <label class="block text-sm mb-1 font-semibold text-gray-600">Password Baru</label>
-                            <input type="password" id="new-admin-pass" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none transition">
+                <!-- Panel General -->
+                <div id="settings-general" class="settings-panel hidden">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mb-4">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-800 mb-4">Password Admin</h3>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Password Baru</label>
+                                <input type="password" id="new-admin-pass" class="w-full border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+                            </div>
+                            <button onclick="window.saveAdminPass()" class="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Update</button>
                         </div>
-                        <button onclick="window.saveAdminPass()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition w-full">Update Password</button>
-                    </div>
-                    <div class="bg-white p-6 rounded shadow border border-gray-200">
-                        <h3 class="font-bold text-gray-700 mb-4 border-b pb-2"><i class="fas fa-lock mr-2"></i>Kode Akses Leader</h3>
-                        <p class="text-xs text-gray-500 mb-3">Digunakan Leader untuk edit/hapus data.</p>
-                        <div class="mb-4">
-                            <label class="block text-sm mb-1 font-semibold text-gray-600">Kode Baru</label>
-                            <input type="text" id="access-code-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-purple-500 outline-none transition">
-                        </div>
-                        <button onclick="window.saveAccessCode()" class="bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-700 transition w-full">Simpan Kode</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Panel Cost -->
-            <div id="settings-cost" class="settings-panel hidden">
-                <div class="bg-white p-6 rounded shadow max-w-2xl border border-gray-200">
-                    <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <h3 class="font-bold text-gray-800 mb-2 flex items-center"><i class="fas fa-coins mr-2 text-yellow-600"></i>Biaya DW (Global)</h3>
-                        <input type="text" id="global-cost-dw" placeholder="Rp" class="border p-2 rounded w-full text-right font-mono" onkeyup="window.formatCostInput(this)">
-                    </div>
-                    
-                    <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                        <h4 class="font-bold text-sm text-blue-800 mb-3 uppercase flex items-center"><i class="fas fa-plus-circle mr-2"></i>Tambah HUB Baru</h4>
-                        <div class="flex gap-2">
-                            <input type="text" id="new-hub-name" placeholder="Kode HUB (mis: JKT-01)" class="border p-2 rounded w-full text-sm focus:border-blue-500 outline-none">
-                            <input type="text" id="new-hub-cost" placeholder="Biaya (Rp)" class="border p-2 rounded w-full text-sm text-right font-mono focus:border-blue-500 outline-none" onkeyup="window.formatCostInput(this)">
-                            <button onclick="window.addHubToTable()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 font-bold whitespace-nowrap shadow">Tambah</button>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 mb-4">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-800 mb-2">Kode Akses Leader</h3>
+                            <p class="text-xs text-slate-400 mb-4">Kode untuk otorisasi edit/hapus data oleh Leader.</p>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kode Baru</label>
+                                <input type="text" id="access-code-input" class="w-full border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition text-sm">
+                            </div>
+                            <button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-purple-700 transition">Simpan Kode</button>
                         </div>
                     </div>
+                </div>
 
-                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Daftar Biaya HUB (Sorter)</h3>
-                    <div id="cost-container" class="space-y-2 max-h-96 overflow-y-auto pr-2"></div>
-                    
-                    <div class="mt-6 pt-4 border-t">
-                        <button onclick="window.saveCosts()" class="bg-green-600 text-white px-6 py-3 rounded w-full font-bold shadow-lg hover:bg-green-700 transition transform hover:-translate-y-0.5">SIMPAN KONFIGURASI</button>
+                <!-- Panel Cost -->
+                <div id="settings-cost" class="settings-panel hidden space-y-6">
+                    <!-- Global DW -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-xl">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">Biaya DW (Global)</h3>
+                                <p class="text-xs text-slate-400">Berlaku untuk semua DW di semua HUB</p>
+                            </div>
+                        </div>
+                        <input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-40 text-right font-mono font-bold text-slate-700 border-none bg-slate-50 rounded-lg focus:ring-2 focus:ring-amber-400" onkeyup="window.formatCostInput(this)">
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Add Form -->
+                        <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <h4 class="font-bold text-slate-800 mb-4">Tambah HUB</h4>
+                            <div class="space-y-3">
+                                <input type="text" id="new-hub-name" placeholder="Kode HUB (mis: JKT-01)" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-3 rounded-xl text-sm font-mono text-right focus:ring-2 focus:ring-indigo-500 outline-none" onkeyup="window.formatCostInput(this)">
+                                <button onclick="window.addHubToTable()" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition">Tambah ke Daftar</button>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            <h4 class="font-bold text-slate-800 mb-4">Daftar Biaya HUB (Sorter)</h4>
+                            <div id="cost-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                                <!-- Generated Rows -->
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-slate-100">
+                                <button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition">SIMPAN PERUBAHAN</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- MODALS -->
-    <!-- USER MODAL (RESTRUCTURED) -->
-    <div id="user-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden flex items-center justify-center z-50 transition-opacity">
-        <div class="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl transform transition-all scale-100">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-xl font-bold text-gray-800" id="modal-title">User</h3>
-                <button onclick="window.closeUserModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+    <!-- MODAL USER -->
+    <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl transform transition-all scale-95 opacity-0" id="user-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-slate-800" id="modal-title">User</h3>
+                <button onclick="window.closeUserModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            <form id="user-form">
+            <form id="user-form" class="space-y-5">
                 <input type="hidden" id="edit-user-id">
+                
                 <div class="space-y-4">
-                    
-                    <!-- 1. Nama -->
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Nama Lengkap</label>
-                        <input type="text" id="input-nama" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nama Lengkap</label>
+                        <input type="text" id="input-nama" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" required>
                     </div>
 
-                    <!-- 2. HUB -->
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Kode HUB</label>
-                        <select id="input-kode-hub" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" required></select>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kode HUB</label>
+                            <select id="input-kode-hub" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Posisi</label>
+                            <select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" onchange="window.toggleUserModalPassword()">
+                                <option value="Sorter">Sorter</option>
+                                <option value="DW">DW</option>
+                                <option value="LEADER">LEADER</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- 3. Posisi -->
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Posisi</label>
-                        <select id="input-posisi" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" onchange="window.toggleUserModalPassword()">
-                            <option value="Sorter">Sorter</option>
-                            <option value="DW">DW</option>
-                            <option value="LEADER">LEADER</option>
-                            <option value="Admin">Admin</option>
-                        </select>
-                    </div>
-
-                    <!-- 4. ID & Password (Dynamic Grid) -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-2" id="id-container">
-                            <label class="text-xs font-bold text-gray-500 uppercase block mb-1">ID User</label>
-                            <input type="text" id="input-id" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">ID User</label>
+                            <input type="text" id="input-id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required>
                         </div>
                         <div class="hidden col-span-1" id="password-container">
-                            <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Kata Sandi</label>
-                            <input type="text" id="input-sandi" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kata Sandi</label>
+                            <input type="text" id="input-sandi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
                         </div>
                     </div>
 
-                    <!-- 5. Akses Toggle -->
-                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded border">
-                        <span class="text-sm font-bold text-gray-700">Akses Edit Laporan</span>
+                    <div class="flex items-center justify-between bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <div>
+                            <span class="block text-sm font-bold text-indigo-900">Akses Edit Laporan</span>
+                            <span class="text-xs text-indigo-600">Izinkan user ini mengubah data?</span>
+                        </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="input-akses-toggle" class="sr-only peer" onchange="document.getElementById('akses-label').innerText = this.checked ? 'YA' : 'TIDAK'">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span class="ml-3 text-sm font-medium text-gray-900 w-10 text-right" id="akses-label">TIDAK</span>
+                            <div class="w-12 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600 shadow-inner"></div>
+                            <span class="ml-3 text-xs font-bold text-indigo-800 w-8" id="akses-label">TIDAK</span>
                         </label>
                     </div>
-
                 </div>
-                <div class="mt-6 flex justify-end gap-2 border-t pt-4">
-                    <button type="button" onclick="window.closeUserModal()" class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100 transition">Batal</button>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition shadow font-bold">Simpan</button>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
+                    <button type="button" onclick="window.closeUserModal()" class="px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-100 transition">Batal</button>
+                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition transform active:scale-95">Simpan Data</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- LAPORAN MODAL -->
-    <div id="laporan-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 hidden flex items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-lg w-full max-w-4xl shadow-2xl my-10 flex flex-col max-h-screen">
-            <div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-lg">
-                <h3 class="text-xl font-bold text-gray-800" id="laporan-modal-title">Laporan</h3>
-                <button onclick="window.closeLaporanModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+    <!-- MODAL LAPORAN -->
+    <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
+        <div class="bg-white rounded-2xl w-full max-w-5xl shadow-2xl my-4 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0" id="laporan-modal-content">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-2xl">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3>
+                    <p class="text-xs text-slate-400">Input data harian dan absensi tim</p>
+                </div>
+                <button onclick="window.closeLaporanModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto bg-gray-50">
-                <form id="laporan-form">
+            
+            <div class="p-6 overflow-y-auto bg-slate-50">
+                <form id="laporan-form" class="space-y-6">
                     <input type="hidden" id="edit-laporan-id">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-white p-4 rounded shadow-sm border border-gray-200">
+                    <!-- Header Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Tanggal</label>
-                            <input type="date" id="lap-tanggal" class="w-full border p-2 rounded font-semibold" required>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Tanggal Laporan</label>
+                            <input type="date" id="lap-tanggal" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" required>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">HUB</label>
-                            <select id="lap-hub-select" class="w-full border p-2 rounded hidden font-semibold" onchange="window.loadHubUsersForAttendance()"></select>
-                            <input type="text" id="lap-hub-text" class="w-full border p-2 rounded bg-gray-100 text-gray-600 hidden font-semibold" readonly>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Lokasi HUB</label>
+                            <select id="lap-hub-select" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none hidden" onchange="window.loadHubUsersForAttendance()"></select>
+                            <input type="text" id="lap-hub-text" class="w-full border border-slate-200 bg-slate-100 p-3 rounded-xl font-bold text-slate-500 cursor-not-allowed hidden" readonly>
                         </div>
                     </div>
 
-                    <h4 class="font-bold text-gray-700 mb-2 border-b pb-1">Metrix Paket (Input)</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div><label class="text-xs text-gray-500">Gateway</label><input type="text" id="lap-gateway" class="w-full border p-2 rounded font-mono text-right" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                        <div><label class="text-xs text-gray-500">Staging</label><input type="text" id="lap-staging" class="w-full border p-2 rounded font-mono text-right" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                        <div><label class="text-xs text-gray-500">JNE</label><input type="text" id="lap-jne" class="w-full border p-2 rounded font-mono text-right" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                        <div><label class="text-xs text-gray-500">SAP</label><input type="text" id="lap-sap" class="w-full border p-2 rounded font-mono text-right" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                    <!-- Metrics -->
+                    <div>
+                        <h4 class="font-bold text-slate-700 mb-3 flex items-center"><i class="fas fa-chart-bar mr-2 text-indigo-500"></i>Metrix Paket</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Gateway</label><input type="text" id="lap-gateway" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Staging</label><input type="text" id="lap-staging" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">JNE</label><input type="text" id="lap-jne" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">SAP</label><input type="text" id="lap-sap" class="w-full border border-slate-200 p-3 rounded-xl font-mono text-right focus:border-indigo-500 outline-none" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                        </div>
+                        
+                        <div class="mt-4 grid grid-cols-2 gap-4">
+                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
+                                <p class="text-xs font-bold text-indigo-400 uppercase">Total Paket</p>
+                                <p class="text-3xl font-bold text-indigo-600 mt-1" id="disp-total-paket">0</p>
+                                <input type="hidden" id="val-total-paket">
+                            </div>
+                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-center">
+                                <p class="text-xs font-bold text-emerald-500 uppercase">Productivity</p>
+                                <p class="text-3xl font-bold text-emerald-600 mt-1" id="disp-productivity">0</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-6 bg-blue-50 p-4 rounded border border-blue-200 shadow-inner">
-                        <div class="text-center border-r border-blue-200">
-                            <p class="text-xs text-blue-500 uppercase font-bold">Total Paket</p>
-                            <p class="text-3xl font-bold text-blue-700" id="disp-total-paket">0</p>
-                            <input type="hidden" id="val-total-paket">
+                    <!-- Attendance -->
+                    <div>
+                        <div class="flex justify-between items-end mb-3">
+                            <h4 class="font-bold text-slate-700 flex items-center"><i class="fas fa-users mr-2 text-indigo-500"></i>Absensi Tim</h4>
+                            <div class="text-right bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">
+                                <span class="text-xs text-slate-400 font-bold uppercase">Total MPP:</span>
+                                <span class="font-bold text-lg text-slate-800 ml-1" id="disp-total-mpp">0</span>
+                            </div>
                         </div>
-                        <div class="text-center">
-                            <p class="text-xs text-green-600 uppercase font-bold">Productivity</p>
-                            <p class="text-3xl font-bold text-green-700" id="disp-productivity">0</p>
+                        
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <table class="w-full text-sm text-center">
+                                <thead class="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3 text-left w-1/3">Nama Personil</th>
+                                        <th class="p-3 w-10 bg-blue-50/50 text-blue-600">1</th>
+                                        <th class="p-3 w-10 bg-blue-50/50 text-blue-600">2</th>
+                                        <th class="p-3 w-10 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th>
+                                        <th class="p-3 w-10 text-amber-500">I</th>
+                                        <th class="p-3 w-10 text-blue-500">S</th>
+                                        <th class="p-3 w-10 text-rose-500">A</th>
+                                        <th class="p-3 text-left">Keterangan</th>
+                                        <th class="p-3 w-8"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-tbody" class="divide-y divide-slate-100"></tbody>
+                            </table>
                         </div>
-                    </div>
-
-                    <div class="flex justify-between items-end mb-2 border-b pb-1">
-                        <h4 class="font-bold text-gray-700">Absensi Tim</h4>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500">Total MPP (Sorter/DW):</span>
-                            <span class="font-bold text-lg text-gray-800 ml-1 bg-yellow-100 px-2 rounded" id="disp-total-mpp">0</span>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto border rounded mb-4 bg-white shadow-sm">
-                        <table class="w-full text-sm text-center">
-                            <thead class="bg-gray-100 text-xs uppercase font-bold text-gray-600">
-                                <tr>
-                                    <th class="p-2 text-left w-1/3">Nama</th>
-                                    <th class="p-2 w-8">1</th><th class="p-2 w-8">2</th><th class="p-2 w-8 border-r-4 border-gray-300">3</th>
-                                    <th class="p-2 w-8 text-yellow-600 pl-4">I</th><th class="p-2 w-8 text-blue-600">S</th><th class="p-2 w-8 text-red-600">A</th>
-                                    <th class="p-2 text-left">Ket</th><th class="p-2 w-8"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendance-tbody" class="divide-y"></tbody>
-                        </table>
-                    </div>
-                    
-                    <button type="button" onclick="window.addManualDWRow()" class="text-sm bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded w-full border-2 border-dashed border-gray-300 hover:border-gray-400 mb-6 transition"><i class="fas fa-plus-circle mr-2 text-green-500"></i> Tambah DW Manual</button>
-                    
-                    <div class="flex justify-end gap-3 pt-4 border-t sticky bottom-0 bg-gray-50">
-                        <button type="button" onclick="window.closeLaporanModal()" class="px-5 py-2 border rounded text-gray-600 hover:bg-gray-200 transition bg-white">Batal</button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 shadow-lg transform transition active:scale-95">SIMPAN LAPORAN</button>
+                        
+                        <button type="button" onclick="window.addManualDWRow()" class="mt-3 w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-plus-circle"></i> Tambah DW Manual
+                        </button>
                     </div>
                 </form>
+            </div>
+            
+            <div class="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-20 flex justify-end gap-3 rounded-b-2xl">
+                <button type="button" onclick="window.closeLaporanModal()" class="px-6 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-50 transition">Batal</button>
+                <button onclick="document.getElementById('laporan-form').requestSubmit()" class="px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition transform active:scale-95">SIMPAN LAPORAN</button>
             </div>
         </div>
     </div>
 
-    <!-- MODULE SCRIPT (Firebase) -->
+    <!-- MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, query } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // KONFIGURASI DARI USER
         const firebaseConfig = {
             apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
             authDomain: "hub-dashboard-92428.firebaseapp.com",
@@ -495,464 +606,485 @@
         };
 
         const storageId = 'hub-data-v1';
-        let app, auth, db;
-        let unsubscribeUsers, unsubscribeCosts, unsubscribeLaporan, unsubscribeSettings;
+        let app, auth, db, unsubscribeUsers, unsubscribeCosts, unsubscribeLaporan, unsubscribeSettings;
 
-        // Global State
-        let appData = {
-            adminPass: '123456',
-            accessCode: 'SUPERHUB',
-            costDW: 120000,
-            users: [],
-            costs: [],
-            laporan: []
-        };
-        let currentUser = null;
-        let annualChart = null, dailyChart = null;
+        // Dynamic Island Logic
+        const island = document.getElementById('dynamic-island');
+        const islandContent = document.getElementById('island-content');
+        const islandIcon = document.getElementById('island-icon');
+        const islandMsg = document.getElementById('island-message');
+        const islandSpinner = document.getElementById('island-spinner');
 
-        // --- ERROR HANDLING & INIT ---
-        function updateLoadingLog(msg, isError = false) {
-            // Hidden by default in new design
-            if (isError) {
-                const el = document.getElementById('init-error-text');
-                if (el) {
-                    el.innerText = msg;
-                    document.getElementById('loading-overlay').classList.add('hidden');
-                    document.getElementById('login-section').classList.remove('hidden');
-                    document.getElementById('init-error-container').classList.remove('hidden');
+        window.notify = (msg, type = 'loading') => {
+            island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
+            
+            if (type === 'loading') {
+                island.classList.add('island-loading', 'bg-dark');
+                islandSpinner.classList.remove('opacity-0');
+                islandContent.classList.add('opacity-0', 'scale-90');
+            } else {
+                island.classList.remove('island-loading');
+                island.classList.add('island-expanded');
+                
+                if (type === 'success') {
+                    island.classList.add('island-success');
+                    islandIcon.className = 'fas fa-check-circle text-white';
+                } else if (type === 'error') {
+                    island.classList.add('island-error');
+                    islandIcon.className = 'fas fa-exclamation-circle text-white';
                 }
+
+                islandSpinner.classList.add('opacity-0');
+                
+                setTimeout(() => {
+                    islandMsg.innerText = msg;
+                    islandContent.classList.remove('opacity-0', 'scale-90');
+                }, 200);
+
+                // Auto hide after 3s
+                setTimeout(() => {
+                    islandContent.classList.add('opacity-0', 'scale-90');
+                    setTimeout(() => {
+                        island.className = 'island-loading bg-dark pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out';
+                        islandSpinner.classList.remove('opacity-0');
+                        // If really idle, maybe hide completely or keep spinner as 'live' indicator
+                        // For this app, we keep it as a subtle live indicator
+                    }, 200);
+                }, 3000);
             }
-        }
+        };
+
+        // Initialize
+        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
+        let currentUser = null, annualChart = null, dailyChart = null;
 
         function handleAuthSuccess(user) {
-            const overlay = document.getElementById('loading-overlay');
-            if (!overlay.classList.contains('hidden-fade')) {
-                setTimeout(() => {
-                    overlay.classList.add('hidden-fade');
-                    setTimeout(() => overlay.classList.add('hidden'), 500);
-                    document.getElementById('login-section').classList.remove('hidden');
-                }, 800);
-                initListeners();
-            }
+            window.notify('Terhubung', 'success');
+            document.getElementById('loading-overlay').classList.add('hidden-fade');
+            setTimeout(() => document.getElementById('loading-overlay').remove(), 500);
+            document.getElementById('login-section').classList.remove('hidden');
+            initListeners();
         }
-
-        window.onerror = function(message) { updateLoadingLog(`System Error: ${message}`, true); };
 
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            
-            onAuthStateChanged(auth, (user) => { if (user) handleAuthSuccess(user); });
-            signInAnonymously(auth).then((result) => {
-                if (result.user) handleAuthSuccess(result.user);
-            }).catch((error) => {
-                console.error("Auth Error:", error);
-                updateLoadingLog("Gagal Login Anonim. Cek koneksi internet.", true);
+            onAuthStateChanged(auth, (u) => { if(u) handleAuthSuccess(u); });
+            signInAnonymously(auth).catch(e => {
+                console.error(e);
+                window.notify('Gagal Koneksi', 'error');
+                document.getElementById('init-error-text').innerText = "Cek koneksi internet / Firebase Auth.";
+                document.getElementById('init-error-container').classList.remove('hidden');
             });
+        } catch(e) { window.notify('Config Error', 'error'); }
 
-        } catch (e) {
-            console.error(e);
-            updateLoadingLog(`Config Error: ${e.message}`, true);
-        }
-
-        // --- DATABASE LISTENERS ---
         function initListeners() {
-            const publicPath = (col) => collection(db, 'artifacts', storageId, 'public', 'data', col);
-
-            unsubscribeSettings = onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (docSnap) => {
-                if (docSnap.exists()) {
-                    const d = docSnap.data();
-                    appData.adminPass = d.adminPass || '123456';
-                    appData.accessCode = d.accessCode || 'SUPERHUB';
-                    appData.costDW = d.costDW || 120000;
-                } else {
-                    setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000 });
-                }
+            const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
+            
+            // Settings
+            onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (s) => {
+                if(s.exists()) {
+                    const d = s.data(); appData.adminPass = d.adminPass; appData.accessCode = d.accessCode; appData.costDW = d.costDW;
+                } else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
             });
 
-            unsubscribeUsers = onSnapshot(publicPath('users'), (s) => { appData.users = []; s.forEach(d => appData.users.push(d.data())); if(!document.getElementById('view-pengaturan').classList.contains('hidden')) window.renderUserTable(); });
-            unsubscribeCosts = onSnapshot(publicPath('costs'), (s) => { 
-                appData.costs = []; 
-                s.forEach(d => appData.costs.push(d.data())); 
-                window.renderHubDropdownOptions();
-                if(!document.getElementById('view-pengaturan').classList.contains('hidden')) window.renderCostInputs(); 
-            });
-            unsubscribeLaporan = onSnapshot(publicPath('laporan'), (s) => { appData.laporan = []; s.forEach(d => appData.laporan.push(d.data())); if(!document.getElementById('view-dashboard').classList.contains('hidden')) window.loadDashboardData(); if(!document.getElementById('view-laporan').classList.contains('hidden')) window.renderLaporanList(); });
+            // Data
+            onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
+            onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); window.renderHubDropdownOptions(); if(currentUser) window.renderCostInputs(); });
+            onSnapshot(pub('laporan'), (s) => { appData.laporan=[]; s.forEach(d=>appData.laporan.push(d.data())); if(currentUser) { window.loadDashboardData(); window.renderLaporanList(); } });
         }
 
+        // --- CHART & UTILS ---
         window.Chart.register(ChartDataLabels);
+        window.formatNumber = (n) => (!n && n!==0)?'':n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        window.parseFormattedNumber = (s) => { if(!s)return 0; return parseInt(s.toString().replace(/[^0-9]/g,''),10)||0; };
+        window.formatCostInput = (e) => { let v=e.value.replace(/[^0-9]/g,''); e.value=window.formatNumber(v); };
+        window.formatRupiah = (n) => n==null?'': 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
 
-        // --- HELPERS ---
-        const safeId = (id) => id ? id.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
-        window.formatNumber = (num) => (!num && num !== 0) ? '' : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        window.parseFormattedNumber = (str) => { if (!str) return 0; const cleanStr = str.toString().replace(/[^0-9]/g, ''); return parseInt(cleanStr, 10) || 0; };
-        window.formatCostInput = (e) => { let val = e.value.replace(/\./g, '').replace(/[^0-9]/g, ''); e.value = window.formatNumber(val); };
-        window.formatRupiah = (n) => { if(n == null) return ''; let s = n.toString().replace(/[^,\d]/g, ''), spl = s.split(','), rem = spl[0].length % 3, r = spl[0].substr(0, rem), th = spl[0].substr(rem).match(/\d{3}/gi); if(th) { let sep = rem ? '.' : ''; r += sep + th.join('.'); } return 'Rp. ' + r; };
-
-        // --- UI LOGIC ---
-        window.switchLoginTab = (type) => {
+        // --- AUTH ---
+        window.switchLoginTab = (t) => {
             const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
-            if(type === 'user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-white','text-blue-600','shadow'); tu.classList.remove('text-gray-500'); ta.classList.remove('bg-white','text-blue-600','shadow'); ta.classList.add('text-gray-500'); }
-            else { u.classList.add('hidden'); a.classList.remove('hidden'); ta.classList.add('bg-white','text-blue-600','shadow'); ta.classList.remove('text-gray-500'); tu.classList.remove('bg-white','text-blue-600','shadow'); tu.classList.add('text-gray-500'); }
+            if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-indigo-600','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-indigo-600','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
+            else { u.classList.add('hidden'); a.classList.remove('hidden'); ta.classList.add('bg-slate-700','text-white','shadow-md'); ta.classList.remove('text-slate-400','hover:text-white'); tu.classList.remove('bg-indigo-600','text-white','shadow-md'); tu.classList.add('text-slate-400','hover:text-white'); }
         };
-        window.togglePasswordField = () => { const c = document.getElementById('is-pic-checkbox'), p = document.getElementById('login-pass-user'); if(c.checked) { p.classList.remove('hidden'); p.setAttribute('required', 'true'); } else { p.classList.add('hidden'); p.removeAttribute('required'); p.value=''; } };
+        window.togglePasswordField = () => { const c=document.getElementById('is-pic-checkbox'), p=document.getElementById('login-pass-user'); c.checked ? (p.classList.remove('hidden'), p.setAttribute('required','true')) : (p.classList.add('hidden'), p.removeAttribute('required'), p.value=''); };
 
-        document.getElementById('form-login-admin').addEventListener('submit', (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value === appData.adminPass) { currentUser = { role: 'admin', name: 'Administrator', id: 'admin', kode_hub: 'ALL' }; window.enterApp(); } else Swal.fire('Error', 'Password Admin Salah!', 'error'); });
-        document.getElementById('form-login-user').addEventListener('submit', (e) => { 
-            e.preventDefault(); 
-            const id = document.getElementById('login-id').value, isPic = document.getElementById('is-pic-checkbox').checked, pass = document.getElementById('login-pass-user').value, u = appData.users.find(u => u.id === id); 
-            if (!u) return Swal.fire('Error', 'ID User tidak ditemukan.', 'error'); 
+        // Login Logic
+        const doLogin = (role, name, id, access, hub) => {
+            currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('app-navbar').classList.remove('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            document.getElementById('user-name-display').innerText = name;
+            document.getElementById('user-badge').innerText = role.toUpperCase();
             
-            if (isPic) { 
-                if (u.sandi === pass) { 
-                    currentUser = { role: 'pic', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; 
-                    window.enterApp(); 
-                } else Swal.fire('Error', 'Password Salah!', 'error'); 
-            } else { 
-                if (u.posisi === 'LEADER' || u.posisi === 'Admin') return Swal.fire('Warning', 'Gunakan login LEADER.', 'warning'); 
-                currentUser = { role: 'sorter', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; // Pass akses
-                window.enterApp(); 
-            } 
-        });
-
-        window.enterApp = () => {
-            document.getElementById('login-section').classList.add('hidden'); document.getElementById('app-content').classList.remove('hidden'); document.getElementById('app-navbar').classList.remove('hidden'); document.getElementById('app-navbar').classList.add('block');
-            document.getElementById('user-name-display').innerText = currentUser.name; document.getElementById('user-badge').innerText = currentUser.role.toUpperCase();
-            
-            const ns = document.getElementById('nav-pengaturan'), bt = document.getElementById('btn-tambah-laporan');
-            
-            const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA');
-            
-            if (currentUser.role === 'admin') { ns.classList.remove('hidden'); } else { ns.classList.add('hidden'); }
-            if (hasEditAccess) { bt.classList.remove('hidden'); } else { bt.classList.add('hidden'); }
+            // Permissions
+            const isAdm = role==='admin', isAcc = role==='pic'||access==='YA';
+            document.getElementById('nav-pengaturan').classList.toggle('hidden', !isAdm);
+            document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
             window.initDashboardFilters(); window.navigate('dashboard');
+            window.notify(`Halo, ${name}`, 'success');
         };
-        window.logout = () => location.reload();
 
-        window.navigate = (viewId) => {
-            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.nav-item, .nav-item-active').forEach(el => { el.classList.remove('nav-item-active'); el.classList.add('nav-item'); });
-            document.getElementById(`view-${viewId}`).classList.remove('hidden'); document.getElementById(`nav-${viewId}`).classList.add('nav-item-active'); document.getElementById(`nav-${viewId}`).classList.remove('nav-item');
-            if (viewId === 'dashboard') window.loadDashboardData(); if (viewId === 'pengaturan') window.loadSettingsUI(); if (viewId === 'laporan') window.renderLaporanList();
+        document.getElementById('form-login-admin').onsubmit = (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value===appData.adminPass) doLogin('admin','Administrator','admin','YA','ALL'); else window.notify('Password Salah', 'error'); };
+        document.getElementById('form-login-user').onsubmit = (e) => { 
+            e.preventDefault(); 
+            const u = appData.users.find(x => x.id === document.getElementById('login-id').value);
+            if(!u) return window.notify('ID Tidak Ditemukan', 'error');
+            const isLeader = document.getElementById('is-pic-checkbox').checked;
+            if(isLeader) {
+                if(u.sandi === document.getElementById('login-pass-user').value) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
+                else window.notify('Password Salah', 'error');
+            } else {
+                if(u.posisi === 'LEADER' || u.posisi === 'Admin') return window.notify('Gunakan Login Leader', 'error');
+                doLogin('sorter', u.nama, u.id, u.akses, u.kode_hub);
+            }
         };
-        window.toggleSidebar = () => {}; 
 
-        // -- DASHBOARD --
+        // --- NAVIGATION ---
+        window.navigate = (id) => {
+            document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
+            document.getElementById(`view-${id}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active', 'text-white'));
+            document.getElementById(`nav-${id}`).classList.add('active', 'text-white');
+            if(id==='dashboard') window.loadDashboardData();
+            if(id==='pengaturan') window.loadSettingsUI();
+            if(id==='laporan') window.renderLaporanList();
+        };
+
+        // --- DASHBOARD ---
         window.toggleHubDropdown = (e) => { e.stopPropagation(); document.getElementById('hub-filter-dropdown').classList.toggle('hidden'); };
-        window.addEventListener('click', (e) => { if (!document.getElementById('hub-filter-btn').contains(e.target) && !document.getElementById('hub-filter-dropdown').contains(e.target)) document.getElementById('hub-filter-dropdown').classList.add('hidden'); });
-
+        window.onclick = (e) => { if(!e.target.closest('#hub-filter-btn') && !e.target.closest('#hub-filter-dropdown')) document.getElementById('hub-filter-dropdown').classList.add('hidden'); };
+        
         window.renderHubDropdownOptions = () => {
-            const c = document.getElementById('hub-filter-dropdown'); if(!c) return; c.innerHTML = '';
-            appData.costs.forEach(co => {
-                c.innerHTML += `<label class="flex items-center space-x-2 p-2 hover:bg-gray-50 cursor-pointer"><input type="checkbox" value="${co.hub}" class="hub-checkbox form-checkbox text-blue-600" checked onchange="window.updateHubFilterLabel(); window.loadDashboardData()"><span class="text-sm text-gray-700">${co.hub}</span></label>`;
+            const c = document.getElementById('hub-filter-dropdown'); c.innerHTML = '';
+            appData.costs.forEach(h => {
+                c.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg"><input type="checkbox" value="${h.hub}" class="hub-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" checked onchange="window.updateHubLabel(); window.loadDashboardData()"> <span class="text-sm text-slate-700">${h.hub}</span></label>`;
             });
-            window.updateHubFilterLabel();
+            window.updateHubLabel();
         };
-        window.updateHubFilterLabel = () => {
-            const chks = document.querySelectorAll('.hub-checkbox:checked'), lbl = document.getElementById('hub-filter-label');
-            if (chks.length === 0) lbl.innerText = 'Pilih HUB'; else if (chks.length === appData.costs.length) lbl.innerText = 'Semua HUB'; else if (chks.length === 1) lbl.innerText = chks[0].value; else lbl.innerText = `${chks.length} HUB Dipilih`;
+        window.updateHubLabel = () => {
+            const n = document.querySelectorAll('.hub-checkbox:checked').length;
+            document.getElementById('hub-filter-label').innerText = n===0?'Pilih HUB':(n===appData.costs.length?'Semua HUB':`${n} HUB Dipilih`);
         };
-        window.initDashboardFilters = () => { window.renderHubDropdownOptions(); window.resetDashboardFilters(); };
-        window.resetDashboardFilters = () => {
-            const e = new Date(), s = new Date(); s.setDate(e.getDate() - 30);
-            document.getElementById('dash-end-date').valueAsDate = e; document.getElementById('dash-start-date').valueAsDate = s;
-            document.querySelectorAll('.hub-checkbox').forEach(c => c.checked = true); window.updateHubFilterLabel();
-            window.loadDashboardData();
+
+        window.initDashboardFilters = () => {
+            const d = new Date(); document.getElementById('dash-end-date').valueAsDate = d;
+            d.setDate(d.getDate()-30); document.getElementById('dash-start-date').valueAsDate = d;
+            window.renderHubDropdownOptions(); window.loadDashboardData();
         };
+        window.resetDashboardFilters = window.initDashboardFilters;
+
         window.loadDashboardData = () => {
-            const sStr = document.getElementById('dash-start-date').value, eStr = document.getElementById('dash-end-date').value, sHubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(cb => cb.value);
-            if(!sStr || !eStr) return;
-            const sDate = new Date(sStr), eDate = new Date(eStr);
-            let f = appData.laporan.filter(l => { const d = new Date(l.tanggal); return d >= sDate && d <= eDate && (sHubs.length === 0 || sHubs.includes(l.hub)); });
-            f.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-            window.updateCharts(f, sHubs); window.updateDashboardTables(f);
+            const s = new Date(document.getElementById('dash-start-date').value), e = new Date(document.getElementById('dash-end-date').value);
+            const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
+            const data = appData.laporan.filter(l => { const d = new Date(l.tanggal); return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); }).sort((a,b)=>new Date(a.tanggal)-new Date(b.tanggal));
+            window.updateCharts(data, hubs); window.updateDashboardTables(data);
         };
 
-        window.getHubCostRate = (h) => { const c = appData.costs.find(x => x.hub === h); return c ? c.cost : 0; };
+        // --- LOGIC PERHITUNGAN ---
+        const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;
         window.calculateReportCost = (r) => {
-            let t = 0; const hr = window.getHubCostRate(r.hub), dr = appData.costDW || 0;
-            if (r.attendance_data) r.attendance_data.forEach(a => { if (a.s1 || a.s2 || a.s3) { let isD = a.userId.startsWith('manual_'); if (!isD) { const u = appData.users.find(x => x.id === a.userId); if (u && u.posisi === 'DW') isD = true; } t += isD ? dr : hr; } });
-            else t = r.total_mpp * hr;
-            return t;
+            let t=0, hr=getRate(r.hub), dr=appData.costDW||0;
+            if(r.attendance_data) r.attendance_data.forEach(a => { if(a.s1||a.s2||a.s3) { 
+                let isD = a.userId.startsWith('manual_'); if(!isD) { const u=appData.users.find(x=>x.id===a.userId); if(u&&u.posisi==='DW') isD=true; }
+                t += isD?dr:hr;
+            }}); else t=r.total_mpp*hr; return t;
         };
 
+        // --- CHARTS ---
         window.updateCharts = (data, hubs) => {
-            const cy = new Date().getFullYear(), mData = Array(12).fill(0).map(() => ({ pkg: 0, mpp: 0 }));
-            let aSrc = appData.laporan.filter(l => new Date(l.tanggal).getFullYear() === cy);
-            if (hubs.length > 0) aSrc = aSrc.filter(l => hubs.includes(l.hub));
-            aSrc.forEach(l => { const m = new Date(l.tanggal).getMonth(); mData[m].pkg += l.total_paket; mData[m].mpp += l.total_mpp; });
-            const dPM = mData.map(d => d.pkg), dPrM = mData.map(d => d.mpp > 0 ? Math.round(d.pkg / d.mpp) : 0);
-            window.renderChart('chart-annual', ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], dPM, dPrM, 'Total Paket', 'Prod.');
+            const cy = new Date().getFullYear(), mD = Array(12).fill(0).map(()=>({p:0,m:0}));
+            let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
+            if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
+            yrData.forEach(l=>{ const m=new Date(l.tanggal).getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
+            
+            const ctx1=document.getElementById('chart-annual').getContext('2d');
+            if(annualChart) annualChart.destroy();
+            annualChart=new Chart(ctx1, { type:'bar', data:{ labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets:[{label:'Paket',data:mD.map(d=>d.p),backgroundColor:'#6366f1',borderRadius:4},{label:'Prod',data:mD.map(d=>d.m?Math.round(d.p/d.m):0),type:'line',borderColor:'#10b981',borderWidth:2,tension:0.4}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}} });
 
-            const agg = {}; data.forEach(l => { if (!agg[l.tanggal]) agg[l.tanggal] = { pkg: 0, mpp: 0 }; agg[l.tanggal].pkg += l.total_paket; agg[l.tanggal].mpp += l.total_mpp; });
-            const sD = Object.keys(agg).sort(), lbs = sD.map(dStr => { const d = new Date(dStr); return `${d.getDate()}/${d.getMonth()+1}`; }), dP = sD.map(d => agg[d].pkg), dPr = sD.map(d => agg[d].mpp > 0 ? Math.round(agg[d].pkg / agg[d].mpp) : 0);
-            window.renderChart('chart-daily', lbs, dP, dPr, 'Total Paket', 'Prod.');
-        };
-
-        window.renderChart = (cid, lb, db, dl, lbb, lbl) => {
-            const ctx = document.getElementById(cid).getContext('2d');
-            if (cid === 'chart-annual') { if(annualChart) annualChart.destroy(); } if (cid === 'chart-daily') { if(dailyChart) dailyChart.destroy(); }
-            const cfg = { type: 'bar', data: { labels: lb, datasets: [{ label: lbb, data: db, backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, order: 2, datalabels: { align: 'end', anchor: 'end', color: '#1e3a8a', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? window.formatNumber(v) : '' } }, { label: lbl, data: dl, type: 'line', borderColor: 'rgba(16, 185, 129, 1)', backgroundColor: 'rgba(16, 185, 129, 1)', borderWidth: 2, tension: 0.2, order: 1, datalabels: { align: 'top', anchor: 'start', color: '#047857', font: { weight: 'bold', size: 11 }, offset: 4, formatter: v => v > 0 ? window.formatNumber(v) : '' } }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, plugins: { legend: { display: false }, tooltip: { enabled: true }, datalabels: { display: true } }, scales: { x: { grid: { display: false } }, y: { display: false }, y1: { display: false } } } };
-            const c = new Chart(ctx, cfg); if (cid === 'chart-annual') annualChart = c; if (cid === 'chart-daily') dailyChart = c;
+            const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
+            const sD=Object.keys(agg).sort(), lbs=sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
+            
+            const ctx2=document.getElementById('chart-daily').getContext('2d');
+            if(dailyChart) dailyChart.destroy();
+            dailyChart=new Chart(ctx2, { type:'bar', data:{ labels:lbs, datasets:[{label:'Paket',data:sD.map(d=>agg[d].p),backgroundColor:'#10b981',borderRadius:4}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}} });
         };
 
         window.updateDashboardTables = (data) => {
-            const tbd = document.getElementById('tbody-daily-detail'); tbd.innerHTML = '';
-            data.forEach(l => { tbd.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-3 py-2 text-left whitespace-nowrap">${l.tanggal}</td><td class="px-3 py-2 font-semibold">${l.hub}</td><td class="px-3 py-2 text-blue-700 font-bold">${l.total_mpp}</td><td class="px-3 py-2">${window.formatNumber(l.staging)}</td><td class="px-3 py-2">${window.formatNumber(l.gateway)}</td><td class="px-3 py-2">${window.formatNumber(l.jne)}</td><td class="px-3 py-2">${window.formatNumber(l.sap)}</td><td class="px-3 py-2 font-bold bg-gray-50">${window.formatNumber(l.total_paket)}</td><td class="px-3 py-2 text-green-700 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-3 py-2 text-right text-red-600 text-xs">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
+            const tb1 = document.getElementById('tbody-daily-detail'); tb1.innerHTML='';
+            data.forEach(l => { tb1.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-medium">${l.tanggal}</td><td class="px-4 py-3">${l.hub}</td><td class="px-4 py-3 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-bold bg-slate-100">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3 text-emerald-600 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
             
-            const tbh = document.getElementById('tbody-hub-breakdown'); tbh.innerHTML = ''; 
-            const hAg = {};
-            data.forEach(l => { 
-                if(!hAg[l.hub]) hAg[l.hub] = { mpp: 0, out: 0, cost: 0 }; 
-                hAg[l.hub].mpp += l.total_mpp; 
-                hAg[l.hub].out += l.total_paket; 
-                hAg[l.hub].cost += window.calculateReportCost(l); 
-            });
-            
-            Object.keys(hAg).sort((a, b) => hAg[b].out - hAg[a].out).forEach(h => { 
-                const d = hAg[h]; 
-                const avgProd = d.mpp > 0 ? Math.round(d.out / d.mpp) : 0;
-                tbh.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${h}</td><td class="px-4 py-3 text-blue-700 font-bold">${d.mpp}</td><td class="px-4 py-3 font-bold bg-gray-50 text-blue-800">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-green-700 font-bold">${window.formatNumber(avgProd)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`; 
-            });
+            const hAg={}; data.forEach(l=>{ if(!hAg[l.hub])hAg[l.hub]={m:0,o:0,c:0}; hAg[l.hub].m+=l.total_mpp; hAg[l.hub].o+=l.total_paket; hAg[l.hub].c+=window.calculateReportCost(l); });
+            const tb2 = document.getElementById('tbody-hub-breakdown'); tb2.innerHTML='';
+            Object.keys(hAg).sort((a,b)=>hAg[b].o-hAg[a].o).forEach(h=>{ const d=hAg[h]; tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 text-emerald-600 font-medium">${window.formatNumber(d.m?Math.round(d.o/d.m):0)}</td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; });
         };
-        window.exportTableToCSV = (id, fn) => { const t = document.getElementById(id); let c = []; t.querySelectorAll("tr").forEach(r => { let row = []; r.querySelectorAll("td, th").forEach(z => row.push(z.innerText)); c.push(row.join(",")); }); const b = new Blob([c.join("\n")], {type: "text/csv"}), a = document.createElement("a"); a.download = fn; a.href = window.URL.createObjectURL(b); a.style.display = "none"; document.body.appendChild(a); a.click(); };
+        window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
 
-        // -- SETTINGS & CRUD --
-        window.switchSettingsTab = (tab) => { document.querySelectorAll('.settings-panel').forEach(e => e.classList.add('hidden')); document.getElementById(`settings-${tab}`).classList.remove('hidden'); ['users', 'general', 'cost'].forEach(t => { const b = document.getElementById(`set-tab-${t}`); t===tab ? (b.classList.add('text-blue-600','border-blue-600','active'),b.classList.remove('border-transparent')) : (b.classList.remove('text-blue-600','border-blue-600','active'),b.classList.add('border-transparent')); }); };
+        // --- SETTINGS ---
+        window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
         window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
         
         window.renderUserTable = () => {
-            const tb = document.getElementById('user-table-body'); tb.innerHTML = '';
-            appData.users.forEach((u) => { tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium">${u.nama}</td><td class="px-6 py-4">${u.id}</td><td class="px-6 py-4">${u.kode_hub}</td><td class="px-6 py-4">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.editUserConfirm('${safeId(u.id)}')" class="text-blue-600 hover:underline mr-3"><i class="fas fa-edit"></i> Edit</button><button onclick="window.deleteUser('${safeId(u.id)}')" class="text-red-600 hover:underline"><i class="fas fa-trash"></i> Hapus</button></td></tr>`; });
+            const tb=document.getElementById('user-table-body'); tb.innerHTML='';
+            appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-medium text-slate-700">${u.nama}</td><td class="px-6 py-4">${u.id}</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-3"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button></td></tr>`);
         };
-        window.editUserConfirm = (id) => Swal.fire({ title: 'Edit User?', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya' }).then((r) => { if (r.isConfirmed) window.openUserModal(id); });
-        
+
         window.toggleUserModalPassword = () => {
-            const pos = document.getElementById('input-posisi').value;
-            const passCont = document.getElementById('password-container');
-            const idCont = document.getElementById('id-container');
-            
-            if (pos === 'LEADER' || pos === 'Admin') {
-                passCont.classList.remove('hidden');
-                idCont.classList.remove('col-span-2'); 
-                idCont.classList.add('col-span-1');
-            } else {
-                passCont.classList.add('hidden');
-                idCont.classList.remove('col-span-1');
-                idCont.classList.add('col-span-2');
-                document.getElementById('input-sandi').value = '';
-            }
-        }
+            const p = document.getElementById('input-posisi').value;
+            const isL = p==='LEADER' || p==='Admin';
+            document.getElementById('password-container').classList.toggle('hidden', !isL);
+            const idC = document.getElementById('id-container');
+            if(isL) { idC.classList.remove('col-span-2'); idC.classList.add('col-span-1'); } else { idC.classList.remove('col-span-1'); idC.classList.add('col-span-2'); }
+        };
 
         window.openUserModal = (id=null) => {
-            document.getElementById('user-modal').classList.remove('hidden'); const hS = document.getElementById('input-kode-hub'); hS.innerHTML = '<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c => { if(c.hub) hS.innerHTML += `<option value="${c.hub}">${c.hub}</option>`; });
-            if (id) { 
-                const u = appData.users.find(x => x.id === id); 
-                document.getElementById('modal-title').innerText = 'Edit User'; 
-                document.getElementById('edit-user-id').value = id; 
-                document.getElementById('input-nama').value = u.nama; 
-                document.getElementById('input-id').value = u.id; 
-                document.getElementById('input-sandi').value = u.sandi || ''; 
-                document.getElementById('input-kode-hub').value = u.kode_hub; 
-                document.getElementById('input-posisi').value = u.posisi; 
-                
-                const toggle = document.getElementById('input-akses-toggle');
-                toggle.checked = (u.akses === 'YA');
-                document.getElementById('akses-label').innerText = u.akses;
-
-                document.getElementById('input-id').readOnly = true; 
-                document.getElementById('input-id').classList.add('bg-gray-100'); 
-            } else { 
-                document.getElementById('modal-title').innerText = 'Tambah User'; 
-                document.getElementById('edit-user-id').value = ''; 
-                document.getElementById('user-form').reset(); 
-                document.getElementById('input-id').readOnly = false; 
-                document.getElementById('input-id').classList.remove('bg-gray-100'); 
+            const m=document.getElementById('user-modal'); m.classList.remove('hidden'); 
+            setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
+            
+            const hS=document.getElementById('input-kode-hub'); hS.innerHTML='<option value="">-- Pilih --</option>'; appData.costs.forEach(c=>hS.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`);
+            
+            if(id) {
+                const u=appData.users.find(x=>x.id===id);
+                document.getElementById('modal-title').innerText='Edit User'; document.getElementById('edit-user-id').value=id;
+                document.getElementById('input-nama').value=u.nama; document.getElementById('input-id').value=u.id; document.getElementById('input-sandi').value=u.sandi||'';
+                document.getElementById('input-kode-hub').value=u.kode_hub; document.getElementById('input-posisi').value=u.posisi;
+                document.getElementById('input-akses-toggle').checked = (u.akses==='YA'); document.getElementById('akses-label').innerText = u.akses;
+                document.getElementById('input-id').readOnly=true; document.getElementById('input-id').classList.add('bg-slate-100');
+            } else {
+                document.getElementById('modal-title').innerText='Tambah User'; document.getElementById('edit-user-id').value=''; document.getElementById('user-form').reset();
+                document.getElementById('input-id').readOnly=false; document.getElementById('input-id').classList.remove('bg-slate-100');
                 document.getElementById('akses-label').innerText = 'TIDAK';
             }
             window.toggleUserModalPassword();
         };
-        window.closeUserModal = () => document.getElementById('user-modal').classList.add('hidden');
+        window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
         
-        document.getElementById('user-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            const eid = document.getElementById('edit-user-id').value;
-            const aksesVal = document.getElementById('input-akses-toggle').checked ? 'YA' : 'TIDAK';
-            const nu = { 
-                nama: document.getElementById('input-nama').value, 
-                id: document.getElementById('input-id').value, 
-                sandi: document.getElementById('input-sandi').value, 
-                kode_hub: document.getElementById('input-kode-hub').value, 
-                posisi: document.getElementById('input-posisi').value, 
-                akses: aksesVal
+        document.getElementById('user-form').onsubmit = async (e) => {
+            e.preventDefault(); window.notify('Menyimpan...', 'loading');
+            const id = document.getElementById('input-id').value;
+            const data = {
+                nama: document.getElementById('input-nama').value, id: id, sandi: document.getElementById('input-sandi').value,
+                kode_hub: document.getElementById('input-kode-hub').value, posisi: document.getElementById('input-posisi').value,
+                akses: document.getElementById('input-akses-toggle').checked ? 'YA' : 'TIDAK'
             };
-            try { 
-                if (!eid && appData.users.some(u => u.id === nu.id)) return Swal.fire('Error', 'ID User ada!', 'error'); 
-                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', nu.id), nu); 
-                window.closeUserModal(); 
-                Swal.fire('Sukses', 'Data tersimpan', 'success'); 
-            } catch (err) { Swal.fire('Error', 'Gagal simpan', 'error'); }
-        });
-        window.deleteUser = (id) => Swal.fire({title: 'Hapus?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33'}).then(async (r) => { if(r.isConfirmed) { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); Swal.fire('Terhapus', '', 'success'); } });
-        
-        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return Swal.fire('Error', 'Min 4 char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); Swal.fire('Sukses', 'Pass Updated', 'success'); };
-        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); Swal.fire('Sukses', 'Kode Updated', 'success'); };
-        
-        window.updateLocalCosts = () => { const r = document.getElementById('cost-container').children; appData.costs = []; for (let i = 0; i < r.length; i++) { const h = document.getElementById(`cost-hub-${i}`), c = document.getElementById(`cost-val-${i}`); if (h && c) appData.costs.push({ hub: h.value, cost: window.parseFormattedNumber(c.value) }); } };
-        window.renderCostInputs = () => { const c = document.getElementById('cost-container'); c.innerHTML = ''; appData.costs.forEach((x, i) => { c.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" placeholder="Kode HUB" value="${x.hub}" id="cost-hub-${i}" class="border p-2 rounded w-1/3"><input type="text" placeholder="Biaya" value="${window.formatRupiah(x.cost)}" id="cost-val-${i}" class="border p-2 rounded w-1/3 text-right" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-red-500 hover:text-red-700 px-2"><i class="fas fa-trash"></i></button></div>`; }); };
-        window.addHubToTable = () => { window.updateLocalCosts(); const n = document.getElementById('new-hub-name').value.toUpperCase(), c = window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info', 'Lengkapi Data', 'warning'); appData.costs.push({ hub: n, cost: c }); window.renderCostInputs(); document.getElementById('new-hub-name').value = ''; document.getElementById('new-hub-cost').value = ''; };
-        window.removeCostRow = (i) => { window.updateLocalCosts(); appData.costs.splice(i, 1); window.renderCostInputs(); };
-        window.saveCosts = async () => { window.updateLocalCosts(); const dw = window.parseFormattedNumber(document.getElementById('global-cost-dw').value); try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { costDW: dw }); for (const i of appData.costs) { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', i.hub), i); } Swal.fire('Sukses', 'Tersimpan', 'success'); } catch(e) { Swal.fire('Error', 'Gagal', 'error'); } };
+            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); }
+        };
+        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
 
-        // -- LAPORAN CRUD --
-        window.renderLaporanList = () => {
-            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
-            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
-            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
-            else {
-                document.getElementById('empty-laporan-msg').classList.add('hidden');
-                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
-                d.forEach(l => {
-                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
-                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporanConfirm('${safeId(l.id)}')" class="text-blue-600 hover:underline text-xs"><i class="fas fa-edit"></i> Edit</button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-red-500 hover:underline text-xs"><i class="fas fa-trash"></i> Hapus</button></div>` : '<span class="text-gray-400 text-xs">View Only</span>';
-                    tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${l.tanggal}</td><td class="px-6 py-4 font-bold">${l.hub}</td><td class="px-6 py-4 text-blue-600 font-bold">${window.formatNumber(l.total_paket)}</td><td class="px-6 py-4">${l.total_mpp}</td><td class="px-6 py-4 text-green-600 font-bold">${Math.round(l.productivity)}</td><td class="px-6 py-4 text-right">${acts}</td></tr>`;
-                });
+        window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-2 items-center mb-2"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border p-2 rounded-lg text-sm bg-slate-50" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border p-2 rounded-lg text-sm text-right font-mono" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-500 hover:text-rose-700 px-2"><i class="fas fa-trash"></i></button></div>`); };
+        window.addHubToTable = () => {
+            const n = document.getElementById('new-hub-name').value.toUpperCase(), c = window.parseFormattedNumber(document.getElementById('new-hub-cost').value);
+            if(!n) return Swal.fire('Info', 'Isi data HUB', 'warning');
+            appData.costs.push({hub:n, cost:c}); window.renderCostInputs();
+            document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value='';
+        };
+        window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
+        window.saveCosts = async () => {
+            window.notify('Menyimpan...', 'loading');
+            const dw = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
+            // Re-capture table values
+            const newCosts = [];
+            const rows = document.getElementById('cost-container').children;
+            for(let i=0; i<rows.length; i++) {
+                const h = document.getElementById(`cost-hub-${i}`).value, c = window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value);
+                newCosts.push({hub:h, cost:c});
             }
+            try {
+                await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw});
+                // Using Promise.all for parallel writes
+                const batch = [];
+                newCosts.forEach(item => batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', item.hub), item)));
+                await Promise.all(batch);
+                window.notify('Konfigurasi Tersimpan', 'success');
+            } catch(e) { window.notify('Gagal Simpan', 'error'); }
         };
+
+        // --- LAPORAN ---
         window.openLaporanModal = () => {
-            document.getElementById('laporan-modal').classList.remove('hidden'); document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText = 'Buat Laporan'; document.getElementById('edit-laporan-id').value = ''; document.getElementById('lap-tanggal').valueAsDate = new Date();
-            const sel = document.getElementById('lap-hub-select'); const txt = document.getElementById('lap-hub-text');
-            if(currentUser.role==='admin') { sel.classList.remove('hidden'); txt.classList.add('hidden'); sel.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>{sel.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`}); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="9" class="p-4 text-gray-400">Pilih HUB dulu.</td></tr>'; }
-            else { sel.classList.add('hidden'); txt.classList.remove('hidden'); txt.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
-            document.getElementById('disp-total-paket').innerText = '0'; document.getElementById('disp-total-mpp').innerText = '0'; document.getElementById('disp-productivity').innerText = '0';
-        };
-        window.closeLaporanModal = () => document.getElementById('laporan-modal').classList.add('hidden');
-        
-        window.editLaporanConfirm = (id) => {
-            Swal.fire({ title: 'Edit Laporan?', text: "Ubah data laporan ini.", icon: 'question', showCancelButton: true, confirmButtonColor: '#3b82f6', cancelButtonColor: '#6b7280', confirmButtonText: 'Ya, Edit' }).then((r) => { if (r.isConfirmed) window.editLaporan(id); });
-        };
-
-        window.editLaporan = (id) => {
-            const d = appData.laporan.find(x => x.id === id); if(!d) return;
-            const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && d.hub === currentUser.kode_hub);
-            if(!hasEditAccess) return Swal.fire('Error', 'No Access', 'error');
+            const m = document.getElementById('laporan-modal'); m.classList.remove('hidden');
+            setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
             
-            window.openLaporanModal(); document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; document.getElementById('edit-laporan-id').value = id;
-            document.getElementById('lap-tanggal').value = d.tanggal;
-            if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub; else document.getElementById('lap-hub-text').value = d.hub;
-            document.getElementById('lap-gateway').value = window.formatNumber(d.gateway); document.getElementById('lap-staging').value = window.formatNumber(d.staging); document.getElementById('lap-jne').value = window.formatNumber(d.jne); document.getElementById('lap-sap').value = window.formatNumber(d.sap);
-            window.loadHubUsersForAttendance(d.hub, d.attendance_data); window.calcMetrics();
+            document.getElementById('laporan-form').reset();
+            document.getElementById('laporan-modal-title').innerText = 'Buat Laporan Baru';
+            document.getElementById('edit-laporan-id').value = '';
+            document.getElementById('lap-tanggal').valueAsDate = new Date();
+            
+            const sel = document.getElementById('lap-hub-select'), txt = document.getElementById('lap-hub-text');
+            if(currentUser.role === 'admin') {
+                sel.classList.remove('hidden'); txt.classList.add('hidden');
+                sel.innerHTML = '<option value="">-- Pilih HUB --</option>';
+                appData.costs.forEach(c => sel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
+                document.getElementById('attendance-tbody').innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-400">Pilih HUB terlebih dahulu untuk memuat tim.</td></tr>';
+            } else {
+                sel.classList.add('hidden'); txt.classList.remove('hidden');
+                txt.value = currentUser.kode_hub;
+                window.loadHubUsersForAttendance(currentUser.kode_hub);
+            }
+            
+            ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id => document.getElementById(id).innerText = '0');
         };
+        window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
+        
+        window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
+            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value;
+            const tb = document.getElementById('attendance-tbody'); tb.innerHTML = '';
+            if(!h) return;
 
-        window.loadHubUsersForAttendance = (hName=null, existing=null) => {
-            let h = hName || (document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value);
-            const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
-            const users = appData.users.filter(u => u.kode_hub === h).sort((a, b) => {
-                const roleScore = (role) => (role === 'LEADER' || role === 'Admin') ? 0 : 1;
-                if (roleScore(a.posisi) !== roleScore(b.posisi)) return roleScore(a.posisi) - roleScore(b.posisi);
-                return a.id.localeCompare(b.id);
+            // Sort Users: Leader first, then Sorters by ID (Oldest first)
+            const users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => {
+                const roleA = (a.posisi==='LEADER'||a.posisi==='Admin') ? 0 : 1;
+                const roleB = (b.posisi==='LEADER'||b.posisi==='Admin') ? 0 : 1;
+                if(roleA !== roleB) return roleA - roleB;
+                return a.id.localeCompare(b.id); // String ID sort (works if IDs are chronological like sorter01, sorter02)
             });
-            const map = {}; if(existing) existing.forEach(x => map[x.userId] = x);
+
+            const map = {}; existingData.forEach(x => map[x.userId] = x);
+
             users.forEach(u => {
-                const isL = (u.posisi==='LEADER'||u.posisi==='Admin'); const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
-                window.renderRow(tb, u.id, u.nama, u.posisi, isL?'<span class="text-xs bg-yellow-200 px-1 rounded ml-1">L</span>':'', isL?'bg-yellow-50':'bg-white', sv, false);
+                const isL = u.posisi==='LEADER'||u.posisi==='Admin';
+                const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
+                window.renderRow(tb, u.id, u.nama, u.posisi, isL, sv, false);
             });
-            if(existing) existing.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', '<span class="text-xs bg-gray-200 px-1 rounded ml-1">Man</span>', 'bg-white', map[x.userId], true); });
+            // Manuals
+            existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
             window.calcMetrics();
         };
-        
-        window.renderRow = (tb, id, nm, role, badge, cls, sv, man) => {
-            const nmF = man ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full border p-1 rounded text-sm" placeholder="Nama">` : `${nm} ${badge}<input type="hidden" name="user_nama[]" value="${nm}">`;
-            const del = man ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : '';
-            const chk = (n,v) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${n==='ijin'||n==='sakit'||n==='alfa'?'status-chk':'shift-chk'}" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-            tb.insertAdjacentHTML('beforeend', `<tr class="border-b ${cls}" data-role="${role}"><td class="p-2 text-left font-medium">${nmF}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${man}"></td><td class="p-2">${chk('s1',sv.s1)}</td><td class="p-2">${chk('s2',sv.s2)}</td><td class="p-2 border-r-4 border-gray-200">${chk('s3',sv.s3)}</td><td class="p-2 pl-4">${chk('ijin',sv.i)}</td><td class="p-2">${chk('sakit',sv.s)}</td><td class="p-2">${chk('alfa',sv.a)}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full border p-1 text-xs rounded" placeholder="..."></td><td class="p-2 text-center">${del}</td></tr>`);
+
+        window.renderRow = (tb, id, nm, role, isLeader, sv, isManual) => {
+            const nameHtml = isManual 
+                ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-sm border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">`
+                : `<div class="font-medium text-slate-700">${nm}</div><div class="text-[10px] text-slate-400">${isLeader ? '★ LEADER' : role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
+            
+            const delBtn = isManual ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
+            const bgClass = isLeader ? 'bg-indigo-50/30' : 'bg-white';
+            
+            const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c}" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
+
+            const html = `
+                <tr class="${bgClass} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}">
+                    <td class="p-3 text-left">
+                        ${nameHtml}
+                        <input type="hidden" name="user_id[]" value="${id}">
+                        <input type="hidden" name="is_manual[]" value="${isManual}">
+                    </td>
+                    <td class="p-2 bg-blue-50/30 text-center">${chk('s1', sv.s1, 'shift-chk')}</td>
+                    <td class="p-2 bg-blue-50/30 text-center">${chk('s2', sv.s2, 'shift-chk')}</td>
+                    <td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-200">${chk('s3', sv.s3, 'shift-chk')}</td>
+                    <td class="p-2 text-center">${chk('ijin', sv.i, 'status-chk')}</td>
+                    <td class="p-2 text-center">${chk('sakit', sv.s, 'status-chk')}</td>
+                    <td class="p-2 text-center">${chk('alfa', sv.a, 'status-chk')}</td>
+                    <td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500 outline-none"></td>
+                    <td class="p-2 text-center">${delBtn}</td>
+                </tr>
+            `;
+            tb.insertAdjacentHTML('beforeend', html);
         };
-        window.addManualDWRow = () => { window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', '', 'bg-white', {}, true); };
-        window.handleSingleCheck = (chk) => { if(chk.checked) { chk.closest('tr').querySelectorAll('.attendance-checkbox').forEach(c => { if(c!==chk) c.checked = false; }); } window.calcMetrics(); };
-        window.calcMetrics = (el=null) => {
+
+        window.handleSingleCheck = (chk) => {
+            if(chk.checked) {
+                const row = chk.closest('tr');
+                row.querySelectorAll('.attendance-checkbox').forEach(c => { if(c!==chk) c.checked=false; });
+            }
+            window.calcMetrics();
+        };
+
+        window.calcMetrics = (el) => {
             if(el) window.formatCostInput(el);
-            const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), p=window.parseFormattedNumber(document.getElementById('lap-sap').value);
-            const tot = g+s+j+p; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot;
+            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
+            const s = window.parseFormattedNumber(document.getElementById('lap-staging').value);
+            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
+            const sp = window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            const totalPaket = g+s+j+sp;
+            
+            document.getElementById('disp-total-paket').innerText = window.formatNumber(totalPaket);
+            document.getElementById('val-total-paket').value = totalPaket;
+
             let mpp = 0;
             document.querySelectorAll('#attendance-tbody tr').forEach(r => {
                 const role = r.getAttribute('data-role');
-                if(role!=='LEADER' && role!=='Admin') { if(r.querySelector('input[name="s1[]"]').checked || r.querySelector('input[name="s2[]"]').checked || r.querySelector('input[name="s3[]"]').checked) mpp++; }
+                if(role !== 'LEADER' && role !== 'Admin') {
+                    if(r.querySelector('.shift-chk:checked')) mpp++;
+                }
             });
+
             document.getElementById('disp-total-mpp').innerText = mpp;
-            document.getElementById('disp-productivity').innerText = mpp>0 ? window.formatNumber(Math.round(tot/mpp)) : 0;
+            document.getElementById('disp-productivity').innerText = mpp>0 ? window.formatNumber(Math.round(totalPaket/mpp)) : 0;
         };
 
-        // FIXED SUBMIT LISTENER FOR REPORT
-        document.getElementById('laporan-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; 
-            if(!h) return Swal.fire('Error','Pilih HUB','error');
+        window.addManualDWRow = () => window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', false, {}, true);
+
+        // Submit Laporan
+        document.getElementById('laporan-form').onsubmit = async (e) => {
+            e.preventDefault(); window.notify('Menyimpan...', 'loading');
             
-            const metrics = { 
-                gateway: window.parseFormattedNumber(document.getElementById('lap-gateway').value), 
-                staging: window.parseFormattedNumber(document.getElementById('lap-staging').value), 
-                jne: window.parseFormattedNumber(document.getElementById('lap-jne').value), 
-                sap: window.parseFormattedNumber(document.getElementById('lap-sap').value), 
-                total_paket: parseInt(document.getElementById('val-total-paket').value)||0 
+            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value;
+            if(!h) return window.notify('Pilih HUB', 'error');
+
+            const att = []; let mpp=0;
+            const rows = document.querySelectorAll('#attendance-tbody tr');
+            for(let r of rows) {
+                const uid = r.querySelector('input[name="user_id[]"]').value;
+                const nm = r.querySelector('input[name="user_nama[]"]').value;
+                const isMan = r.querySelector('input[name="is_manual[]"]').value === 'true';
+                
+                if(isMan && !nm.trim()) return window.notify('Nama DW Kosong', 'error');
+
+                const s1=r.querySelector('input[name="s1[]"]').checked, s2=r.querySelector('input[name="s2[]"]').checked, s3=r.querySelector('input[name="s3[]"]').checked;
+                
+                if((s1||s2||s3) && r.getAttribute('data-role')!=='LEADER' && r.getAttribute('data-role')!=='Admin') mpp++;
+
+                att.push({
+                    userId: uid, nama: nm, s1, s2, s3,
+                    i: r.querySelector('input[name="ijin[]"]').checked,
+                    s: r.querySelector('input[name="sakit[]"]').checked,
+                    a: r.querySelector('input[name="alfa[]"]').checked,
+                    ket: r.querySelector('input[name="ket[]"]').value
+                });
+            }
+
+            const metrics = {
+                gateway: window.parseFormattedNumber(document.getElementById('lap-gateway').value),
+                staging: window.parseFormattedNumber(document.getElementById('lap-staging').value),
+                jne: window.parseFormattedNumber(document.getElementById('lap-jne').value),
+                sap: window.parseFormattedNumber(document.getElementById('lap-sap').value),
+                total_paket: parseInt(document.getElementById('val-total-paket').value)||0
             };
             
-            const att = []; 
-            let mpp=0; 
-            let err=false;
-            
-            // Gather row data manually to avoid empty rows or bad references
-            const rows = document.getElementById('attendance-tbody').querySelectorAll('tr');
-            rows.forEach(r => {
-                const uid=r.querySelector('input[name="user_id[]"]').value;
-                const nmVal=r.querySelector('input[name="user_nama[]"]').value;
-                const isMan=r.querySelector('input[name="is_manual[]"]').value === 'true';
-                
-                if(isMan && !nmVal.trim()) { err = true; return; }
+            const id = document.getElementById('edit-laporan-id').value || Date.now().toString();
+            const data = { id, tanggal: document.getElementById('lap-tanggal').value, hub: h, ...metrics, total_mpp: mpp, productivity: mpp>0?metrics.total_paket/mpp:0, attendance_data: att };
 
-                const s1=r.querySelector('input[name="s1[]"]').checked;
-                const s2=r.querySelector('input[name="s2[]"]').checked;
-                const s3=r.querySelector('input[name="s3[]"]').checked;
-                
-                // Recalc MPP Logic just in case
-                if((s1||s2||s3) && r.getAttribute('data-role')!=='LEADER' && r.getAttribute('data-role')!=='Admin') mpp++;
-                
-                att.push({ 
-                    userId: uid, 
-                    nama: nmVal, 
-                    s1: s1, s2: s2, s3: s3, 
-                    i: r.querySelector('input[name="ijin[]"]').checked, 
-                    s: r.querySelector('input[name="sakit[]"]').checked, 
-                    a: r.querySelector('input[name="alfa[]"]').checked, 
-                    ket: r.querySelector('input[name="ket[]"]').value 
-                });
-            });
-
-            if(err) return Swal.fire('Error', 'Nama DW Manual tidak boleh kosong', 'warning');
-            
-            const prod = mpp > 0 ? metrics.total_paket/mpp : 0;
-            const idx = document.getElementById('edit-laporan-id').value; 
-            const docId = idx || Date.now().toString();
-            
-            const newData = { id: docId, tanggal: document.getElementById('lap-tanggal').value, hub: h, ...metrics, total_mpp: mpp, productivity: prod, attendance_data: att };
-            
             try {
-                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', docId), newData);
-                window.closeLaporanModal(); 
-                Swal.fire('Sukses', 'Laporan berhasil disimpan!', 'success');
-            } catch (error) { 
-                console.error(error); 
-                Swal.fire('Error', 'Gagal menyimpan laporan: ' + error.message, 'error'); 
-            }
-        });
-
-        window.deleteLaporan = async (id) => {
-            const r = appData.laporan.find(x => x.id === id); if(currentUser.role!=='admin' && r.hub!==currentUser.kode_hub) return;
-            const del = async () => { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); Swal.fire('Terhapus','','success'); };
-            if(currentUser.role==='pic') { Swal.fire({title: 'Kode Akses', input: 'password', showCancelButton: true, preConfirm: (c) => c!==appData.accessCode?Swal.showValidationMessage('Salah'):true}).then((res) => { if(res.isConfirmed) del(); }); }
-            else Swal.fire({title: 'Hapus Laporan?', text: 'Data tidak bisa dikembalikan.', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Ya, Hapus'}).then(res=>{if(res.isConfirmed) del();});
+                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data);
+                window.closeLaporanModal(); window.notify('Laporan Tersimpan', 'success');
+            } catch(e) { window.notify('Gagal Simpan', 'error'); }
         };
 
+        // Edit
+        window.editLaporan = (id) => {
+            const d = appData.laporan.find(x => x.id === id);
+            window.openLaporanModal();
+            document.getElementById('laporan-modal-title').innerText = 'Edit Laporan';
+            document.getElementById('edit-laporan-id').value = id;
+            document.getElementById('lap-tanggal').value = d.tanggal;
+            if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
+            document.getElementById('lap-gateway').value = window.formatNumber(d.gateway);
+            document.getElementById('lap-staging').value = window.formatNumber(d.staging);
+            document.getElementById('lap-jne').value = window.formatNumber(d.jne);
+            document.getElementById('lap-sap').value = window.formatNumber(d.sap);
+            window.loadHubUsersForAttendance(d.hub, d.attendance_data);
+            window.calcMetrics();
+        };
+
+        window.deleteLaporan = (id) => {
+            Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
+        };
+        
+        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
+        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
     </script>
 </body>
 </html>

@@ -22,7 +22,11 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#4f46e5', secondary: '#64748b', success: '#10b981', danger: '#ef4444', dark: '#0f172a',
+                        primary: '#4f46e5', // Indigo 600
+                        secondary: '#64748b', // Slate 500
+                        success: '#10b981', // Emerald 500
+                        danger: '#ef4444', // Red 500
+                        dark: '#0f172a', // Slate 900
                     },
                     boxShadow: {
                         'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
@@ -36,9 +40,13 @@
     <style>
         body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
         
-        /* Dynamic Island */
+        /* Dynamic Island Animations */
         #dynamic-island-container { pointer-events: none; z-index: 9999; }
-        #dynamic-island { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 8px 30px rgba(0,0,0,0.12); pointer-events: auto; }
+        #dynamic-island {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            pointer-events: auto;
+        }
         .island-hidden { opacity: 0; transform: translateY(-20px) scale(0.9); pointer-events: none !important; }
         .island-loading { width: 40px; height: 40px; border-radius: 50%; background: #0f172a; }
         .island-expanded { width: auto; min-width: 180px; height: 44px; border-radius: 22px; padding: 0 16px; background: #0f172a; }
@@ -51,14 +59,12 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .attendance-checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: #4f46e5; border-radius: 4px; transition: transform 0.1s; }
-        .attendance-checkbox:active { transform: scale(0.9); }
-
-        /* Navigation */
+        /* Navbar Items */
         .nav-link { position: relative; color: #94a3b8; transition: all 0.3s; cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; }
         .nav-link:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
         .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); font-weight: 600; }
         
+        /* Bottom Mobile Nav */
         .mobile-nav-item { color: #64748b; transition: all 0.3s; }
         .mobile-nav-item.active { color: #4f46e5; font-weight: 600; }
         .mobile-nav-item.active i { transform: translateY(-2px); }
@@ -71,14 +77,14 @@
         button:active { transform: scale(0.97); }
 
         /* Absensi Table */
-        .abs-cell { min-width: 36px; text-align: center; border-right: 1px solid #f1f5f9; }
-        .abs-header { position: sticky; top: 0; background: #f8fafc; z-index: 10; font-size: 10px; }
-        .abs-name-col { position: sticky; left: 0; background: white; z-index: 20; border-right: 2px solid #e2e8f0; min-width: 140px; }
+        .abs-cell { min-width: 36px; text-align: center; border-right: 1px solid #f1f5f9; font-size: 11px; }
+        .abs-header { position: sticky; top: 0; background: #f8fafc; z-index: 20; font-size: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .abs-name-col { position: sticky; left: 0; background: white; z-index: 30; border-right: 2px solid #e2e8f0; min-width: 140px; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700">
 
-    <!-- DYNAMIC ISLAND -->
+    <!-- DYNAMIC ISLAND (Notification Center) -->
     <div id="dynamic-island-container" class="fixed top-6 left-0 right-0 flex justify-center">
         <div id="dynamic-island" class="island-hidden flex items-center justify-center overflow-hidden text-white group">
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
@@ -163,6 +169,10 @@
 
     <!-- LOGIN SECTION -->
     <div id="login-section" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-200/30 blur-3xl"></div>
+            <div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/30 blur-3xl"></div>
+        </div>
         <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100 relative fade-in z-10 m-4">
             <div class="text-center mb-8">
                 <div class="w-14 h-14 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-200 mb-4">
@@ -206,7 +216,10 @@
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div><h2 class="text-lg font-bold text-slate-800">Dashboard</h2><p class="text-xs text-slate-500">Ringkasan Kinerja Online</p></div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Dashboard</h2>
+                        <p class="text-xs text-slate-500">Ringkasan Kinerja Online</p>
+                    </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 md:flex-none">
                             <i class="far fa-calendar text-slate-400 text-xs"></i>
@@ -225,23 +238,39 @@
                     </div>
                 </div>
 
-                <!-- KPI CARDS (NEW) -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Paket</p><i class="fas fa-box text-indigo-100 text-xl"></i></div>
-                        <h3 class="text-2xl font-bold text-indigo-600" id="kpi-total-paket">0</h3>
+                <!-- KPI CARDS (Expanded to 8) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Total MPP</p>
+                        <h3 class="text-lg font-bold text-blue-600 mt-1" id="kpi-total-mpp">0</h3>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total MPP</p><i class="fas fa-users text-blue-100 text-xl"></i></div>
-                        <h3 class="text-2xl font-bold text-blue-600" id="kpi-total-mpp">0</h3>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Staging</p>
+                        <h3 class="text-lg font-bold text-slate-700 mt-1" id="kpi-staging">0</h3>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Rata-rata Prod</p><i class="fas fa-chart-line text-emerald-100 text-xl"></i></div>
-                        <h3 class="text-2xl font-bold text-emerald-600" id="kpi-avg-prod">0</h3>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Gateway</p>
+                        <h3 class="text-lg font-bold text-slate-700 mt-1" id="kpi-gateway">0</h3>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Cost</p><i class="fas fa-coins text-rose-100 text-xl"></i></div>
-                        <h3 class="text-lg font-bold text-rose-600" id="kpi-total-cost">Rp 0</h3>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">JNE</p>
+                        <h3 class="text-lg font-bold text-slate-700 mt-1" id="kpi-jne">0</h3>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">SAP</p>
+                        <h3 class="text-lg font-bold text-slate-700 mt-1" id="kpi-sap">0</h3>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Total Paket</p>
+                        <h3 class="text-lg font-bold text-indigo-600 mt-1" id="kpi-total-paket">0</h3>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Prod.</p>
+                        <h3 class="text-lg font-bold text-emerald-600 mt-1" id="kpi-avg-prod">0</h3>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Cost</p>
+                        <h3 class="text-sm font-bold text-rose-600 mt-1 truncate" id="kpi-total-cost">Rp 0</h3>
                     </div>
                 </div>
 
@@ -267,7 +296,7 @@
                         </div>
                         <div class="overflow-x-auto flex-1">
                             <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
-                                <thead class="text-slate-500 bg-slate-50 uppercase font-bold">
+                                <thead class="text-slate-500 bg-slate-50 uppercase font-bold sticky top-0 z-10">
                                     <tr>
                                         <th class="px-3 py-3 text-left">Tanggal</th><th class="px-3 py-3">HUB</th><th class="px-3 py-3 text-blue-600">MPP</th>
                                         <th class="px-3 py-3 text-slate-400">Stg</th><th class="px-3 py-3 text-slate-400">Gtw</th>
@@ -288,10 +317,10 @@
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-xs text-center">
-                                <thead class="text-slate-500 bg-slate-50 uppercase font-bold">
+                                <thead class="text-slate-500 bg-slate-50 uppercase font-bold sticky top-0 z-10">
                                     <tr>
-                                        <th class="px-3 py-3 text-left">HUB</th><th class="px-2 py-3 text-blue-600">MPP</th>
-                                        <th class="px-3 py-3 text-indigo-600">Out.</th><th class="px-2 py-3">Prod</th>
+                                        <th class="px-3 py-3 text-left">HUB</th><th class="px-2 py-3 text-blue-600">Total MPP</th>
+                                        <th class="px-3 py-3 text-indigo-600">Outbound</th><th class="px-2 py-3 text-emerald-600">Prod. HUB</th>
                                         <th class="px-3 py-3 text-right text-slate-400">Cost</th>
                                     </tr>
                                 </thead>
@@ -310,16 +339,16 @@
                         <i class="fas fa-plus"></i> Buat Laporan
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[75vh]">
+                    <div class="overflow-auto flex-1">
                         <table class="w-full text-xs text-left text-slate-600 whitespace-nowrap">
-                            <thead class="text-slate-500 uppercase bg-slate-50 border-b border-slate-100 font-bold">
+                            <thead class="text-slate-500 uppercase bg-slate-50 border-b border-slate-100 font-bold sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th class="px-4 py-4">Tanggal</th><th class="px-4 py-4">HUB</th>
-                                    <th class="px-2 py-4">Gtw</th><th class="px-2 py-4">Stg</th><th class="px-2 py-4">JNE</th><th class="px-2 py-4">SAP</th>
-                                    <th class="px-4 py-4 bg-slate-50 font-bold text-slate-800">Total</th>
-                                    <th class="px-4 py-4 text-blue-600">MPP</th><th class="px-4 py-4">Prod</th>
-                                    <th class="px-4 py-4 text-right">Aksi</th>
+                                    <th class="px-4 py-4 bg-slate-50">Tanggal</th><th class="px-4 py-4 bg-slate-50">HUB</th>
+                                    <th class="px-2 py-4 bg-slate-50">Gtw</th><th class="px-2 py-4 bg-slate-50">Stg</th><th class="px-2 py-4 bg-slate-50">JNE</th><th class="px-2 py-4 bg-slate-50">SAP</th>
+                                    <th class="px-4 py-4 bg-slate-100 font-bold text-slate-800">Total</th>
+                                    <th class="px-4 py-4 text-blue-600 bg-slate-50">MPP</th><th class="px-4 py-4 text-emerald-600 bg-slate-50">Prod</th>
+                                    <th class="px-4 py-4 text-right bg-slate-50">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="laporan-list-body" class="divide-y divide-slate-50"></tbody>
@@ -334,6 +363,18 @@
 
             <!-- VIEW: ABSENSI -->
             <div id="view-absensi" class="view-content hidden fade-in space-y-4">
+                 <!-- KPI Absensi -->
+                <div class="grid grid-cols-2 gap-4">
+                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total MPP</p><i class="fas fa-users text-blue-100 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-blue-600" id="abs-kpi-mpp">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Cost</p><i class="fas fa-coins text-rose-100 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-rose-600" id="abs-kpi-cost">Rp 0</h3>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
                     <div class="flex flex-wrap gap-2 items-center justify-between">
                          <div class="flex items-center gap-2 flex-1 min-w-[250px]">
@@ -348,8 +389,8 @@
                          </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[65vh]">
+                    <div class="overflow-auto flex-1">
                         <div id="absensi-table-container"><p class="text-center text-slate-400 text-xs py-8">Silakan pilih filter dan klik Tampilkan</p></div>
                     </div>
                 </div>
@@ -671,14 +712,18 @@
         window.loadDashboardData = () => {
             const s = new Date(document.getElementById('dash-start-date').value), e = new Date(document.getElementById('dash-end-date').value);
             const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
-            const data = appData.laporan.filter(l => { const d = new Date(l.tanggal); return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); }).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+            const data = appData.laporan.filter(l => { const d = new Date(l.tanggal); return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); }).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)); // Sorted Newest to Oldest (b-a)
             
             // Calc Totals for KPI
-            let totP=0, totM=0, totC=0;
+            let totP=0, totM=0, totC=0, totGtw=0, totStg=0, totJne=0, totSap=0;
             data.forEach(d => {
                 totP += d.total_paket;
                 totM += d.total_mpp;
                 totC += window.calculateReportCost(d);
+                totGtw += d.gateway || 0;
+                totStg += d.staging || 0;
+                totJne += d.jne || 0;
+                totSap += d.sap || 0;
             });
             const avgP = totM > 0 ? Math.round(totP/totM) : 0;
             
@@ -686,6 +731,10 @@
             document.getElementById('kpi-total-mpp').innerText = window.formatNumber(totM);
             document.getElementById('kpi-avg-prod').innerText = window.formatNumber(avgP);
             document.getElementById('kpi-total-cost').innerText = window.formatRupiah(totC);
+            document.getElementById('kpi-staging').innerText = window.formatNumber(totStg);
+            document.getElementById('kpi-gateway').innerText = window.formatNumber(totGtw);
+            document.getElementById('kpi-jne').innerText = window.formatNumber(totJne);
+            document.getElementById('kpi-sap').innerText = window.formatNumber(totSap);
 
             window.updateCharts(data, hubs); window.updateDashboardTables(data);
         };
@@ -775,7 +824,7 @@
                 const d=hAg[h]; 
                 const prod = d.m?Math.round(d.o/d.m):0;
                 const prodClass = window.getProdColorClass(prod);
-                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
+                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 font-medium"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
             });
         };
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
@@ -825,12 +874,24 @@
                 const d = new Date(l.tanggal);
                 return d >= sDate && d <= eDate && (hubFilter === 'ALL' || l.hub === hubFilter);
             });
+            
+            // KPI calculation for Absensi view
+            let totAbsMpp = 0;
+            let totAbsCost = 0;
+            reports.forEach(r => {
+                totAbsMpp += r.total_mpp;
+                totAbsCost += window.calculateReportCost(r);
+            });
+            document.getElementById('abs-kpi-mpp').innerText = window.formatNumber(totAbsMpp);
+            document.getElementById('abs-kpi-cost').innerText = window.formatRupiah(totAbsCost);
 
             const attMap = {};
             const colTotals = {}; 
 
             reports.forEach(r => {
                 if(!attMap[r.hub]) attMap[r.hub] = {};
+                
+                // Ensure colTotals initialized for this date (might be multiple reports same date if ALL hubs)
                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
 
                 if(r.attendance_data) {
@@ -842,7 +903,14 @@
                          if(status) {
                              if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
                              attMap[r.hub][a.userId][r.tanggal] = status;
-                             if(['1','2','3'].includes(status)) colTotals[r.tanggal]++;
+                             
+                             if(['1','2','3'].includes(status)) {
+                                 // We need to be careful not to double count if multiple reports exist for same hub/date (which shouldn't happen with validation)
+                                 // But across hubs on same date, we just sum up.
+                                 // Note: colTotals is keyed by Date String.
+                                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0; // redundant check but safe
+                                 colTotals[r.tanggal]++;
+                             }
                          }
                     });
                 }
@@ -851,13 +919,13 @@
             let hubsToShow = (hubFilter === 'ALL') ? appData.costs.map(c=>c.hub) : [hubFilter];
             let html = `<table class="w-full text-xs border-collapse">`;
             
-            html += `<thead class="abs-header"><tr>
-                        <th class="p-2 border bg-slate-100 text-left min-w-[150px] abs-name-col">Nama / HUB</th>`;
+            html += `<thead class="abs-header sticky top-0 bg-slate-50 z-20 shadow-sm"><tr>
+                        <th class="p-2 border bg-slate-50 text-left min-w-[150px] abs-name-col sticky left-0 z-30">Nama / HUB</th>`;
             dateRange.forEach(d => {
                 const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
-                html += `<th class="p-1 border bg-slate-100 abs-cell">${dStr}</th>`;
+                html += `<th class="p-1 border bg-slate-50 abs-cell font-medium text-slate-500">${dStr}</th>`;
             });
-            html += `<th class="p-1 border bg-slate-200 font-bold w-12">Total</th></tr></thead><tbody>`;
+            html += `<th class="p-1 border bg-slate-100 font-bold w-12 text-slate-700">Total</th></tr></thead><tbody>`;
 
             hubsToShow.forEach(h => {
                 let users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => {
@@ -866,7 +934,8 @@
                      if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id);
                 });
 
-                html += `<tr class="bg-indigo-50"><td class="p-2 border font-bold text-indigo-700 abs-name-col" colspan="${dateRange.length + 2}">${h}</td></tr>`;
+                // HUB Header Row
+                html += `<tr class="bg-indigo-50"><td class="p-2 border font-bold text-indigo-700 abs-name-col sticky left-0 z-20" colspan="1">${h}</td><td colspan="${dateRange.length + 1}" class="bg-indigo-50 border"></td></tr>`;
 
                 let currentRole = '';
 
@@ -874,14 +943,17 @@
                      let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
                      if(roleType !== currentRole) {
                          currentRole = roleType;
-                         html += `<tr class="bg-slate-50"><td class="p-1 border text-[10px] font-bold text-slate-400 pl-4 abs-name-col" colspan="${dateRange.length + 2}">${currentRole}</td></tr>`;
+                         html += `<tr class="bg-slate-50/50"><td class="p-1 border text-[10px] font-bold text-slate-400 pl-4 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length + 1}" class="border bg-slate-50/50"></td></tr>`;
                      }
 
                      let rowTotal = 0;
-                     html += `<tr><td class="p-2 border font-medium text-slate-700 abs-name-col">${u.nama}</td>`;
+                     html += `<tr><td class="p-2 border font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[150px]">${u.nama}</td>`;
                      
                      dateRange.forEach(d => {
-                         const dateKey = d.toISOString().split('T')[0];
+                         // Important: Match format with r.tanggal (YYYY-MM-DD) from input type=date
+                         const offset = d.getTimezoneOffset();
+                         const dateKey = new Date(d.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+                         
                          let status = '';
                          if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
                              status = attMap[h][u.id][dateKey];
@@ -889,21 +961,23 @@
                          
                          let cellClass = '';
                          if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; rowTotal++; }
-                         else if(status==='I') cellClass='bg-yellow-50 text-amber-500';
-                         else if(status==='S') cellClass='bg-purple-50 text-purple-500';
-                         else if(status==='A') cellClass='bg-red-50 text-red-500';
+                         else if(status==='I') cellClass='bg-yellow-50 text-amber-500 font-bold';
+                         else if(status==='S') cellClass='bg-purple-50 text-purple-500 font-bold';
+                         else if(status==='A') cellClass='bg-red-50 text-red-500 font-bold';
 
                          html += `<td class="p-1 border abs-cell ${cellClass}">${status}</td>`;
                      });
                      
-                     html += `<td class="p-1 border text-center font-bold bg-slate-50">${rowTotal}</td></tr>`;
+                     html += `<td class="p-1 border text-center font-bold bg-slate-50 text-slate-700">${rowTotal}</td></tr>`;
                 });
             });
             
-            html += `<tr class="bg-slate-100 font-bold"><td class="p-2 border text-right abs-name-col">Total Hadir:</td>`;
+            // Grand Total Row
+            html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20"><td class="p-2 border text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700">Total Hadir:</td>`;
             let rangeTotal = 0;
             dateRange.forEach(d => {
-                 const dateKey = d.toISOString().split('T')[0];
+                 const offset = d.getTimezoneOffset();
+                 const dateKey = new Date(d.getTime() - (offset*60*1000)).toISOString().split('T')[0];
                  const tot = colTotals[dateKey] || 0;
                  rangeTotal += tot;
                  html += `<td class="p-1 border text-center text-indigo-600">${tot}</td>`;
@@ -1006,7 +1080,7 @@
                     // UPDATE: Removed COST, Added Details, Apply Prod Color
                     tb.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                            <td class="px-6 py-4 font-medium text-slate-700">${l.tanggal}</td>
+                            <td class="px-6 py-4 font-medium text-slate-700 sticky left-0 bg-white z-10">${l.tanggal}</td>
                             <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${l.hub}</span></td>
                             <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.gateway)}</td>
                             <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.staging)}</td>

@@ -200,7 +200,7 @@
             <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
                 <div class="max-w-[1400px] mx-auto">
                     
-                    <!-- VIEW: DASHBOARD -->
+                    <!-- VIEW: DASHBOARD (UPDATED) -->
                     <div id="view-dashboard" class="content-view hidden space-y-6">
                         <div class="flex flex-col md:flex-row justify-between items-center mb-4">
                             <h2 class="text-xl font-bold text-slate-800 mb-2 md:mb-0">Dashboard Overview</h2>
@@ -561,6 +561,7 @@
             loading: document.getElementById('loading-screen'),
             loginScreen: document.getElementById('login-screen'),
             appScreen: document.getElementById('app-screen'),
+            // Login
             loginForm: document.getElementById('login-form'),
             loginNik: document.getElementById('login-nik'),
             loginPass: document.getElementById('login-pass'),
@@ -572,6 +573,7 @@
             tabLoginSorter: document.getElementById('tab-login-sorter'),
             tabLoginLeader: document.getElementById('tab-login-leader'),
             tabLoginAdmin: document.getElementById('tab-login-admin'),
+            
             sidebar: document.getElementById('sidebar'),
             sidebarOverlay: document.getElementById('sidebar-overlay'),
             openSidebarBtn: document.getElementById('open-sidebar'),
@@ -579,30 +581,103 @@
             menuSettings: document.getElementById('menu-settings'),
             userNameDisplay: document.getElementById('user-name-display'),
             userRoleDisplay: document.getElementById('user-role-display'),
+            
+            // Security Modal
             securityModal: document.getElementById('security-modal'),
             inputSecureCode: document.getElementById('input-secure-code'),
             btnCancelSecure: document.getElementById('btn-cancel-secure'),
             btnConfirmSecure: document.getElementById('btn-confirm-secure'),
             secureError: document.getElementById('secure-error'),
-            views: { dashboard: document.getElementById('view-dashboard'), reports: document.getElementById('view-reports'), settings: document.getElementById('view-settings') },
-            dashName: document.getElementById('dash-name'), dashRole: document.getElementById('dash-role'), dashInfo: document.getElementById('dash-info'),
-            dashStartDate: document.getElementById('dash-start-date'), dashEndDate: document.getElementById('dash-end-date'), dashHubContainer: document.getElementById('dash-hub-container'),
+
+            views: {
+                dashboard: document.getElementById('view-dashboard'),
+                reports: document.getElementById('view-reports'),
+                settings: document.getElementById('view-settings')
+            },
+            
+            dashName: document.getElementById('dash-name'),
+            dashRole: document.getElementById('dash-role'),
+            dashInfo: document.getElementById('dash-info'),
+            
+            // Dashboard Elements
+            dashStartDate: document.getElementById('dash-start-date'),
+            dashEndDate: document.getElementById('dash-end-date'),
+            dashHubContainer: document.getElementById('dash-hub-container'),
             // KPI Elements
             kpiTotalPaket: document.getElementById('kpi-total-paket'),
             kpiTotalMpp: document.getElementById('kpi-total-mpp'),
             kpiProductivity: document.getElementById('kpi-productivity'),
             kpiTotalCost: document.getElementById('kpi-total-cost'),
             kpiCpp: document.getElementById('kpi-cpp'),
-            canvasAnnual: document.getElementById('annualChart'), canvasDaily: document.getElementById('dailyChart'),
-            dashTableDaily: document.getElementById('dash-table-daily'), dashTableHub: document.getElementById('dash-table-hub'),
-            sectionInputReport: document.getElementById('section-input-report'), formDailyReport: document.getElementById('form-daily-report'), formReportTitle: document.getElementById('form-report-title'), editReportId: document.getElementById('edit-report-id'), rptDate: document.getElementById('rpt-date'), rptHubContainer: document.getElementById('rpt-hub-container'), rptHub: document.getElementById('rpt-hub'), rptGateway: document.getElementById('rpt-gateway'), rptStaging: document.getElementById('rpt-staging'), rptSap: document.getElementById('rpt-sap'), rptJne: document.getElementById('rpt-jne'), rptTotalPaket: document.getElementById('rpt-total-paket'), rptProductivity: document.getElementById('rpt-productivity'), btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'), sorterAttendanceList: document.getElementById('sorter-attendance-list'), displayTotalMpp: document.getElementById('display-total-mpp'), btnSaveReport: document.getElementById('btn-save-report'), rptMsg: document.getElementById('rpt-msg'), rptHistoryBody: document.getElementById('rpt-history-body'),
-            formAddHub: document.getElementById('form-add-hub'), editHubId: document.getElementById('edit-hub-id'), hubCode: document.getElementById('hub-code'), hubName: document.getElementById('hub-name'), hubRate: document.getElementById('hub-rate'), btnSaveHub: document.getElementById('btn-save-hub'), btnCancelHub: document.getElementById('btn-cancel-hub'), hubMsg: document.getElementById('hub-msg'), hubTableBody: document.getElementById('hub-table-body'),
-            formAddUser: document.getElementById('form-add-user'), formUserTitle: document.getElementById('form-user-title'), editUserId: document.getElementById('edit-user-id'), userNik: document.getElementById('user-nik'), userName: document.getElementById('user-name'), userHub: document.getElementById('user-hub'), userRole: document.getElementById('user-role'), userCanLogin: document.getElementById('user-can-login'), userPass: document.getElementById('user-pass'), passContainer: document.getElementById('password-container'), btnSaveUser: document.getElementById('btn-save-user'), btnCancelEdit: document.getElementById('btn-cancel-edit'), userMsg: document.getElementById('user-msg'), userTableBody: document.getElementById('user-table-body'), userCount: document.getElementById('user-count'),
-            formConfigSecurity: document.getElementById('form-config-security'), configAdminPass: document.getElementById('config-admin-pass'), configSecureCode: document.getElementById('config-secure-code'), formConfigCost: document.getElementById('form-config-cost'), configDwRate: document.getElementById('config-dw-rate'), configMsg: document.getElementById('config-msg')
+            canvasAnnual: document.getElementById('annualChart'),
+            canvasDaily: document.getElementById('dailyChart'),
+            dashTableDaily: document.getElementById('dash-table-daily'),
+            dashTableHub: document.getElementById('dash-table-hub'),
+
+            // Reports
+            sectionInputReport: document.getElementById('section-input-report'),
+            formDailyReport: document.getElementById('form-daily-report'),
+            formReportTitle: document.getElementById('form-report-title'),
+            editReportId: document.getElementById('edit-report-id'),
+            rptDate: document.getElementById('rpt-date'),
+            rptHubContainer: document.getElementById('rpt-hub-container'), 
+            rptHub: document.getElementById('rpt-hub'),
+            rptGateway: document.getElementById('rpt-gateway'),
+            rptStaging: document.getElementById('rpt-staging'),
+            rptSap: document.getElementById('rpt-sap'),
+            rptJne: document.getElementById('rpt-jne'),
+            rptTotalPaket: document.getElementById('rpt-total-paket'),
+            rptProductivity: document.getElementById('rpt-productivity'),
+            btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'),
+            
+            sorterAttendanceList: document.getElementById('sorter-attendance-list'),
+            displayTotalMpp: document.getElementById('display-total-mpp'),
+            
+            btnSaveReport: document.getElementById('btn-save-report'),
+            rptMsg: document.getElementById('rpt-msg'),
+            rptHistoryBody: document.getElementById('rpt-history-body'),
+            
+            // Settings - Hubs
+            formAddHub: document.getElementById('form-add-hub'),
+            editHubId: document.getElementById('edit-hub-id'),
+            hubCode: document.getElementById('hub-code'),
+            hubName: document.getElementById('hub-name'),
+            hubRate: document.getElementById('hub-rate'),
+            btnSaveHub: document.getElementById('btn-save-hub'),
+            btnCancelHub: document.getElementById('btn-cancel-hub'),
+            hubMsg: document.getElementById('hub-msg'),
+            hubTableBody: document.getElementById('hub-table-body'),
+
+            // Settings - Users
+            formAddUser: document.getElementById('form-add-user'),
+            formUserTitle: document.getElementById('form-user-title'),
+            editUserId: document.getElementById('edit-user-id'),
+            userNik: document.getElementById('user-nik'),
+            userName: document.getElementById('user-name'),
+            userHub: document.getElementById('user-hub'),
+            userRole: document.getElementById('user-role'),
+            userCanLogin: document.getElementById('user-can-login'),
+            userPass: document.getElementById('user-pass'),
+            passContainer: document.getElementById('password-container'),
+            btnSaveUser: document.getElementById('btn-save-user'),
+            btnCancelEdit: document.getElementById('btn-cancel-edit'),
+            userMsg: document.getElementById('user-msg'),
+            userTableBody: document.getElementById('user-table-body'),
+            userCount: document.getElementById('user-count'),
+
+            // Config
+            formConfigSecurity: document.getElementById('form-config-security'),
+            configAdminPass: document.getElementById('config-admin-pass'),
+            configSecureCode: document.getElementById('config-secure-code'),
+            formConfigCost: document.getElementById('form-config-cost'),
+            configDwRate: document.getElementById('config-dw-rate'),
+            configMsg: document.getElementById('config-msg'),
         };
 
         // --- UTILS ---
-        function formatNumber(num) { return Number(num).toLocaleString('id-ID'); }
+        function formatNumber(num) {
+            return Number(num).toLocaleString('id-ID');
+        }
 
         // --- INITIALIZATION ---
         async function init() {
@@ -626,7 +701,7 @@
             try {
                 const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'));
                 if (snap.exists()) state.config = { ...state.config, ...snap.data() };
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Config Load Error", e); }
         }
 
         // --- SECURITY LOGIC ---
@@ -711,7 +786,8 @@
 
         function loadDashboard() {
             els.dashName.textContent = state.userData?.name || state.role; els.dashRole.textContent = state.userData?.role || state.role; els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only' : 'User Mode');
-            if(!els.dashStartDate.value) { const now = new Date(); const start = new Date(now.getFullYear(), 0, 1); els.dashStartDate.valueAsDate = start; els.dashEndDate.valueAsDate = now; }
+            // Default to current month for performance
+            if(!els.dashStartDate.value) { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); els.dashStartDate.valueAsDate = start; els.dashEndDate.valueAsDate = now; }
             if (state.role === 'admin') {
                 if (state.hubs.length === 0) {
                     getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs')).then(snap => {
@@ -746,12 +822,14 @@
 
                 reports.sort((a, b) => a.date.localeCompare(b.date));
 
-                let totalPaket = 0; let totalMppAll = 0; let totalCost = 0;
+                let totalPaket = 0; let totalMpp = 0; let totalCost = 0;
                 const monthlyData = {}; const dailyData = {}; const hubData = {};
 
                 reports.forEach(r => {
                     totalPaket += (r.total_paket || 0);
-                    totalMppAll += (r.total_mpp || 0);
+                    // Filter MPP for dashboard calc as well to be consistent (already filtered in DB save, but just in case)
+                    // The 'total_mpp' field in DB should be Sorter+DW only as per save logic.
+                    totalMpp += (r.total_mpp || 0); 
                     totalCost += (r.est_cost || 0);
 
                     // Monthly
@@ -780,12 +858,12 @@
                 });
 
                 // Calculate Aggregates for KPI
-                const avgProd = totalMppAll > 0 ? Math.round(totalPaket / totalMppAll) : 0;
+                const avgProd = totalMpp > 0 ? Math.round(totalPaket / totalMpp) : 0;
                 const avgCpp = totalPaket > 0 ? Math.round(totalCost / totalPaket) : 0;
 
                 // Render KPI
                 els.kpiTotalPaket.textContent = formatNumber(totalPaket);
-                els.kpiTotalMpp.textContent = formatNumber(totalMppAll);
+                els.kpiTotalMpp.textContent = formatNumber(totalMpp);
                 els.kpiProductivity.textContent = formatNumber(avgProd);
                 els.kpiTotalCost.textContent = "Rp " + formatNumber(totalCost);
                 els.kpiCpp.textContent = "Rp " + formatNumber(avgCpp);
@@ -856,12 +934,18 @@
             const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
             const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
             const totalPaket = g+s+sa+j; els.rptTotalPaket.value = formatNumber(totalPaket);
+            
             let workingCount = 0; let sorterDwCount = 0;
             document.querySelectorAll('#sorter-attendance-list tr').forEach(row => {
                 const checked = row.querySelector('.attendance-radio:checked');
                 if(checked && ['s1','s2','s3'].includes(checked.value)) {
-                    const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
-                    if(!role.includes('leader')) { workingCount++; sorterDwCount++; }
+                    // Check Role from DOM (data-name row logic) or DB logic.
+                    // The simplest is to rely on what was rendered.
+                    // Admin isn't rendered. Leaders are rendered with (leader).
+                    const roleText = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
+                    if(!roleText.includes('leader')) { 
+                        workingCount++; sorterDwCount++; 
+                    }
                 }
             });
             els.displayTotalMpp.textContent = workingCount;
@@ -898,7 +982,6 @@
                 state.hubs = hubsSnap.docs.map(doc => doc.data());
             }
 
-            // ADMIN INPUT FIX: Only create select if not exists or if we need to refresh options
             if (state.role === 'admin') {
                 const existingSelect = document.getElementById('rpt-hub-select');
                 if (!existingSelect) {
@@ -907,7 +990,6 @@
                     els.rptHubContainer.innerHTML = `<select id="rpt-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-blue-500 focus:border-blue-500 outline-none">${options}</select>`;
                     setupHubListener();
                 } 
-                // If exists, keep current value
             } else {
                 currentHubCode = state.userData?.hub_code || 'UNKNOWN';
                 els.rptHubContainer.innerHTML = `<input type="text" id="rpt-hub-static" value="${currentHubCode}" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" readonly>`;
@@ -916,7 +998,6 @@
             const getSelectedHub = () => state.role === 'admin' ? (document.getElementById('rpt-hub-select')?.value || '') : currentHubCode;
             const hubCode = getSelectedHub();
             
-            // Only load employees if we have a valid hub code selected
             if (state.role !== 'sorter' && (hubCode || state.role !== 'admin')) {
                 loadEmployeesForReport(hubCode);
             } else if (state.role === 'admin' && !hubCode) {

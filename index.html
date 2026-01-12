@@ -116,7 +116,7 @@
                 </button>
                 
                 <p class="text-xs text-center text-slate-400 mt-4" id="login-hint">
-                    Masuk sebagai Leader
+                    Masuk sebagai Leader/Staf (Akses Penuh)
                 </p>
             </form>
         </div>
@@ -750,7 +750,7 @@
             } else if (tab === 'leader') {
                 els.fieldNik.classList.remove('hidden');
                 els.fieldPass.classList.remove('hidden');
-                els.loginHint.textContent = "Masuk sebagai Leader";
+                els.loginHint.textContent = "Masuk sebagai Leader/Staf (Akses Penuh)";
                 els.loginNik.required = true;
                 els.loginPass.required = true;
             } else if (tab === 'admin') {
@@ -788,20 +788,21 @@
                         throw new Error('Password Admin Salah');
                     }
                 } else if (tab === 'leader') {
-                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass), where("role", "==", "leader"));
+                    // Masuk sebagai Leader (Siapapun yang punya akses login)
+                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
                     const snap = await getDocs(q);
                     if (!snap.empty) {
                         const u = snap.docs[0].data();
-                        if (u.can_login) updateLocalState('leader', u); 
-                        else throw new Error('Akun Leader tidak aktif.');
+                        if (u.can_login) updateLocalState('leader', u); // Role 'leader' means Write Access here
+                        else throw new Error('Akun ini tidak memiliki akses login (Hanya View). Gunakan tab Sorter.');
                     } else throw new Error('NIK atau Password Salah');
                 } else if (tab === 'sorter') {
-                    // Check if NIK exists as sorter
+                    // Check if NIK exists as sorter (Read Only)
                     const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
                     const snap = await getDocs(q);
                     if (!snap.empty) {
                         const u = snap.docs[0].data();
-                        updateLocalState('sorter', u);
+                        updateLocalState('sorter', u); // Role 'sorter' means Read Only
                     } else throw new Error('NIK tidak ditemukan.');
                 }
 
@@ -833,7 +834,8 @@
             els.loginScreen.classList.add('hidden');
             els.appScreen.classList.remove('hidden');
             els.userNameDisplay.textContent = state.userData?.name || 'User';
-            els.userRoleDisplay.textContent = state.role;
+            // Tampilkan Jabatan Asli jika ada, kalau tidak gunakan Role sesi
+            els.userRoleDisplay.textContent = state.userData?.role || state.role;
             
             // Access Control UI
             if (state.role === 'admin') {
@@ -842,7 +844,7 @@
                 els.menuSettings.classList.add('hidden');
             }
 
-            // Hide Input Report if Sorter
+            // Hide Input Report if Sorter (Read Only)
             if (state.role === 'sorter') {
                 if(els.sectionInputReport) els.sectionInputReport.classList.add('hidden');
             } else {
@@ -874,7 +876,7 @@
 
         function loadDashboard() {
             els.dashName.textContent = state.userData?.name || state.role;
-            els.dashRole.textContent = state.role;
+            els.dashRole.textContent = state.userData?.role || state.role;
             els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only Mode' : 'User Mode');
         }
 
@@ -973,8 +975,10 @@
         window.loadMyReports = async () => {
             els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
             try {
-                // Fetch ALL reports, limit to 20 for performance
+                // Fetch ALL reports (Global View)
                 const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
+                
+                // Remove User Filter so everyone sees everything (Limit 20)
                 let q = query(reportsRef, orderBy("date", "desc"), limit(20));
 
                 let querySnapshot;
@@ -996,7 +1000,7 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
                     
-                    // Logic Hak Akses Tombol
+                    // Logic Hak Akses Tombol: Hanya Admin atau Leader di HUB yang sama
                     let actionButtons = '';
                     if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === data.hub)) {
                         actionButtons = `
@@ -1025,7 +1029,7 @@
             secureCheck(async () => {
                 // Double check permission on execute
                 if(state.role !== 'admin' && hub !== state.userData.hub_code) {
-                    alert("Akses Ditolak."); return;
+                    alert("Akses Ditolak. Anda hanya bisa menghapus laporan HUB Anda."); return;
                 }
                 if(!confirm('Hapus laporan ini?')) return;
                 try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); } 
@@ -1036,7 +1040,7 @@
         window.confirmEditReport = (rpt) => {
             secureCheck(() => {
                 if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) {
-                    alert("Akses Ditolak."); return;
+                    alert("Akses Ditolak. Anda hanya bisa mengedit laporan HUB Anda."); return;
                 }
                 els.editReportId.value = rpt.id;
                 els.rptDate.value = rpt.date;

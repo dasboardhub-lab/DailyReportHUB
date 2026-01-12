@@ -11,6 +11,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -195,27 +198,151 @@
 
             <!-- Content Views -->
             <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
-                <div class="max-w-6xl mx-auto">
+                <div class="max-w-[1400px] mx-auto">
                     
-                    <!-- VIEW: DASHBOARD -->
+                    <!-- VIEW: DASHBOARD (UPDATED) -->
                     <div id="view-dashboard" class="content-view hidden space-y-6">
-                        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                            <h2 class="text-xl font-bold text-slate-800 mb-1">Halo, <span id="dash-name">User</span>!</h2>
-                            <p class="text-slate-500 text-sm">Selamat datang kembali di Dashboard.</p>
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-slate-800 mb-2 md:mb-0">Dashboard Overview</h2>
                         </div>
 
+                        <!-- Filter Section -->
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Mulai Tanggal</label>
+                                    <input type="date" id="dash-start-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Sampai Tanggal</label>
+                                    <input type="date" id="dash-end-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">Filter HUB</label>
+                                    <div id="dash-hub-container">
+                                        <!-- Populated via JS -->
+                                        <select disabled class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-100"><option>Loading...</option></select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button onclick="loadDashboardStats()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                        <i data-lucide="filter" class="w-4 h-4"></i> Terapkan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary Cards -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                                <div class="text-slate-500 mb-2 text-sm font-medium uppercase">Role Anda</div>
-                                <div id="dash-role" class="text-2xl font-bold text-blue-600 capitalize">-</div>
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="text-slate-500 mb-1 text-sm font-medium uppercase">Total Paket</div>
+                                        <div id="dash-total-paket" class="text-3xl font-bold text-blue-600">0</div>
+                                    </div>
+                                    <div class="p-2 bg-blue-50 rounded-lg"><i data-lucide="package" class="w-6 h-6 text-blue-500"></i></div>
+                                </div>
                             </div>
-                            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 md:col-span-2">
-                                <div class="text-slate-500 mb-2 text-sm font-medium uppercase">Info</div>
-                                <p id="dash-info" class="text-slate-700">Info role...</p>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="text-slate-500 mb-1 text-sm font-medium uppercase">Rata-rata Produktivitas</div>
+                                        <div id="dash-avg-prod" class="text-3xl font-bold text-green-600">0</div>
+                                        <div class="text-xs text-slate-400 mt-1">Paket / MPP</div>
+                                    </div>
+                                    <div class="p-2 bg-green-50 rounded-lg"><i data-lucide="activity" class="w-6 h-6 text-green-500"></i></div>
+                                </div>
                             </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="text-slate-500 mb-1 text-sm font-medium uppercase">Estimasi Cost</div>
+                                        <div id="dash-total-cost" class="text-3xl font-bold text-slate-800">0</div>
+                                        <div class="text-xs text-slate-400 mt-1">Total Biaya Operasional</div>
+                                    </div>
+                                    <div class="p-2 bg-slate-100 rounded-lg"><i data-lucide="dollar-sign" class="w-6 h-6 text-slate-500"></i></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Annual Section -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-700 mb-4">Tren Performa Tahunan (Bulanan)</h3>
+                            <div class="relative h-64 w-full">
+                                <canvas id="annualChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart Daily Section -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-700 mb-4">Tren Harian (Sesuai Filter)</h3>
+                            <div class="relative h-64 w-full">
+                                <canvas id="dailyChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Tables Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            
+                            <!-- Detailed Daily Table -->
+                            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                                    <h3 class="font-bold text-slate-700">Rincian Pertanggal</h3>
+                                </div>
+                                <div class="overflow-x-auto max-h-96">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                                            <tr>
+                                                <th class="p-3">Tanggal</th>
+                                                <th class="p-3 text-right">MPP</th>
+                                                <th class="p-3 text-right">Gateway</th>
+                                                <th class="p-3 text-right">Staging</th>
+                                                <th class="p-3 text-right">SAP</th>
+                                                <th class="p-3 text-right">JNE</th>
+                                                <th class="p-3 text-right font-bold text-blue-600">Total Outbound</th>
+                                                <th class="p-3 text-right font-bold text-green-600">Prod. HUB</th>
+                                                <th class="p-3 text-right">Cost Mitra</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-table-daily" class="divide-y divide-slate-100">
+                                            <tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Breakdown Per HUB Table -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                                    <h3 class="font-bold text-slate-700">Breakdown Performance per HUB</h3>
+                                </div>
+                                <div class="overflow-x-auto max-h-96">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                                            <tr>
+                                                <th class="p-3">HUB</th>
+                                                <th class="p-3 text-right">Total MPP</th>
+                                                <th class="p-3 text-right">Total Outbound</th>
+                                                <th class="p-3 text-right">Prod. HUB</th>
+                                                <th class="p-3 text-right">Cost</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-table-hub" class="divide-y divide-slate-100">
+                                            <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
+                    <!-- VIEW: REPORTS -->
+                    <!-- ... (Kode View Reports sama seperti sebelumnya) ... -->
+                    
+                    <!-- (SISA KODE VIEW REPORTS DAN SETTINGS TETAP SAMA SEPERTI SEBELUMNYA UNTUK EFISIENSI KARAKTER, SAYA AKAN FOKUS PADA LOGIKA DASHBOARD DI JAVASCRIPT) -->
+                    <!-- Saya sertakan kembali struktur Reports & Settings agar file lengkap -->
+                    
                     <!-- VIEW: REPORTS -->
                     <div id="view-reports" class="content-view hidden space-y-6">
                         <div class="flex items-center justify-between">
@@ -223,7 +350,7 @@
                             <span id="current-date-display" class="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200"></span>
                         </div>
                         
-                        <!-- Form Input (Hanya untuk Admin & Leader) -->
+                        <!-- Form Input -->
                         <div id="section-input-report" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                                 <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> <span id="form-report-title">Input Laporan Operasional</span>
@@ -238,7 +365,6 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-slate-500 mb-1">HUB Operasional</label>
-                                        <!-- Container untuk Admin Select / Leader Readonly -->
                                         <div id="rpt-hub-container">
                                             <input type="text" id="rpt-hub-static" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
                                         </div>
@@ -291,7 +417,6 @@
                                             <p class="text-[10px] text-slate-400">*Hanya Sorter & DW</p>
                                         </div>
                                     </div>
-                                    
                                     <div class="border border-slate-200 rounded-lg overflow-hidden bg-white">
                                         <div class="max-h-80 overflow-y-auto">
                                             <table class="w-full text-sm text-left">
@@ -308,9 +433,7 @@
                                                         <th class="p-3 w-8"></th>
                                                     </tr>
                                                 </thead>
-                                                <tbody id="sorter-attendance-list" class="divide-y divide-slate-100">
-                                                    <!-- List Sorter Akan Digenerate Disini -->
-                                                </tbody>
+                                                <tbody id="sorter-attendance-list" class="divide-y divide-slate-100"></tbody>
                                             </table>
                                         </div>
                                         <div class="p-3 bg-slate-50 border-t border-slate-200">
@@ -332,7 +455,7 @@
                             </form>
                         </div>
 
-                        <!-- Table History (Untuk Semua User) -->
+                        <!-- Table History -->
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                                 <h3 class="font-semibold text-slate-800">Riwayat Laporan</h3>
@@ -364,175 +487,66 @@
                         <div class="flex flex-col md:flex-row justify-between items-center mb-4">
                             <h2 class="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
                         </div>
-
-                        <!-- Tabs Navigation -->
                         <div class="flex border-b border-slate-200 mb-6 gap-6 overflow-x-auto">
-                            <button onclick="switchSettingsTab('hubs')" id="tab-btn-hubs" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-active transition-colors">
-                                Data HUB
-                            </button>
-                            <button onclick="switchSettingsTab('employees')" id="tab-btn-employees" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">
-                                Data Karyawan
-                            </button>
-                            <button onclick="switchSettingsTab('config')" id="tab-btn-config" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2">
-                                <i data-lucide="settings-2" class="w-3 h-3"></i> Konfigurasi Umum
-                            </button>
+                            <button onclick="switchSettingsTab('hubs')" id="tab-btn-hubs" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-active transition-colors">Data HUB</button>
+                            <button onclick="switchSettingsTab('employees')" id="tab-btn-employees" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">Data Karyawan</button>
+                            <button onclick="switchSettingsTab('config')" id="tab-btn-config" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2"><i data-lucide="settings-2" class="w-3 h-3"></i> Konfigurasi Umum</button>
                         </div>
 
                         <!-- TAB: DATA HUB -->
                         <div id="tab-content-hubs" class="settings-tab-content space-y-6">
                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                    <i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i> Tambah / Edit HUB
-                                </h3>
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i> Tambah / Edit HUB</h3>
                                 <form id="form-add-hub" class="flex flex-col md:flex-row gap-4 items-end">
                                     <input type="hidden" id="edit-hub-id">
-                                    <div class="w-full md:w-1/4">
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB</label>
-                                        <input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required>
-                                    </div>
-                                    <div class="w-full md:w-2/4">
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">Nama HUB</label>
-                                        <input type="text" id="hub-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lokasi HUB" required>
-                                    </div>
-                                    <div class="w-full md:w-1/4">
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">Rate Sorter (Rp)</label>
-                                        <input type="number" id="hub-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0">
-                                    </div>
-                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[80px]">
-                                        Simpan
-                                    </button>
+                                    <div class="w-full md:w-1/4"><label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB</label><input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required></div>
+                                    <div class="w-full md:w-2/4"><label class="block text-xs font-medium text-slate-500 mb-1">Nama HUB</label><input type="text" id="hub-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lokasi HUB" required></div>
+                                    <div class="w-full md:w-1/4"><label class="block text-xs font-medium text-slate-500 mb-1">Rate Sorter (Rp)</label><input type="number" id="hub-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0"></div>
+                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[80px]">Simpan</button>
                                     <button type="button" id="btn-cancel-hub" class="hidden text-slate-500 text-sm" onclick="resetHubForm()">Batal</button>
                                 </form>
                                 <p id="hub-msg" class="text-xs mt-3 hidden"></p>
                             </div>
-
                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                                 <div class="p-4 border-b border-slate-100 bg-slate-50"><h3 class="font-semibold text-slate-800">Daftar HUB & Biaya</h3></div>
-                                <table class="w-full text-left text-sm">
-                                    <thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Rate Sorter</th><th class="p-4 text-right">Aksi</th></tr></thead>
-                                    <tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody>
-                                </table>
+                                <table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Rate Sorter</th><th class="p-4 text-right">Aksi</th></tr></thead><tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody></table>
                             </div>
                         </div>
 
                         <!-- TAB: DATA KARYAWAN -->
                         <div id="tab-content-employees" class="settings-tab-content hidden space-y-6">
                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                    <i data-lucide="user-plus" class="w-5 h-5 text-blue-600"></i> <span id="form-user-title">Tambah Data Karyawan</span>
-                                </h3>
+                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="user-plus" class="w-5 h-5 text-blue-600"></i> <span id="form-user-title">Tambah Data Karyawan</span></h3>
                                 <form id="form-add-user" class="space-y-4">
                                     <input type="hidden" id="edit-user-id">
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">NIK</label>
-                                            <input type="text" id="user-nik" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nomor Induk" required>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label>
-                                            <input type="text" id="user-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama" required>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Penempatan HUB</label>
-                                            <select id="user-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required>
-                                                <option value="">Pilih HUB...</option>
-                                                <!-- Populated by JS -->
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Status / Jabatan</label>
-                                            <select id="user-role" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required>
-                                                <option value="leader">Leader</option>
-                                                <option value="sorter">Sorter</option>
-                                                <option value="dw">DW</option>
-                                            </select>
-                                        </div>
+                                        <div><label class="block text-xs font-medium text-slate-500 mb-1">NIK</label><input type="text" id="user-nik" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nomor Induk" required></div>
+                                        <div><label class="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label><input type="text" id="user-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama" required></div>
+                                        <div><label class="block text-xs font-medium text-slate-500 mb-1">Penempatan HUB</label><select id="user-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required><option value="">Pilih HUB...</option></select></div>
+                                        <div><label class="block text-xs font-medium text-slate-500 mb-1">Status / Jabatan</label><select id="user-role" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required><option value="leader">Leader</option><option value="sorter">Sorter</option><option value="dw">DW</option></select></div>
                                     </div>
-                                    
                                     <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col md:flex-row gap-4 items-center">
-                                        <div class="flex items-center gap-2">
-                                            <input type="checkbox" id="user-can-login" class="custom-checkbox accent-blue-600" onchange="togglePasswordInput()">
-                                            <label for="user-can-login" class="text-sm font-medium text-slate-700 cursor-pointer">Beri Akses Login Aplikasi?</label>
-                                        </div>
-                                        <div id="password-container" class="flex-1 hidden">
-                                            <input type="text" id="user-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Set Password Login">
-                                        </div>
+                                        <div class="flex items-center gap-2"><input type="checkbox" id="user-can-login" class="custom-checkbox accent-blue-600" onchange="togglePasswordInput()"><label for="user-can-login" class="text-sm font-medium text-slate-700 cursor-pointer">Beri Akses Login Aplikasi?</label></div>
+                                        <div id="password-container" class="flex-1 hidden"><input type="text" id="user-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Set Password Login"></div>
                                     </div>
-
-                                    <div class="flex gap-2">
-                                        <button type="submit" id="btn-save-user" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
-                                            Simpan Data
-                                        </button>
-                                        <button type="button" id="btn-cancel-edit" class="hidden bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300" onclick="resetUserForm()">
-                                            Batal Edit
-                                        </button>
-                                    </div>
+                                    <div class="flex gap-2"><button type="submit" id="btn-save-user" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Simpan Data</button><button type="button" id="btn-cancel-edit" class="hidden bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300" onclick="resetUserForm()">Batal Edit</button></div>
                                 </form>
                                 <p id="user-msg" class="text-xs mt-3 hidden"></p>
                             </div>
-
                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                    <h3 class="font-semibold text-slate-800">Daftar Semua Karyawan</h3>
-                                    <span id="user-count" class="text-xs text-slate-500">Total: 0</span>
-                                </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left text-sm">
-                                        <thead class="bg-slate-50 text-slate-500 font-medium">
-                                            <tr>
-                                                <th class="p-4">Nama</th>
-                                                <th class="p-4">HUB</th>
-                                                <th class="p-4">Status</th>
-                                                <th class="p-4">Pass Login</th>
-                                                <th class="p-4">Aktif/Tdk</th>
-                                                <th class="p-4 text-right">Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="user-table-body" class="divide-y divide-slate-100"></tbody>
-                                    </table>
-                                </div>
+                                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center"><h3 class="font-semibold text-slate-800">Daftar Semua Karyawan</h3><span id="user-count" class="text-xs text-slate-500">Total: 0</span></div>
+                                <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Nama</th><th class="p-4">HUB</th><th class="p-4">Status</th><th class="p-4">Pass Login</th><th class="p-4">Aktif/Tdk</th><th class="p-4 text-right">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-100"></tbody></table></div>
                             </div>
                         </div>
 
                         <!-- TAB: KONFIGURASI UMUM -->
                         <div id="tab-content-config" class="settings-tab-content hidden space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Keamanan Admin -->
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                        <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i> Akun & Keamanan
-                                    </h3>
-                                    <form id="form-config-security" class="space-y-4">
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Ganti Password Admin</label>
-                                            <input type="text" id="config-admin-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Password Baru">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Delete/Edit)</label>
-                                            <input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456">
-                                        </div>
-                                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 w-full">Update Keamanan</button>
-                                    </form>
-                                </div>
-
-                                <!-- Biaya Global -->
-                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                    <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                        <i data-lucide="wallet" class="w-5 h-5 text-green-600"></i> Biaya Operasional Global
-                                    </h3>
-                                    <form id="form-config-cost" class="space-y-4">
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Biaya DW per Kehadiran (Rp)</label>
-                                            <input type="number" id="config-dw-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0">
-                                            <p class="text-xs text-slate-400 mt-1">*Berlaku sama untuk semua HUB</p>
-                                        </div>
-                                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 w-full">Update Biaya</button>
-                                    </form>
-                                </div>
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i> Akun & Keamanan</h3><form id="form-config-security" class="space-y-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">Ganti Password Admin</label><input type="text" id="config-admin-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Password Baru"></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Delete/Edit)</label><input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456"></div><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 w-full">Update Keamanan</button></form></div>
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="wallet" class="w-5 h-5 text-green-600"></i> Biaya Operasional Global</h3><form id="form-config-cost" class="space-y-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">Biaya DW per Kehadiran (Rp)</label><input type="number" id="config-dw-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0"><p class="text-xs text-slate-400 mt-1">*Berlaku sama untuk semua HUB</p></div><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 w-full">Update Biaya</button></form></div>
                             </div>
                             <p id="config-msg" class="text-center text-sm font-medium hidden"></p>
                         </div>
-
                     </div>
 
                 </div>
@@ -579,18 +593,10 @@
 
         // --- STATE MANAGEMENT ---
         let state = {
-            user: null, 
-            role: null, 
-            userData: null,
-            loginTab: 'leader', // default tab
-            currentView: 'dashboard',
-            hubs: [],
-            employees: [],
-            config: {
-                secure_code: '123456',
-                admin_password: 'admin123',
-                dw_rate: 0
-            }
+            user: null, role: null, userData: null, loginTab: 'leader',
+            currentView: 'dashboard', hubs: [], employees: [],
+            config: { secure_code: '123456', admin_password: 'admin123', dw_rate: 0 },
+            chartAnnual: null, chartDaily: null
         };
 
         // --- DOM ELEMENTS ---
@@ -598,6 +604,7 @@
             loading: document.getElementById('loading-screen'),
             loginScreen: document.getElementById('login-screen'),
             appScreen: document.getElementById('app-screen'),
+            // Login
             loginForm: document.getElementById('login-form'),
             loginNik: document.getElementById('login-nik'),
             loginPass: document.getElementById('login-pass'),
@@ -606,22 +613,19 @@
             loginError: document.getElementById('login-error'),
             btnLogin: document.getElementById('btn-login'),
             loginHint: document.getElementById('login-hint'),
-            
-            // Login Tabs
             tabLoginSorter: document.getElementById('tab-login-sorter'),
             tabLoginLeader: document.getElementById('tab-login-leader'),
             tabLoginAdmin: document.getElementById('tab-login-admin'),
-
+            
             sidebar: document.getElementById('sidebar'),
             sidebarOverlay: document.getElementById('sidebar-overlay'),
             openSidebarBtn: document.getElementById('open-sidebar'),
             closeSidebarBtn: document.getElementById('close-sidebar'),
             menuSettings: document.getElementById('menu-settings'),
-            
             userNameDisplay: document.getElementById('user-name-display'),
             userRoleDisplay: document.getElementById('user-role-display'),
             
-            // Security Modal
+            // Security
             securityModal: document.getElementById('security-modal'),
             inputSecureCode: document.getElementById('input-secure-code'),
             btnCancelSecure: document.getElementById('btn-cancel-secure'),
@@ -638,13 +642,25 @@
             dashRole: document.getElementById('dash-role'),
             dashInfo: document.getElementById('dash-info'),
             
+            // Dashboard Elements
+            dashStartDate: document.getElementById('dash-start-date'),
+            dashEndDate: document.getElementById('dash-end-date'),
+            dashHubContainer: document.getElementById('dash-hub-container'),
+            dashTotalPaket: document.getElementById('dash-total-paket'),
+            dashAvgProd: document.getElementById('dash-avg-prod'),
+            dashTotalCost: document.getElementById('dash-total-cost'),
+            canvasAnnual: document.getElementById('annualChart'),
+            canvasDaily: document.getElementById('dailyChart'),
+            dashTableDaily: document.getElementById('dash-table-daily'),
+            dashTableHub: document.getElementById('dash-table-hub'),
+
             // Reports
             sectionInputReport: document.getElementById('section-input-report'),
             formDailyReport: document.getElementById('form-daily-report'),
             formReportTitle: document.getElementById('form-report-title'),
             editReportId: document.getElementById('edit-report-id'),
             rptDate: document.getElementById('rpt-date'),
-            rptHubContainer: document.getElementById('rpt-hub-container'), // Container for dynamic input/select
+            rptHubContainer: document.getElementById('rpt-hub-container'), 
             rptHub: document.getElementById('rpt-hub'),
             rptGateway: document.getElementById('rpt-gateway'),
             rptStaging: document.getElementById('rpt-staging'),
@@ -653,10 +669,8 @@
             rptTotalPaket: document.getElementById('rpt-total-paket'),
             rptProductivity: document.getElementById('rpt-productivity'),
             btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'),
-            
             sorterAttendanceList: document.getElementById('sorter-attendance-list'),
             displayTotalMpp: document.getElementById('display-total-mpp'),
-            
             btnSaveReport: document.getElementById('btn-save-report'),
             rptMsg: document.getElementById('rpt-msg'),
             rptHistoryBody: document.getElementById('rpt-history-body'),
@@ -672,6 +686,7 @@
             hubMsg: document.getElementById('hub-msg'),
             hubTableBody: document.getElementById('hub-table-body'),
 
+            // Settings - Users
             formAddUser: document.getElementById('form-add-user'),
             formUserTitle: document.getElementById('form-user-title'),
             editUserId: document.getElementById('edit-user-id'),
@@ -688,7 +703,7 @@
             userTableBody: document.getElementById('user-table-body'),
             userCount: document.getElementById('user-count'),
 
-            // Config (New)
+            // Config
             formConfigSecurity: document.getElementById('form-config-security'),
             configAdminPass: document.getElementById('config-admin-pass'),
             configSecureCode: document.getElementById('config-secure-code'),
@@ -697,31 +712,25 @@
             configMsg: document.getElementById('config-msg'),
         };
 
+        // --- UTILS ---
+        function formatNumber(num) {
+            return Number(num).toLocaleString('id-ID');
+        }
+
         // --- INITIALIZATION ---
         async function init() {
             try { lucide.createIcons(); } catch(e) {}
-
-            if (typeof __initial_auth_token !== 'undefined') {
-                try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {}
-            }
-
-            // Load Global Config Early
+            if (typeof __initial_auth_token !== 'undefined') { try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {} }
             loadGlobalConfig();
-
             onAuthStateChanged(auth, (currentUser) => {
                 state.user = currentUser;
                 const savedRole = localStorage.getItem('userRole');
                 const savedUserData = localStorage.getItem('userData');
-                
                 if (currentUser && savedRole) {
                     state.role = savedRole;
                     if (savedUserData) state.userData = JSON.parse(savedUserData);
                     showApp();
-                } else {
-                    state.role = null;
-                    state.userData = null;
-                    showLogin();
-                }
+                } else { state.role = null; state.userData = null; showLogin(); }
                 els.loading.classList.add('hidden');
             });
         }
@@ -729,15 +738,12 @@
         async function loadGlobalConfig() {
             try {
                 const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'));
-                if (snap.exists()) {
-                    state.config = { ...state.config, ...snap.data() };
-                }
-            } catch(e) { console.error("Config Load Error", e); }
+                if (snap.exists()) state.config = { ...state.config, ...snap.data() };
+            } catch(e) { console.error(e); }
         }
 
         // --- SECURITY LOGIC ---
         let pendingSecureAction = null;
-
         function secureCheck(callback) {
             if (state.role === 'admin') { callback(); return; }
             pendingSecureAction = callback;
@@ -746,50 +752,25 @@
             els.securityModal.classList.remove('hidden');
             els.inputSecureCode.focus();
         }
-
         function closeSecureModal() {
-            els.securityModal.classList.add('hidden');
-            pendingSecureAction = null;
+            els.securityModal.classList.add('hidden'); pendingSecureAction = null;
         }
-
         els.btnCancelSecure.addEventListener('click', closeSecureModal);
-        
         els.btnConfirmSecure.addEventListener('click', () => {
             const input = els.inputSecureCode.value.trim();
-            if (input === state.config.secure_code) {
-                closeSecureModal();
-                if(pendingSecureAction) pendingSecureAction();
-            } else {
-                els.secureError.textContent = "Kode salah!";
-                els.secureError.classList.remove('hidden');
-            }
+            if (input === state.config.secure_code) { closeSecureModal(); if(pendingSecureAction) pendingSecureAction(); } 
+            else { els.secureError.textContent = "Kode salah!"; els.secureError.classList.remove('hidden'); }
         });
 
-        // Config Save Handlers
+        // Config Save
         async function saveConfig(data) {
             try {
                 await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), data, { merge: true });
-                // Update local state
-                state.config = { ...state.config, ...data };
-                showStatusMsg(els.configMsg, "Konfigurasi berhasil disimpan!", "success");
-            } catch(e) { showStatusMsg(els.configMsg, "Gagal simpan.", "error"); }
+                state.config = { ...state.config, ...data }; showStatusMsg(els.configMsg, "Tersimpan!", "success");
+            } catch(e) { showStatusMsg(els.configMsg, "Gagal.", "error"); }
         }
-
-        els.formConfigSecurity.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const pass = els.configAdminPass.value.trim();
-            const code = els.configSecureCode.value.trim();
-            const update = {};
-            if(pass) update.admin_password = pass;
-            if(code) update.secure_code = code;
-            if(Object.keys(update).length > 0) saveConfig(update);
-        });
-
-        els.formConfigCost.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const rate = Number(els.configDwRate.value);
-            saveConfig({ dw_rate: rate });
-        });
+        els.formConfigSecurity.addEventListener('submit', (e) => { e.preventDefault(); const p = els.configAdminPass.value.trim(); const c = els.configSecureCode.value.trim(); const u={}; if(p)u.admin_password=p; if(c)u.secure_code=c; if(Object.keys(u).length) saveConfig(u); });
+        els.formConfigCost.addEventListener('submit', (e) => { e.preventDefault(); saveConfig({ dw_rate: Number(els.configDwRate.value) }); });
 
         // --- LOGIN LOGIC ---
         window.switchLoginTab = (tab) => {
@@ -799,93 +780,47 @@
                 if(t === tab) el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600";
                 else el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive";
             });
-
-            els.loginError.classList.add('hidden');
-            els.loginNik.value = ''; els.loginPass.value = '';
-
-            if (tab === 'sorter') {
-                els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.add('hidden');
-                els.loginHint.textContent = "Masuk sebagai Sorter (View Only)";
-                els.loginNik.required = true; els.loginPass.required = false;
-            } else if (tab === 'leader') {
-                els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.remove('hidden');
-                els.loginHint.textContent = "Masuk sebagai Leader/Staf (Akses Penuh)";
-                els.loginNik.required = true; els.loginPass.required = true;
-            } else if (tab === 'admin') {
-                els.fieldNik.classList.add('hidden'); els.fieldPass.classList.remove('hidden');
-                els.loginHint.textContent = "Masuk sebagai Administrator";
-                els.loginNik.required = false; els.loginPass.required = true;
-            }
+            els.loginError.classList.add('hidden'); els.loginNik.value = ''; els.loginPass.value = '';
+            if (tab === 'sorter') { els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.add('hidden'); els.loginHint.textContent = "Masuk sebagai Sorter (View Only)"; els.loginNik.required = true; els.loginPass.required = false; } 
+            else if (tab === 'leader') { els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.remove('hidden'); els.loginHint.textContent = "Masuk sebagai Leader/Staf"; els.loginNik.required = true; els.loginPass.required = true; } 
+            else if (tab === 'admin') { els.fieldNik.classList.add('hidden'); els.fieldPass.classList.remove('hidden'); els.loginHint.textContent = "Masuk sebagai Administrator"; els.loginNik.required = false; els.loginPass.required = true; }
         };
 
         els.loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const tab = state.loginTab;
-            const nik = els.loginNik.value.trim();
-            const pass = els.loginPass.value.trim();
-            
-            els.loginError.classList.add('hidden');
-            els.btnLogin.disabled = true; els.btnLogin.textContent = 'Memeriksa...';
-
+            const tab = state.loginTab; const nik = els.loginNik.value.trim(); const pass = els.loginPass.value.trim();
+            els.loginError.classList.add('hidden'); els.btnLogin.disabled = true; els.btnLogin.textContent = 'Memeriksa...';
             try {
-                if (!auth.currentUser) {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
-                        else await signInAnonymously(auth);
-                    } catch(e) { console.warn("Auth Init Failed:", e); }
-                }
-
-                // Make sure config is loaded
+                if (!auth.currentUser) { try { if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token); else await signInAnonymously(auth); } catch(e) {} }
                 if(!state.config.admin_password) await loadGlobalConfig();
 
                 if (tab === 'admin') {
-                    if (pass === state.config.admin_password) { 
-                        updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
-                    } else throw new Error('Password Admin Salah');
+                    if (pass === state.config.admin_password) updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
+                    else throw new Error('Password Admin Salah');
                 } else if (tab === 'leader') {
                     const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
                     const snap = await getDocs(q);
-                    if (!snap.empty) {
-                        const u = snap.docs[0].data();
-                        if (u.can_login) updateLocalState('leader', u); 
-                        else throw new Error('Akun ini tidak memiliki akses login.');
-                    } else throw new Error('NIK atau Password Salah');
+                    if (!snap.empty) { const u = snap.docs[0].data(); if (u.can_login) updateLocalState('leader', u); else throw new Error('Akun ini tidak memiliki akses login.'); } 
+                    else throw new Error('NIK atau Password Salah');
                 } else if (tab === 'sorter') {
                     const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
                     const snap = await getDocs(q);
-                    if (!snap.empty) updateLocalState('sorter', snap.docs[0].data());
-                    else throw new Error('NIK tidak ditemukan.');
+                    if (!snap.empty) updateLocalState('sorter', snap.docs[0].data()); else throw new Error('NIK tidak ditemukan.');
                 }
-            } catch (err) {
-                console.error("Login Error:", err);
-                els.loginError.textContent = err.message || 'Login Gagal';
-                els.loginError.classList.remove('hidden');
-                els.btnLogin.disabled = false; els.btnLogin.textContent = 'Masuk';
-            }
+            } catch (err) { console.error(err); els.loginError.textContent = err.message || 'Login Gagal'; els.loginError.classList.remove('hidden'); els.btnLogin.disabled = false; els.btnLogin.textContent = 'Masuk'; }
         });
 
         function updateLocalState(role, userData) {
             state.role = role; state.userData = userData;
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('userData', JSON.stringify(userData));
-            showApp();
+            localStorage.setItem('userRole', role); localStorage.setItem('userData', JSON.stringify(userData)); showApp();
         }
 
-        function showLogin() {
-            els.loginScreen.classList.remove('hidden'); els.appScreen.classList.add('hidden'); switchLoginTab('leader');
-        }
-
+        function showLogin() { els.loginScreen.classList.remove('hidden'); els.appScreen.classList.add('hidden'); switchLoginTab('leader'); }
         function showApp() {
             els.loginScreen.classList.add('hidden'); els.appScreen.classList.remove('hidden');
-            els.userNameDisplay.textContent = state.userData?.name || 'User';
-            els.userRoleDisplay.textContent = state.userData?.role || state.role;
-            
-            if (state.role === 'admin') els.menuSettings.classList.remove('hidden');
-            else els.menuSettings.classList.add('hidden');
-
-            if (state.role === 'sorter') els.sectionInputReport.classList.add('hidden');
-            else els.sectionInputReport.classList.remove('hidden');
-            
+            els.userNameDisplay.textContent = state.userData?.name || 'User'; els.userRoleDisplay.textContent = state.userData?.role || state.role;
+            if (state.role === 'admin') els.menuSettings.classList.remove('hidden'); else els.menuSettings.classList.add('hidden');
+            if (state.role === 'sorter') els.sectionInputReport.classList.add('hidden'); else els.sectionInputReport.classList.remove('hidden');
             navigateTo('dashboard');
         }
 
@@ -897,230 +832,261 @@
             });
             Object.values(els.views).forEach(el => el.classList.add('hidden'));
             if (els.views[viewId]) els.views[viewId].classList.remove('hidden');
-            if (viewId === 'dashboard') loadDashboard();
-            if (viewId === 'reports') loadReportsView();
-            if (viewId === 'settings' && state.role === 'admin') loadSettings();
+            if (viewId === 'dashboard') loadDashboard(); if (viewId === 'reports') loadReportsView(); if (viewId === 'settings' && state.role === 'admin') loadSettings();
             els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden');
         };
 
         function loadDashboard() {
-            els.dashName.textContent = state.userData?.name || state.role;
-            els.dashRole.textContent = state.userData?.role || state.role;
-            els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only Mode' : 'User Mode');
+            els.dashName.textContent = state.userData?.name || state.role; els.dashRole.textContent = state.userData?.role || state.role; els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only' : 'User Mode');
+            if(!els.dashStartDate.value) { const now = new Date(); const start = new Date(now.getFullYear(), 0, 1); els.dashStartDate.valueAsDate = start; els.dashEndDate.valueAsDate = now; }
+            if (state.role === 'admin') {
+                if (state.hubs.length === 0) {
+                    getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs')).then(snap => {
+                        state.hubs = snap.docs.map(d => d.data());
+                        let options = `<option value="">Semua HUB</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
+                        els.dashHubContainer.innerHTML = `<select id="dash-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">${options}</select>`;
+                    });
+                } else {
+                    let options = `<option value="">Semua HUB</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
+                    els.dashHubContainer.innerHTML = `<select id="dash-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">${options}</select>`;
+                }
+            } else {
+                els.dashHubContainer.innerHTML = `<input type="text" value="${state.userData?.hub_code || '-'}" readonly class="w-full p-2 bg-slate-100 border border-slate-300 rounded-lg text-sm text-slate-500 font-bold">`;
+            }
+            loadDashboardStats();
         }
 
-        window.handleLogout = async () => {
-            localStorage.removeItem('userRole'); localStorage.removeItem('userData'); window.location.reload();
+        window.loadDashboardStats = async () => {
+            const start = els.dashStartDate.value; const end = els.dashEndDate.value;
+            let hubFilter = state.role === 'admin' ? (document.getElementById('dash-hub-select')?.value || '') : state.userData?.hub_code;
+            
+            try {
+                const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
+                const q = query(reportsRef, orderBy("date", "asc")); 
+                const snap = await getDocs(q);
+                
+                let reports = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if (d.date >= start && d.date <= end) { if (!hubFilter || d.hub === hubFilter) reports.push(d); }
+                });
+
+                let totalPaket = 0; let totalProdSum = 0; let prodCount = 0; let totalCost = 0;
+                const monthlyData = {}; const dailyData = {}; const hubData = {};
+
+                reports.forEach(r => {
+                    totalPaket += (r.total_paket || 0);
+                    if(r.productivity > 0) { totalProdSum += r.productivity; prodCount++; }
+                    totalCost += (r.est_cost || 0);
+
+                    // Monthly
+                    const monthKey = r.date.substring(0, 7);
+                    if(!monthlyData[monthKey]) monthlyData[monthKey] = { paket: 0, prodSum: 0, prodCnt: 0 };
+                    monthlyData[monthKey].paket += (r.total_paket || 0);
+                    if(r.productivity > 0) { monthlyData[monthKey].prodSum += r.productivity; monthlyData[monthKey].prodCnt++; }
+
+                    // Daily (Date)
+                    const dateKey = r.date;
+                    if(!dailyData[dateKey]) dailyData[dateKey] = { 
+                        date: r.date, mpp: 0, staging: 0, gateway: 0, jne: 0, sap: 0, outbound: 0, prodSum: 0, prodCnt: 0, cost: 0 
+                    };
+                    dailyData[dateKey].mpp += (r.total_mpp || 0);
+                    dailyData[dateKey].staging += (r.staging || 0);
+                    dailyData[dateKey].gateway += (r.gateway || 0);
+                    dailyData[dateKey].jne += (r.jne || 0);
+                    dailyData[dateKey].sap += (r.sap || 0);
+                    dailyData[dateKey].outbound += (r.total_paket || 0);
+                    dailyData[dateKey].cost += (r.est_cost || 0);
+                    if(r.productivity > 0) { dailyData[dateKey].prodSum += r.productivity; dailyData[dateKey].prodCnt++; }
+
+                    // Hub
+                    const hKey = r.hub;
+                    if(!hubData[hKey]) hubData[hKey] = { hub: r.hub, mpp: 0, outbound: 0, prodSum: 0, prodCnt: 0, cost: 0 };
+                    hubData[hKey].mpp += (r.total_mpp || 0);
+                    hubData[hKey].outbound += (r.total_paket || 0);
+                    hubData[hKey].cost += (r.est_cost || 0);
+                    if(r.productivity > 0) { hubData[hKey].prodSum += r.productivity; hubData[hKey].prodCnt++; }
+                });
+
+                els.dashTotalPaket.textContent = formatNumber(totalPaket);
+                els.dashAvgProd.textContent = prodCount > 0 ? formatNumber(Math.round(totalProdSum / prodCount)) : 0;
+                els.dashTotalCost.textContent = "Rp " + formatNumber(totalCost);
+
+                // --- Annual Chart ---
+                const monthLabels = Object.keys(monthlyData).sort();
+                renderChart(els.canvasAnnual, monthLabels.map(k => new Date(k+"-01").toLocaleDateString('id-ID', {month:'short', year:'2-digit'})), 
+                    monthLabels.map(k => monthlyData[k].paket), 
+                    monthLabels.map(k => monthlyData[k].prodCnt > 0 ? Math.round(monthlyData[k].prodSum / monthlyData[k].prodCnt) : 0), 
+                    'chartAnnual');
+
+                // --- Daily Chart ---
+                const dateLabels = Object.keys(dailyData).sort();
+                renderChart(els.canvasDaily, dateLabels.map(d => new Date(d).toLocaleDateString('id-ID', {day:'numeric', month:'short'})),
+                    dateLabels.map(k => dailyData[k].outbound),
+                    dateLabels.map(k => dailyData[k].prodCnt > 0 ? Math.round(dailyData[k].prodSum / dailyData[k].prodCnt) : 0),
+                    'chartDaily');
+
+                // --- Table Daily ---
+                els.dashTableDaily.innerHTML = dateLabels.sort().reverse().map(k => {
+                    const d = dailyData[k];
+                    const prod = d.prodCnt > 0 ? Math.round(d.prodSum / d.prodCnt) : 0;
+                    return `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                        <td class="p-3">${d.date}</td><td class="p-3 text-right">${d.mpp}</td>
+                        <td class="p-3 text-right">${formatNumber(d.gateway)}</td><td class="p-3 text-right">${formatNumber(d.staging)}</td>
+                        <td class="p-3 text-right">${formatNumber(d.sap)}</td><td class="p-3 text-right">${formatNumber(d.jne)}</td>
+                        <td class="p-3 text-right font-bold text-blue-600">${formatNumber(d.outbound)}</td>
+                        <td class="p-3 text-right font-bold text-green-600">${formatNumber(prod)}</td>
+                        <td class="p-3 text-right">Rp ${formatNumber(d.cost)}</td>
+                    </tr>`;
+                }).join('');
+
+                // --- Table HUB ---
+                els.dashTableHub.innerHTML = Object.keys(hubData).sort().map(k => {
+                    const h = hubData[k];
+                    const prod = h.prodCnt > 0 ? Math.round(h.prodSum / h.prodCnt) : 0;
+                    return `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                        <td class="p-3 font-medium">${h.hub}</td><td class="p-3 text-right">${h.mpp}</td>
+                        <td class="p-3 text-right text-blue-600">${formatNumber(h.outbound)}</td>
+                        <td class="p-3 text-right text-green-600">${formatNumber(prod)}</td>
+                        <td class="p-3 text-right">Rp ${formatNumber(h.cost)}</td>
+                    </tr>`;
+                }).join('');
+
+            } catch (e) { console.error("Dash Error", e); }
         };
 
-        // ==========================================
-        // REPORTS LOGIC
-        // ==========================================
-        document.querySelectorAll('.metric-input').forEach(input => {
-            input.addEventListener('input', calculateReportTotals);
-        });
+        function renderChart(canvas, labels, dataBar, dataLine, stateKey) {
+            const ctx = canvas.getContext('2d');
+            if (state[stateKey]) state[stateKey].destroy();
+            state[stateKey] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Total Paket', data: dataBar, backgroundColor: '#3b82f6', order: 2, yAxisID: 'y' },
+                        { type: 'line', label: 'Produktivitas', data: dataLine, borderColor: '#22c55e', borderWidth: 2, tension: 0.3, pointRadius: 3, order: 1, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { display: false }, y1: { display: false, position: 'right', grid: { drawOnChartArea: false } }, x: { grid: { display: false } } }
+                }
+            });
+        }
 
-        // Function to listen change event for Select HUB
+        window.handleLogout = async () => { localStorage.removeItem('userRole'); localStorage.removeItem('userData'); window.location.reload(); };
+
+        // --- REPORTS LOGIC ---
+        document.querySelectorAll('.metric-input').forEach(input => { input.addEventListener('input', calculateReportTotals); });
         function setupHubListener() {
             const hubSelect = document.getElementById('rpt-hub-select');
-            if (hubSelect) {
-                hubSelect.addEventListener('change', () => {
-                    // Reload attendance list when HUB changes for Admin
-                    loadReportsView();
-                });
-            }
+            if (hubSelect) hubSelect.addEventListener('change', () => loadReportsView());
         }
 
         function calculateReportTotals() {
-            const g = Number(els.rptGateway.value) || 0;
-            const s = Number(els.rptStaging.value) || 0;
-            const sa = Number(els.rptSap.value) || 0;
-            const j = Number(els.rptJne.value) || 0;
-            const totalPaket = g + s + sa + j;
-            els.rptTotalPaket.value = totalPaket.toLocaleString('id-ID');
-            
-            let workingCount = 0;
-            let sorterDwWorkingCount = 0;
-
-            // Iterate through rows to calculate MPP and Productivity Divisor
+            const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
+            const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
+            const totalPaket = g+s+sa+j; els.rptTotalPaket.value = formatNumber(totalPaket);
+            let workingCount = 0; let sorterDwCount = 0;
             document.querySelectorAll('#sorter-attendance-list tr').forEach(row => {
                 const checked = row.querySelector('.attendance-radio:checked');
-                if(checked && ['s1', 's2', 's3'].includes(checked.value)) {
-                    // Check if Leader (exclude from MPP and Prod)
-                    const roleSpan = row.querySelector('.text-slate-400'); // (role)
-                    const roleText = roleSpan ? roleSpan.textContent.toLowerCase() : '';
-                    const isLeader = roleText.includes('leader');
-
-                    if (!isLeader) {
-                        workingCount++; // Only Sorter & DW count towards Total MPP
-                        sorterDwWorkingCount++; // Only Sorter & DW count towards Prod Divisor
-                    }
+                if(checked && ['s1','s2','s3'].includes(checked.value)) {
+                    const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
+                    if(!role.includes('leader')) { workingCount++; sorterDwCount++; }
                 }
             });
-
             els.displayTotalMpp.textContent = workingCount;
-
-            const productivity = sorterDwWorkingCount > 0 ? Math.round(totalPaket / sorterDwWorkingCount) : 0;
-            els.rptProductivity.value = productivity.toLocaleString('id-ID');
+            const prod = sorterDwCount > 0 ? Math.round(totalPaket / sorterDwCount) : 0;
+            els.rptProductivity.value = formatNumber(prod);
         }
         window.calculateReportTotals = calculateReportTotals;
 
         window.addDwRow = () => {
-            const uniqueId = 'dw_' + Date.now();
+            const uid = 'dw_' + Date.now();
             const row = document.createElement('tr');
             row.className = 'border-b border-slate-50 hover:bg-slate-50';
-            row.innerHTML = `
-                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uniqueId}"></td>
-                ${generateAttendanceColumns(uniqueId)}
-                <td class="p-3 text-center"><button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600"><i data-lucide="x-circle" class="w-4 h-4"></i></button></td>
-            `;
-            els.sorterAttendanceList.appendChild(row);
-            lucide.createIcons();
+            row.innerHTML = `<td class="p-3"><input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uid}"></td>${generateAttendanceColumns(uid)}<td class="p-3 text-center"><button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600"><i data-lucide="x-circle" class="w-4 h-4"></i></button></td>`;
+            els.sorterAttendanceList.appendChild(row); lucide.createIcons();
         }
 
         function generateAttendanceColumns(rowId) {
-            return `
-                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s1" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
+            return `<td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s1" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
                 <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s2" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
                 <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s3" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
                 <td class="p-3 text-center bg-yellow-50/30"><input type="radio" name="att_${rowId}" value="i" class="attendance-radio custom-radio accent-yellow-500" onclick="calculateReportTotals()"></td>
                 <td class="p-3 text-center bg-red-50/30"><input type="radio" name="att_${rowId}" value="s" class="attendance-radio custom-radio accent-red-500" onclick="calculateReportTotals()"></td>
                 <td class="p-3 text-center bg-red-100/30"><input type="radio" name="att_${rowId}" value="a" class="attendance-radio custom-radio accent-red-800" onclick="calculateReportTotals()"></td>
-                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-200 rounded text-xs att-remarks" placeholder="..."></td>
-            `;
+                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-200 rounded text-xs att-remarks" placeholder="..."></td>`;
         }
 
         async function loadReportsView() {
             if(els.editReportId.value) return; 
             els.rptDate.valueAsDate = new Date();
             
-            // SETUP HUB INPUT
-            const hubContainer = els.rptHubContainer;
             let currentHubCode = '';
-
-            // Ensure hubs are loaded (might need fetch if not yet)
             if (state.hubs.length === 0) {
                 const hubsSnap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'));
                 state.hubs = hubsSnap.docs.map(doc => doc.data());
             }
 
             if (state.role === 'admin') {
-                // Admin: Create Select Box
-                let options = `<option value="">Pilih HUB...</option>` + 
-                    state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
-                
-                hubContainer.innerHTML = `<select id="rpt-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-blue-500 focus:border-blue-500 outline-none">${options}</select>`;
-                
-                // Add listener to reload employees on change
+                let options = `<option value="">Pilih HUB...</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
+                els.rptHubContainer.innerHTML = `<select id="rpt-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-blue-500 focus:border-blue-500 outline-none">${options}</select>`;
                 setupHubListener();
             } else {
-                // Leader: Readonly Input
                 currentHubCode = state.userData?.hub_code || 'UNKNOWN';
-                hubContainer.innerHTML = `<input type="text" id="rpt-hub-static" value="${currentHubCode}" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" readonly>`;
+                els.rptHubContainer.innerHTML = `<input type="text" id="rpt-hub-static" value="${currentHubCode}" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" readonly>`;
             }
 
-            // Function to get current selected HUB
-            const getSelectedHub = () => {
-                if (state.role === 'admin') {
-                    const sel = document.getElementById('rpt-hub-select');
-                    return sel ? sel.value : '';
-                }
-                return currentHubCode;
-            };
-
+            const getSelectedHub = () => state.role === 'admin' ? (document.getElementById('rpt-hub-select')?.value || '') : currentHubCode;
             const hubCode = getSelectedHub();
             
-            // Only load employees if a hub is selected (or pre-set)
-            if (state.role !== 'sorter' && (hubCode || state.role !== 'admin')) {
-                loadEmployeesForReport(hubCode);
-            } else if (state.role === 'admin') {
-                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB untuk memuat karyawan.</td></tr>';
-            }
+            if (state.role !== 'sorter' && (hubCode || state.role !== 'admin')) loadEmployeesForReport(hubCode);
+            else if (state.role === 'admin') els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB untuk memuat karyawan.</td></tr>';
 
-            loadMyReports();
-            calculateReportTotals();
+            loadMyReports(); calculateReportTotals();
         }
 
-        // Helper to load employees table content
         async function loadEmployeesForReport(hubCode) {
-            if (!hubCode) {
-                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB.</td></tr>';
-                 return;
-            }
-
+            if (!hubCode) return;
             els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
             try {
                 const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
                 let qSorter = query(usersRef, where("hub_code", "==", hubCode));
                 const snap = await getDocs(qSorter);
-                
                 els.sorterAttendanceList.innerHTML = '';
-                if (snap.empty) {
-                    els.sorterAttendanceList.innerHTML = ''; // Empty for DWs
-                } else {
-                    snap.forEach(doc => {
-                        const s = doc.data();
-                        if(s.role === 'admin') return;
-                        const row = document.createElement('tr');
-                        row.className = 'border-b border-slate-50 hover:bg-slate-50';
-                        const rowId = doc.id;
-                        row.innerHTML = `
-                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
-                            ${generateAttendanceColumns(rowId)}
-                            <td class="p-3"></td>
-                        `;
-                        els.sorterAttendanceList.appendChild(row);
-                    });
-                }
+                snap.forEach(doc => {
+                    const s = doc.data();
+                    if(s.role === 'admin') return;
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                    row.innerHTML = `<td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>${generateAttendanceColumns(doc.id)}<td class="p-3"></td>`;
+                    els.sorterAttendanceList.appendChild(row);
+                });
             } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
         }
-
-        // Hook into Admin Select Change to reload employees
-        // This is handled in setupHubListener but we need to call loadEmployeesForReport
         
         window.loadMyReports = async () => {
             els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
             try {
                 const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
                 let q = query(reportsRef, orderBy("date", "desc"), limit(20));
-                
                 let querySnapshot;
-                try { querySnapshot = await getDocs(q); } 
-                catch(err) {
-                    const q2 = query(reportsRef, limit(20)); 
-                    querySnapshot = await getDocs(q2);
-                }
+                try { querySnapshot = await getDocs(q); } catch(err) { const q2 = query(reportsRef, limit(20)); querySnapshot = await getDocs(q2); }
 
-                if (querySnapshot.empty) {
-                    els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>';
-                    return;
-                }
+                if (querySnapshot.empty) { els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>'; return; }
 
                 els.rptHistoryBody.innerHTML = '';
                 querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                    const d = doc.data();
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
-                    
-                    let actionButtons = '';
-                    if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === data.hub)) {
-                        actionButtons = `
-                            <button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...data})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick='confirmDeleteReport("${doc.id}", "${data.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        `;
+                    let btns = '';
+                    if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === d.hub)) {
+                        btns = `<button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...d})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick='confirmDeleteReport("${doc.id}", "${d.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
                     }
-
-                    tr.innerHTML = `
-                        <td class="p-3 whitespace-nowrap">${data.date}</td>
-                        <td class="p-3 font-medium">${data.hub}</td>
-                        <td class="p-3 text-right text-blue-600 font-mono">${(data.total_paket || 0).toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-right font-mono font-bold">${data.total_mpp || 0}</td>
-                        <td class="p-3 text-right text-purple-600 font-mono text-xs font-bold">${(data.productivity || 0).toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-right text-green-600 font-mono text-xs">Rp ${(data.est_cost || 0).toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-right flex gap-2 justify-end">
-                            ${actionButtons}
-                        </td>
-                    `;
+                    tr.innerHTML = `<td class="p-3 whitespace-nowrap">${d.date}</td><td class="p-3 font-medium">${d.hub}</td><td class="p-3 text-right text-blue-600 font-mono">${formatNumber(d.total_paket || 0)}</td><td class="p-3 text-right font-mono font-bold">${d.total_mpp || 0}</td><td class="p-3 text-right text-purple-600 font-mono text-xs font-bold">${formatNumber(d.productivity || 0)}</td><td class="p-3 text-right text-green-600 font-mono text-xs">Rp ${formatNumber(d.est_cost || 0)}</td><td class="p-3 text-right flex gap-2 justify-end">${btns}</td>`;
                     els.rptHistoryBody.appendChild(tr);
                 });
                 lucide.createIcons();
@@ -1131,8 +1097,7 @@
             secureCheck(async () => {
                 if(state.role !== 'admin' && hub !== state.userData.hub_code) { alert("Akses Ditolak."); return; }
                 if(!confirm('Hapus laporan ini?')) return;
-                try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); } 
-                catch(e) { alert('Gagal hapus'); }
+                try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); } catch(e) { alert('Gagal hapus'); }
             });
         };
 
@@ -1141,38 +1106,23 @@
                 if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) { alert("Akses Ditolak."); return; }
                 els.editReportId.value = rpt.id; els.rptDate.value = rpt.date; 
                 
-                // Set HUB
                 if (state.role === 'admin') {
-                    // Force set select value
                     const select = document.getElementById('rpt-hub-select');
-                    if(select) {
-                        select.value = rpt.hub;
-                        // Reload employees for this hub
-                        loadEmployeesForReport(rpt.hub).then(() => {
-                            restoreAttendanceData(rpt);
-                        });
-                    }
+                    if(select) { select.value = rpt.hub; loadEmployeesForReport(rpt.hub).then(() => { restoreAttendanceData(rpt); }); }
                 } else {
-                    // Leader static input
-                    document.getElementById('rpt-hub-static').value = rpt.hub;
-                    // Employees already loaded for leader's hub, just restore data
-                    restoreAttendanceData(rpt);
+                    document.getElementById('rpt-hub-static').value = rpt.hub; restoreAttendanceData(rpt);
                 }
 
                 els.rptGateway.value = rpt.gateway; els.rptStaging.value = rpt.staging; els.rptSap.value = rpt.sap; els.rptJne.value = rpt.jne;
-                
                 els.formReportTitle.textContent = "Edit Laporan"; els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
                 els.btnCancelReportEdit.classList.remove('hidden');
-                
                 els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
             });
         };
 
         function restoreAttendanceData(rpt) {
-             // Clear existing radios first
              document.querySelectorAll('.attendance-radio').forEach(r => r.checked = false);
              document.querySelectorAll('.att-remarks').forEach(i => i.value = '');
-
              if(rpt.attendance_data) {
                 rpt.attendance_data.forEach(att => {
                     const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
@@ -1191,103 +1141,61 @@
         window.resetReportForm = () => {
             els.formDailyReport.reset(); els.editReportId.value = ''; els.formReportTitle.textContent = "Input Laporan Operasional";
             els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan'; els.btnCancelReportEdit.classList.add('hidden');
-            loadReportsView();
+            els.rptHub.value = state.userData?.hub_code || ''; loadReportsView();
         };
 
         els.formDailyReport.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            els.btnSaveReport.disabled = true; els.btnSaveReport.textContent = 'Menyimpan...'; els.rptMsg.classList.add('hidden');
-
+            e.preventDefault(); els.btnSaveReport.disabled = true; els.btnSaveReport.textContent = 'Menyimpan...'; els.rptMsg.classList.add('hidden');
             try {
-                // Get Selected HUB Code
-                let selectedHub = '';
-                if (state.role === 'admin') {
-                    selectedHub = document.getElementById('rpt-hub-select').value;
-                    if(!selectedHub) throw new Error("Pilih HUB terlebih dahulu.");
-                } else {
-                    selectedHub = document.getElementById('rpt-hub-static').value;
-                }
+                let selectedHub = state.role === 'admin' ? document.getElementById('rpt-hub-select').value : document.getElementById('rpt-hub-static').value;
+                if(!selectedHub && state.role === 'admin') throw new Error("Pilih HUB.");
 
-                // Get rates
-                let sorterRate = 0;
-                const hubData = state.hubs.find(h => h.code === selectedHub);
+                let sorterRate = 0; const hubData = state.hubs.find(h => h.code === selectedHub);
                 if(hubData) sorterRate = Number(hubData.sorter_rate) || 0;
-                
                 const dwRate = Number(state.config.dw_rate) || 0;
 
-                const attendanceDetails = [];
-                let sorterCount = 0;
-                let dwCount = 0;
-                let sorterDwWorkingCount = 0; // For productivity (Sorter + DW)
-
-                const rows = els.sorterAttendanceList.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const checked = row.querySelector('.attendance-radio:checked');
-                    if(checked) {
+                const att = []; let sCnt = 0; let dCnt = 0; let wCnt = 0;
+                els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
+                    const chk = row.querySelector('.attendance-radio:checked');
+                    if(chk) {
                         const isDb = row.querySelector('td[data-is-db="true"]');
                         let name = isDb ? isDb.dataset.name : row.querySelector('.dw-name-input')?.value || 'Unknown';
-                        const status = checked.value;
-                        const isWorking = ['s1','s2','s3'].includes(status);
+                        const status = chk.value;
+                        att.push({ name: name, status: status, remarks: row.querySelector('.att-remarks').value });
                         
-                        attendanceDetails.push({ name: name, status: status, remarks: row.querySelector('.att-remarks').value });
-                        
-                        if(isWorking) {
-                            // Check if leader (from DB list text content)
-                            const roleSpan = row.querySelector('.text-slate-400');
-                            const roleText = roleSpan ? roleSpan.textContent.toLowerCase() : '';
-                            const isLeader = roleText.includes('leader');
-
-                            if (!isLeader) {
-                                sorterDwWorkingCount++; // Only non-leaders count towards Prod & Cost & MPP Display
-                                if(isDb) sorterCount++;
-                                else dwCount++;
+                        if(['s1','s2','s3'].includes(status)) {
+                            const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
+                            if(!role.includes('leader')) {
+                                wCnt++;
+                                if(isDb) sCnt++; else dCnt++;
                             }
                         }
                     }
                 });
 
-                const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
-                const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
+                const g = Number(els.rptGateway.value)||0; const s = Number(els.rptStaging.value)||0;
+                const sa = Number(els.rptSap.value)||0; const j = Number(els.rptJne.value)||0;
                 const totalPaket = g+s+sa+j;
-                
-                // Calculate Cost (Leaders excluded above)
-                const estCost = (sorterCount * sorterRate) + (dwCount * dwRate);
-                
-                // Calculate Productivity (Leaders excluded above)
-                const productivity = sorterDwWorkingCount > 0 ? Math.round(totalPaket / sorterDwWorkingCount) : 0;
+                const estCost = (sCnt * sorterRate) + (dCnt * dwRate);
+                const productivity = wCnt > 0 ? Math.round(totalPaket / wCnt) : 0;
 
-                const reportData = {
+                const rData = {
                     date: els.rptDate.value, hub: selectedHub, nik: state.userData?.nik || 'UNKNOWN',
-                    reporter_name: state.userData?.name || 'UNKNOWN',
-                    gateway: g, staging: s, sap: sa, jne: j, total_paket: totalPaket,
-                    total_mpp: sorterDwWorkingCount, // Save filtered count
-                    productivity: productivity,
-                    attendance_data: attendanceDetails,
-                    est_cost: estCost, 
-                    created_at: new Date().toISOString()
+                    reporter_name: state.userData?.name || 'UNKNOWN', gateway: g, staging: s, sap: sa, jne: j, total_paket: totalPaket,
+                    total_mpp: wCnt, productivity: productivity, attendance_data: att, est_cost: estCost, created_at: new Date().toISOString()
                 };
 
-                if(els.editReportId.value) {
-                    await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', els.editReportId.value), reportData);
-                    els.rptMsg.textContent = "Laporan berhasil diupdate!";
-                } else {
-                    await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), reportData);
-                    els.rptMsg.textContent = "Laporan berhasil disimpan!";
-                }
+                if(els.editReportId.value) { await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', els.editReportId.value), rData); els.rptMsg.textContent = "Diupdate!"; } 
+                else { await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), rData); els.rptMsg.textContent = "Disimpan!"; }
                 
                 els.rptMsg.className = "text-sm text-green-600 font-medium animate-pulse"; els.rptMsg.classList.remove('hidden');
                 resetReportForm(); loadMyReports();
-
-            } catch (err) {
-                els.rptMsg.textContent = "Gagal: " + err.message; els.rptMsg.className = "text-sm text-red-600 font-medium"; els.rptMsg.classList.remove('hidden');
-            } finally {
-                els.btnSaveReport.disabled = false; if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan'; lucide.createIcons();
-            }
+            } catch (err) { els.rptMsg.textContent = "Gagal: " + err.message; els.rptMsg.className = "text-sm text-red-600 font-medium"; els.rptMsg.classList.remove('hidden'); } 
+            finally { els.btnSaveReport.disabled = false; if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan'; lucide.createIcons(); }
         });
 
         // --- SETTINGS LOGIC ---
         let unsubscribeHubs = null; let unsubscribeEmployees = null;
-
         window.switchSettingsTab = (tabName) => {
             document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
             ['hubs', 'employees', 'config'].forEach(t => {
@@ -1299,22 +1207,9 @@
         }
 
         function loadSettings() {
-            if (!unsubscribeHubs) {
-                unsubscribeHubs = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), (snap) => {
-                    state.hubs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderHubsTable(); populateHubDropdowns();
-                });
-            }
-            if (!unsubscribeEmployees) {
-                unsubscribeEmployees = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => {
-                    state.employees = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.role !== 'admin');
-                    renderEmployeesTable();
-                });
-            }
-            if(state.config) {
-                els.configSecureCode.value = state.config.secure_code || '';
-                els.configDwRate.value = state.config.dw_rate || 0;
-            }
+            if (!unsubscribeHubs) { unsubscribeHubs = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), (snap) => { state.hubs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderHubsTable(); populateHubDropdowns(); }); }
+            if (!unsubscribeEmployees) { unsubscribeEmployees = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => { state.employees = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.role !== 'admin'); renderEmployeesTable(); }); }
+            if(state.config) { els.configSecureCode.value = state.config.secure_code || ''; els.configDwRate.value = state.config.dw_rate || 0; }
         }
 
         function populateHubDropdowns() {
@@ -1323,129 +1218,31 @@
         }
 
         els.formAddHub.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = els.editHubId.value;
-            const data = { 
-                code: els.hubCode.value.toUpperCase().trim(), 
-                name: els.hubName.value.trim(), 
-                sorter_rate: Number(els.hubRate.value) || 0,
-                created_at: new Date().toISOString() 
-            };
+            e.preventDefault(); const id = els.editHubId.value;
+            const data = { code: els.hubCode.value.toUpperCase().trim(), name: els.hubName.value.trim(), sorter_rate: Number(els.hubRate.value) || 0, created_at: new Date().toISOString() };
             secureCheck(async () => {
-                try {
-                    if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'hubs', id), data);
-                    else {
-                        if(state.hubs.find(h => h.code === data.code)) throw new Error("Kode sudah ada!");
-                        await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data);
-                    }
-                    resetHubForm(); showStatusMsg(els.hubMsg, "Berhasil!", "success");
-                } catch(err) { showStatusMsg(els.hubMsg, err.message, "error"); }
+                try { if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'hubs', id), data); else { if(state.hubs.find(h => h.code === data.code)) throw new Error("Kode sudah ada!"); await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data); } resetHubForm(); showStatusMsg(els.hubMsg, "Berhasil!", "success"); } catch(err) { showStatusMsg(els.hubMsg, err.message, "error"); }
             });
         });
 
-        window.editHub = (h) => {
-            if(typeof h === 'string') h = JSON.parse(h);
-            secureCheck(() => {
-                els.editHubId.value = h.id; els.hubCode.value = h.code; els.hubName.value = h.name;
-                els.hubRate.value = h.sorter_rate || 0;
-                els.btnSaveHub.textContent = 'Update'; els.btnCancelHub.classList.remove('hidden');
-                els.formAddHub.scrollIntoView({ behavior: 'smooth' });
-            });
-        }
+        window.editHub = (h) => { if(typeof h === 'string') h = JSON.parse(h); secureCheck(() => { els.editHubId.value = h.id; els.hubCode.value = h.code; els.hubName.value = h.name; els.hubRate.value = h.sorter_rate || 0; els.btnSaveHub.textContent = 'Update'; els.btnCancelHub.classList.remove('hidden'); els.formAddHub.scrollIntoView({ behavior: 'smooth' }); }); }
+        window.resetHubForm = () => { els.formAddHub.reset(); els.editHubId.value = ''; els.btnSaveHub.textContent = 'Simpan'; els.btnCancelHub.classList.add('hidden'); }
+        function renderHubsTable() { els.hubTableBody.innerHTML = state.hubs.map(hub => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td><td class="p-4 font-medium">${hub.name}</td><td class="p-4 text-right">Rp ${formatNumber(hub.sorter_rate||0)}</td><td class="p-4 text-right"><button onclick='editHub(${JSON.stringify(hub)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); lucide.createIcons(); }
 
-        window.resetHubForm = () => {
-            els.formAddHub.reset(); els.editHubId.value = ''; els.btnSaveHub.textContent = 'Simpan'; els.btnCancelHub.classList.add('hidden');
-        }
-
-        function renderHubsTable() {
-            els.hubTableBody.innerHTML = state.hubs.map(hub => `
-                <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                    <td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td>
-                    <td class="p-4 font-medium">${hub.name}</td>
-                    <td class="p-4 text-right">Rp ${(hub.sorter_rate||0).toLocaleString('id-ID')}</td>
-                    <td class="p-4 text-right">
-                        <button onclick='editHub(${JSON.stringify(hub)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                        <button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        // --- EMPLOYEE LOGIC ---
         els.formAddUser.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = els.editUserId.value;
-            const data = {
-                nik: els.userNik.value.trim(), name: els.userName.value.trim(), hub_code: els.userHub.value, 
-                role: els.userRole.value, can_login: els.userCanLogin.checked, password: els.userPass.value.trim(), created_at: new Date().toISOString()
-            };
+            e.preventDefault(); const id = els.editUserId.value;
+            const data = { nik: els.userNik.value.trim(), name: els.userName.value.trim(), hub_code: els.userHub.value, role: els.userRole.value, can_login: els.userCanLogin.checked, password: els.userPass.value.trim(), created_at: new Date().toISOString() };
             secureCheck(async () => {
-                try {
-                    if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id), data);
-                    else {
-                        if(state.employees.find(e => e.nik === data.nik)) throw new Error('NIK sudah terdaftar!');
-                        await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data);
-                    }
-                    resetUserForm(); showStatusMsg(els.userMsg, 'Berhasil!', 'success');
-                } catch (err) { showStatusMsg(els.userMsg, err.message, 'error'); }
+                try { if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id), data); else { if(state.employees.find(e => e.nik === data.nik)) throw new Error("NIK Terdaftar!"); await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data); } resetUserForm(); showStatusMsg(els.userMsg, 'Berhasil!', 'success'); } catch(err) { showStatusMsg(els.userMsg, err.message, 'error'); }
             });
         });
 
-        window.togglePasswordInput = () => {
-            if(els.userCanLogin.checked) { els.passContainer.classList.remove('hidden'); els.userPass.required = true; } 
-            else { els.passContainer.classList.add('hidden'); els.userPass.required = false; els.userPass.value = ''; }
-        }
-
-        window.resetUserForm = () => {
-            els.formAddUser.reset(); els.editUserId.value = ''; els.formUserTitle.textContent = 'Tambah Data Karyawan';
-            els.btnSaveUser.textContent = 'Simpan Data'; els.btnCancelEdit.classList.add('hidden'); els.userNik.disabled = false; togglePasswordInput();
-        }
-
-        function renderEmployeesTable() {
-            els.userCount.textContent = `Total: ${state.employees.length}`;
-            els.userTableBody.innerHTML = state.employees.map(u => `
-                <tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                    <td class="p-4"><div class="font-medium text-slate-800">${u.name}</div><div class="text-xs text-slate-500 font-mono">${u.nik}</div></td>
-                    <td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${u.hub_code || '-'}</span></td>
-                    <td class="p-4 capitalize text-slate-600">${u.role}</td>
-                    <td class="p-4 font-mono text-slate-500 text-xs">${u.can_login ? u.password : '-'}</td>
-                    <td class="p-4">${u.can_login ? '<span class="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Aktif</span>' : '<span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded-full">Tidak</span>'}</td>
-                    <td class="p-4 text-right flex gap-2 justify-end">
-                        <button onclick='editUser(${JSON.stringify(u)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                        <button onclick="deleteDocItem('users', '${u.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        window.editUser = (u) => {
-            if(typeof u === 'string') u = JSON.parse(u);
-            secureCheck(() => {
-                els.editUserId.value = u.id; els.userNik.value = u.nik; els.userNik.disabled = true; els.userName.value = u.name;
-                els.userHub.value = u.hub_code; els.userRole.value = u.role; els.userCanLogin.checked = u.can_login; els.userPass.value = u.password || '';
-                togglePasswordInput();
-                els.formUserTitle.textContent = 'Edit Data Karyawan'; els.btnSaveUser.textContent = 'Update Data'; els.btnCancelEdit.classList.remove('hidden');
-                els.formAddUser.scrollIntoView({ behavior: 'smooth' });
-            });
-        }
-
-        window.deleteDocItem = async (colName, id) => {
-            secureCheck(async () => {
-                if(!confirm('Hapus data ini?')) return;
-                try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); } 
-                catch(e) { alert('Gagal hapus'); }
-            });
-        };
-
-        function showStatusMsg(el, text, type) {
-            el.textContent = text;
-            el.className = `text-xs mt-3 ${type === 'error' ? 'text-red-500' : 'text-green-600'}`;
-            el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 3000);
-        }
-
+        window.togglePasswordInput = () => { if(els.userCanLogin.checked) { els.passContainer.classList.remove('hidden'); els.userPass.required = true; } else { els.passContainer.classList.add('hidden'); els.userPass.required = false; els.userPass.value = ''; } }
+        window.resetUserForm = () => { els.formAddUser.reset(); els.editUserId.value = ''; els.formUserTitle.textContent = 'Tambah Data Karyawan'; els.btnSaveUser.textContent = 'Simpan Data'; els.btnCancelEdit.classList.add('hidden'); els.userNik.disabled = false; togglePasswordInput(); }
+        function renderEmployeesTable() { els.userCount.textContent = `Total: ${state.employees.length}`; els.userTableBody.innerHTML = state.employees.map(u => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-4"><div class="font-medium text-slate-800">${u.name}</div><div class="text-xs text-slate-500 font-mono">${u.nik}</div></td><td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${u.hub_code || '-'}</span></td><td class="p-4 capitalize text-slate-600">${u.role}</td><td class="p-4 font-mono text-slate-500 text-xs">${u.can_login ? u.password : '-'}</td><td class="p-4">${u.can_login ? '<span class="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Aktif</span>' : '<span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded-full">Tidak</span>'}</td><td class="p-4 text-right flex gap-2 justify-end"><button onclick='editUser(${JSON.stringify(u)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDocItem('users', '${u.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); lucide.createIcons(); }
+        window.editUser = (u) => { if(typeof u === 'string') u = JSON.parse(u); secureCheck(() => { els.editUserId.value = u.id; els.userNik.value = u.nik; els.userNik.disabled = true; els.userName.value = u.name; els.userHub.value = u.hub_code; els.userRole.value = u.role; els.userCanLogin.checked = u.can_login; els.userPass.value = u.password || ''; togglePasswordInput(); els.formUserTitle.textContent = 'Edit Data Karyawan'; els.btnSaveUser.textContent = 'Update Data'; els.btnCancelEdit.classList.remove('hidden'); els.formAddUser.scrollIntoView({ behavior: 'smooth' }); }); }
+        window.deleteDocItem = async (colName, id) => { secureCheck(async () => { if(!confirm('Hapus data ini?')) return; try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); } catch(e) { alert('Gagal hapus'); } }); };
+        function showStatusMsg(el, text, type) { el.textContent = text; el.className = `text-xs mt-3 ${type === 'error' ? 'text-red-500' : 'text-green-600'}`; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); }
         els.openSidebarBtn.addEventListener('click', () => { els.sidebar.classList.remove('-translate-x-full'); els.sidebarOverlay.classList.remove('hidden'); });
         els.closeSidebarBtn.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
         els.sidebarOverlay.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });

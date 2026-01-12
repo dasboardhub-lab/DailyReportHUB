@@ -875,17 +875,39 @@
         // --- INIT ---
         async function init() {
             try { lucide.createIcons(); } catch(e) {}
+            
+            // SECURITY FALLBACK: Force remove loading screen after 3 seconds
+            // This prevents the "stuck on loading" issue if Firebase fails to initialize
+            const fallbackTimer = setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                if (loader && !loader.classList.contains('hidden')) {
+                    console.warn("Loading timeout - forcing display");
+                    loader.classList.add('opacity-0');
+                    setTimeout(() => loader.classList.add('hidden'), 500);
+                    if (!state.user) showLogin();
+                }
+            }, 3000);
+
             if (typeof __initial_auth_token !== 'undefined') { try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {} }
             loadGlobalConfig();
+            
             onAuthStateChanged(auth, (currentUser) => {
+                clearTimeout(fallbackTimer); // Cancel fallback if auth responds
                 state.user = currentUser;
                 const savedRole = localStorage.getItem('userRole');
                 const savedUserData = localStorage.getItem('userData');
+                
                 if (currentUser && savedRole) {
                     state.role = savedRole;
                     if (savedUserData) state.userData = JSON.parse(savedUserData);
                     showApp();
-                } else { state.role = null; state.userData = null; showLogin(); }
+                } else { 
+                    state.role = null; 
+                    state.userData = null; 
+                    showLogin(); 
+                }
+                
+                // Hide loading
                 els.loading.classList.add('opacity-0');
                 setTimeout(() => els.loading.classList.add('hidden'), 500);
             });

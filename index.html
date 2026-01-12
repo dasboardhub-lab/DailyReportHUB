@@ -34,6 +34,11 @@
         
         /* Table Sticky Header */
         thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; }
+        
+        /* Login Tabs */
+        .login-tab-active { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; }
+        .login-tab-inactive { color: #64748b; border-color: transparent; }
+        .login-tab-inactive:hover { background-color: #f8fafc; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -68,7 +73,7 @@
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="min-h-screen bg-slate-100 flex items-center justify-center p-4 hidden">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-slate-200">
-            <div class="text-center mb-8">
+            <div class="text-center mb-6">
                 <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-blue-200 shadow-lg">
                     <i data-lucide="file-text" class="text-white w-8 h-8"></i>
                 </div>
@@ -76,24 +81,31 @@
                 <p class="text-slate-500 text-sm mt-1">Sistem Laporan Harian</p>
             </div>
 
+            <!-- Login Tabs -->
+            <div class="grid grid-cols-3 gap-1 mb-6 p-1 bg-slate-100 rounded-lg">
+                <button onclick="switchLoginTab('sorter')" id="tab-login-sorter" class="py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive">Sorter</button>
+                <button onclick="switchLoginTab('leader')" id="tab-login-leader" class="py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600">Leader</button>
+                <button onclick="switchLoginTab('admin')" id="tab-login-admin" class="py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive">Admin</button>
+            </div>
+
             <form id="login-form" class="space-y-5">
-                <div>
+                <div id="field-nik">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Username / NIK</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i data-lucide="user" class="h-5 w-5 text-slate-400"></i>
                         </div>
-                        <input type="text" id="login-nik" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Masukan NIK atau 'admin'" required>
+                        <input type="text" id="login-nik" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Masukan NIK">
                     </div>
                 </div>
 
-                <div>
+                <div id="field-pass">
                     <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
                         </div>
-                        <input type="password" id="login-pass" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Masukan Password" required>
+                        <input type="password" id="login-pass" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Masukan Password">
                     </div>
                 </div>
 
@@ -103,9 +115,9 @@
                     <span>Masuk</span>
                 </button>
                 
-                <div class="text-xs text-center text-slate-400 mt-4">
-                    Demo Admin: user: <b>admin</b>, pass: <b>admin123</b>
-                </div>
+                <p class="text-xs text-center text-slate-400 mt-4" id="login-hint">
+                    Masuk sebagai Leader
+                </p>
             </form>
         </div>
     </div>
@@ -194,23 +206,21 @@
                         </div>
                     </div>
 
-                    <!-- VIEW: REPORTS (MODIFIED) -->
+                    <!-- VIEW: REPORTS -->
                     <div id="view-reports" class="content-view hidden space-y-6">
                         <div class="flex items-center justify-between">
                             <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
                             <span id="current-date-display" class="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200"></span>
                         </div>
                         
-                        <!-- Form Input -->
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
+                        <!-- Form Input (Hanya untuk Admin & Leader) -->
+                        <div id="section-input-report" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                                 <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> <span id="form-report-title">Input Laporan Operasional</span>
                             </h3>
                             
                             <form id="form-daily-report" class="space-y-6">
-                                <input type="hidden" id="edit-report-id"> <!-- ID untuk mode edit -->
-                                
-                                <!-- Bagian Header -->
+                                <input type="hidden" id="edit-report-id"> 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
                                     <div>
                                         <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Laporan</label>
@@ -222,7 +232,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Bagian Metrik -->
                                 <div>
                                     <h4 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                                         <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i> Metrik Operasional
@@ -251,7 +260,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Bagian Absensi Sorter (UPDATED) -->
                                 <div>
                                     <div class="flex justify-between items-end mb-3">
                                         <h4 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
@@ -303,10 +311,10 @@
                             </form>
                         </div>
 
-                        <!-- Table History -->
+                        <!-- Table History (Untuk Semua User) -->
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                <h3 class="font-semibold text-slate-800">Riwayat Laporan Saya</h3>
+                                <h3 class="font-semibold text-slate-800">Riwayat Semua Laporan</h3>
                                 <button onclick="loadMyReports()" class="text-blue-600 text-xs hover:text-blue-800 font-medium">Refresh Data</button>
                             </div>
                             <div class="overflow-x-auto">
@@ -328,7 +336,7 @@
                         </div>
                     </div>
 
-                    <!-- VIEW: SETTINGS (MULTI-TAB) -->
+                    <!-- VIEW: SETTINGS -->
                     <div id="view-settings" class="content-view hidden space-y-6">
                         <div class="flex flex-col md:flex-row justify-between items-center mb-4">
                             <h2 class="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
@@ -387,7 +395,7 @@
                                     <i data-lucide="user-plus" class="w-5 h-5 text-blue-600"></i> <span id="form-user-title">Tambah Data Karyawan</span>
                                 </h3>
                                 <form id="form-add-user" class="space-y-4">
-                                    <input type="hidden" id="edit-user-id"> <!-- Hidden ID for Editing -->
+                                    <input type="hidden" id="edit-user-id">
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
                                             <label class="block text-xs font-medium text-slate-500 mb-1">NIK</label>
@@ -528,10 +536,11 @@
             user: null, 
             role: null, 
             userData: null,
+            loginTab: 'leader', // default tab
             currentView: 'dashboard',
             hubs: [],
             employees: [],
-            secureCode: '123456' // Default fallback
+            secureCode: '123456' 
         };
 
         // --- DOM ELEMENTS ---
@@ -542,9 +551,17 @@
             loginForm: document.getElementById('login-form'),
             loginNik: document.getElementById('login-nik'),
             loginPass: document.getElementById('login-pass'),
+            fieldNik: document.getElementById('field-nik'),
+            fieldPass: document.getElementById('field-pass'),
             loginError: document.getElementById('login-error'),
             btnLogin: document.getElementById('btn-login'),
+            loginHint: document.getElementById('login-hint'),
             
+            // Login Tabs
+            tabLoginSorter: document.getElementById('tab-login-sorter'),
+            tabLoginLeader: document.getElementById('tab-login-leader'),
+            tabLoginAdmin: document.getElementById('tab-login-admin'),
+
             sidebar: document.getElementById('sidebar'),
             sidebarOverlay: document.getElementById('sidebar-overlay'),
             openSidebarBtn: document.getElementById('open-sidebar'),
@@ -572,6 +589,7 @@
             dashInfo: document.getElementById('dash-info'),
             
             // Reports
+            sectionInputReport: document.getElementById('section-input-report'),
             formDailyReport: document.getElementById('form-daily-report'),
             formReportTitle: document.getElementById('form-report-title'),
             editReportId: document.getElementById('edit-report-id'),
@@ -675,7 +693,6 @@
         
         els.btnConfirmSecure.addEventListener('click', async () => {
             const input = els.inputSecureCode.value.trim();
-            // Fetch code from DB to be sure
             const settingsRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config');
             try {
                 const snap = await getDoc(settingsRef);
@@ -690,28 +707,126 @@
                 }
             } catch (e) {
                 console.error(e);
-                els.secureError.textContent = "Gagal memverifikasi. Cek koneksi.";
+                els.secureError.textContent = "Gagal verifikasi.";
                 els.secureError.classList.remove('hidden');
             }
         });
 
-        // Config Security
         els.formSecurityCode.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newCode = els.configSecureCode.value.trim();
             if(!newCode) return;
             try {
                 await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), { secure_code: newCode }, { merge: true });
-                showStatusMsg(els.securityMsg, "Kode keamanan berhasil disimpan!", "success");
-            } catch(e) {
-                showStatusMsg(els.securityMsg, "Gagal simpan.", "error");
+                showStatusMsg(els.securityMsg, "Kode berhasil disimpan!", "success");
+            } catch(e) { showStatusMsg(els.securityMsg, "Gagal simpan.", "error"); }
+        });
+
+        // --- LOGIN LOGIC ---
+        window.switchLoginTab = (tab) => {
+            state.loginTab = tab;
+            
+            // Reset styles
+            ['sorter', 'leader', 'admin'].forEach(t => {
+                const el = document.getElementById(`tab-login-${t}`);
+                if(t === tab) {
+                    el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600";
+                } else {
+                    el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive";
+                }
+            });
+
+            // Adjust fields visibility
+            els.loginError.classList.add('hidden');
+            els.loginNik.value = '';
+            els.loginPass.value = '';
+
+            if (tab === 'sorter') {
+                els.fieldNik.classList.remove('hidden');
+                els.fieldPass.classList.add('hidden');
+                els.loginHint.textContent = "Masuk sebagai Sorter (View Only)";
+                els.loginNik.required = true;
+                els.loginPass.required = false;
+            } else if (tab === 'leader') {
+                els.fieldNik.classList.remove('hidden');
+                els.fieldPass.classList.remove('hidden');
+                els.loginHint.textContent = "Masuk sebagai Leader";
+                els.loginNik.required = true;
+                els.loginPass.required = true;
+            } else if (tab === 'admin') {
+                els.fieldNik.classList.add('hidden');
+                els.fieldPass.classList.remove('hidden');
+                els.loginHint.textContent = "Masuk sebagai Administrator";
+                els.loginNik.required = false;
+                els.loginPass.required = true;
+            }
+        };
+
+        els.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tab = state.loginTab;
+            const nik = els.loginNik.value.trim();
+            const pass = els.loginPass.value.trim();
+            
+            els.loginError.classList.add('hidden');
+            els.btnLogin.disabled = true;
+            els.btnLogin.textContent = 'Memeriksa...';
+
+            try {
+                // Ensure Firebase connection
+                if (!auth.currentUser) {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
+                        else await signInAnonymously(auth);
+                    } catch(e) {}
+                }
+
+                if (tab === 'admin') {
+                    if (pass === 'admin123') { // Simple admin check
+                        updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
+                    } else {
+                        throw new Error('Password Admin Salah');
+                    }
+                } else if (tab === 'leader') {
+                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass), where("role", "==", "leader"));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        const u = snap.docs[0].data();
+                        if (u.can_login) updateLocalState('leader', u); 
+                        else throw new Error('Akun Leader tidak aktif.');
+                    } else throw new Error('NIK atau Password Salah');
+                } else if (tab === 'sorter') {
+                    // Check if NIK exists as sorter
+                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        const u = snap.docs[0].data();
+                        updateLocalState('sorter', u);
+                    } else throw new Error('NIK tidak ditemukan.');
+                }
+
+            } catch (err) {
+                console.error("Login Error:", err);
+                els.loginError.textContent = err.message || 'Login Gagal';
+                els.loginError.classList.remove('hidden');
+                els.btnLogin.disabled = false;
+                els.btnLogin.textContent = 'Masuk';
             }
         });
+
+        function updateLocalState(role, userData) {
+            state.role = role; 
+            state.userData = userData;
+            localStorage.setItem('userRole', role);
+            localStorage.setItem('userData', JSON.stringify(userData));
+            showApp();
+        }
 
         // --- NAVIGATION & UI ---
         function showLogin() {
             els.loginScreen.classList.remove('hidden');
             els.appScreen.classList.add('hidden');
+            switchLoginTab('leader'); // Default tab
         }
 
         function showApp() {
@@ -719,7 +834,21 @@
             els.appScreen.classList.remove('hidden');
             els.userNameDisplay.textContent = state.userData?.name || 'User';
             els.userRoleDisplay.textContent = state.role;
-            if (state.role === 'admin') els.menuSettings.classList.remove('hidden');
+            
+            // Access Control UI
+            if (state.role === 'admin') {
+                els.menuSettings.classList.remove('hidden');
+            } else {
+                els.menuSettings.classList.add('hidden');
+            }
+
+            // Hide Input Report if Sorter
+            if (state.role === 'sorter') {
+                if(els.sectionInputReport) els.sectionInputReport.classList.add('hidden');
+            } else {
+                if(els.sectionInputReport) els.sectionInputReport.classList.remove('hidden');
+            }
+            
             navigateTo('dashboard');
         }
 
@@ -746,8 +875,14 @@
         function loadDashboard() {
             els.dashName.textContent = state.userData?.name || state.role;
             els.dashRole.textContent = state.role;
-            els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : 'User Mode';
+            els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only Mode' : 'User Mode');
         }
+
+        window.handleLogout = async () => {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userData');
+            window.location.reload();
+        };
 
         // ==========================================
         // REPORTS LOGIC
@@ -796,39 +931,40 @@
         }
 
         async function loadReportsView() {
-            // Jangan reset form jika sedang edit
-            if(els.editReportId.value) return;
+            if(els.editReportId.value) return; // Don't reset if editing
 
             els.rptDate.valueAsDate = new Date();
             const hubCode = state.userData?.hub_code || 'UNKNOWN';
             els.rptHub.value = hubCode;
             
-            // Load Employees
-            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
-            try {
-                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", hubCode));
-                const snap = await getDocs(qSorter);
-                
-                els.sorterAttendanceList.innerHTML = '';
-                if (snap.empty) {
+            // Load Employees only if user can input reports (Leader/Admin)
+            if (state.role !== 'sorter') {
+                els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
+                try {
+                    const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
+                    let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", hubCode));
+                    const snap = await getDocs(qSorter);
+                    
                     els.sorterAttendanceList.innerHTML = '';
-                } else {
-                    snap.forEach(doc => {
-                        const s = doc.data();
-                        if(s.role === 'admin') return;
-                        const row = document.createElement('tr');
-                        row.className = 'border-b border-slate-50 hover:bg-slate-50';
-                        const rowId = doc.id;
-                        row.innerHTML = `
-                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
-                            ${generateAttendanceColumns(rowId)}
-                            <td class="p-3"></td>
-                        `;
-                        els.sorterAttendanceList.appendChild(row);
-                    });
-                }
-            } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
+                    if (snap.empty) {
+                        els.sorterAttendanceList.innerHTML = '';
+                    } else {
+                        snap.forEach(doc => {
+                            const s = doc.data();
+                            if(s.role === 'admin') return;
+                            const row = document.createElement('tr');
+                            row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                            const rowId = doc.id;
+                            row.innerHTML = `
+                                <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
+                                ${generateAttendanceColumns(rowId)}
+                                <td class="p-3"></td>
+                            `;
+                            els.sorterAttendanceList.appendChild(row);
+                        });
+                    }
+                } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
+            }
 
             loadMyReports();
             calculateReportTotals();
@@ -837,15 +973,15 @@
         window.loadMyReports = async () => {
             els.rptHistoryBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
             try {
+                // Fetch ALL reports, limit to 20 for performance
                 const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
-                let q = state.userData?.nik && state.role !== 'admin' 
-                    ? query(reportsRef, where("nik", "==", state.userData.nik), orderBy("date", "desc"), limit(10))
-                    : query(reportsRef, orderBy("date", "desc"), limit(10));
+                let q = query(reportsRef, orderBy("date", "desc"), limit(20));
 
                 let querySnapshot;
                 try { querySnapshot = await getDocs(q); } 
                 catch(err) {
-                    const q2 = query(reportsRef, where("nik", "==", state.userData.nik || 'ADMIN'));
+                    console.log("Index error, fetching all");
+                    const q2 = query(reportsRef, limit(20)); // Fallback
                     querySnapshot = await getDocs(q2);
                 }
 
@@ -859,14 +995,23 @@
                     const data = doc.data();
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
+                    
+                    // Logic Hak Akses Tombol
+                    let actionButtons = '';
+                    if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === data.hub)) {
+                        actionButtons = `
+                            <button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...data})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                            <button onclick='confirmDeleteReport("${doc.id}", "${data.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        `;
+                    }
+
                     tr.innerHTML = `
                         <td class="p-3 whitespace-nowrap">${data.date}</td>
                         <td class="p-3 font-medium">${data.hub}</td>
                         <td class="p-3 text-right text-blue-600 font-mono">${(data.total_paket || 0).toLocaleString('id-ID')}</td>
                         <td class="p-3 text-right font-mono font-bold">${data.total_mpp || 0}</td>
                         <td class="p-3 text-right flex gap-2 justify-end">
-                            <button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...data})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                            <button onclick='confirmDeleteReport("${doc.id}", "${data.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            ${actionButtons}
                         </td>
                     `;
                     els.rptHistoryBody.appendChild(tr);
@@ -878,9 +1023,9 @@
         // --- REPORT ACTIONS ---
         window.confirmDeleteReport = (id, hub) => {
             secureCheck(async () => {
+                // Double check permission on execute
                 if(state.role !== 'admin' && hub !== state.userData.hub_code) {
-                    alert("Anda hanya bisa menghapus laporan HUB Anda sendiri.");
-                    return;
+                    alert("Akses Ditolak."); return;
                 }
                 if(!confirm('Hapus laporan ini?')) return;
                 try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); } 
@@ -891,10 +1036,8 @@
         window.confirmEditReport = (rpt) => {
             secureCheck(() => {
                 if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) {
-                    alert("Anda hanya bisa mengedit laporan HUB Anda sendiri.");
-                    return;
+                    alert("Akses Ditolak."); return;
                 }
-                // Populate Form
                 els.editReportId.value = rpt.id;
                 els.rptDate.value = rpt.date;
                 els.rptHub.value = rpt.hub;
@@ -903,47 +1046,57 @@
                 els.rptSap.value = rpt.sap;
                 els.rptJne.value = rpt.jne;
                 
-                // UI Changes
                 els.formReportTitle.textContent = "Edit Laporan";
                 els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
                 els.btnCancelReportEdit.classList.remove('hidden');
                 
-                calculateReportTotals();
-                
-                // Restore Attendance (Complex part: simplified by just resetting list and manual re-entry for MVP stability or simple message)
-                // In full implementation, we'd map attendance_data back to checkboxes. 
-                // For now, let's keep it simple: inform user they need to re-verify attendance or just keep totals.
-                // Or better: try to map it.
-                // Reset radios
-                document.querySelectorAll('.attendance-radio').forEach(r => r.checked = false);
-                document.querySelectorAll('.att-remarks').forEach(i => i.value = '');
-                
-                if(rpt.attendance_data) {
-                    rpt.attendance_data.forEach(att => {
-                        // Try to find row by name
-                        const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
-                        let row;
-                        if(nameCell) {
-                            row = nameCell.closest('tr');
-                        } else {
-                            // Create DW row
-                            addDwRow(); 
-                            // Get the last added row
-                            row = els.sorterAttendanceList.lastElementChild;
-                            row.querySelector('.dw-name-input').value = att.name;
-                        }
-                        
-                        // Set Radio
-                        if(row) {
-                            const radio = row.querySelector(`input[value="${att.status}"]`);
-                            if(radio) radio.checked = true;
-                            const remarkInput = row.querySelector('.att-remarks');
-                            if(remarkInput) remarkInput.value = att.remarks || '';
-                        }
+                // Restore Attendance (Simplified: Clear & suggest manual re-entry if complex, or try basic map)
+                // For a robust edit, we'd need to re-render the list and map the values.
+                // Re-rendering list for specific HUB:
+                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
+                // Use a quick fetch to rebuild the list context for the edited HUB
+                let qSorter = state.role === 'admin' ? query(usersRef) : query(usersRef, where("hub_code", "==", rpt.hub));
+                getDocs(qSorter).then(snap => {
+                    els.sorterAttendanceList.innerHTML = '';
+                    snap.forEach(doc => {
+                        const s = doc.data();
+                        if(s.role === 'admin') return;
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-slate-50 hover:bg-slate-50';
+                        const rowId = doc.id;
+                        row.innerHTML = `
+                            <td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>
+                            ${generateAttendanceColumns(rowId)}
+                            <td class="p-3"></td>
+                        `;
+                        els.sorterAttendanceList.appendChild(row);
                     });
-                }
-                
-                calculateReportTotals();
+                    
+                    // Map existing data
+                    if(rpt.attendance_data) {
+                        rpt.attendance_data.forEach(att => {
+                            // Find row
+                            const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
+                            let row;
+                            if(nameCell) {
+                                row = nameCell.closest('tr');
+                            } else {
+                                addDwRow(); 
+                                row = els.sorterAttendanceList.lastElementChild;
+                                row.querySelector('.dw-name-input').value = att.name;
+                            }
+                            
+                            if(row) {
+                                const radio = row.querySelector(`input[value="${att.status}"]`);
+                                if(radio) radio.checked = true;
+                                const remarkInput = row.querySelector('.att-remarks');
+                                if(remarkInput) remarkInput.value = att.remarks || '';
+                            }
+                        });
+                    }
+                    calculateReportTotals();
+                });
+
                 els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
             });
         };
@@ -954,20 +1107,9 @@
             els.formReportTitle.textContent = "Input Laporan Operasional";
             els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan';
             els.btnCancelReportEdit.classList.add('hidden');
-            // Reload basic employee list to clear DWs
             els.rptHub.value = state.userData?.hub_code || '';
-            const listContainer = els.sorterAttendanceList;
-            // Remove DW rows (those with inputs in first cell)
-            Array.from(listContainer.querySelectorAll('tr')).forEach(tr => {
-                if(tr.querySelector('.dw-name-input')) tr.remove();
-                else {
-                    tr.querySelectorAll('input').forEach(i => {
-                        if(i.type === 'radio') i.checked = false;
-                        if(i.type === 'text') i.value = '';
-                    });
-                }
-            });
-            calculateReportTotals();
+            // Reset attendance UI
+            loadReportsView();
         };
 
         els.formDailyReport.addEventListener('submit', async (e) => {
@@ -1028,62 +1170,7 @@
             }
         });
 
-        // --- AUTH ACTIONS ---
-        els.loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nik = els.loginNik.value.trim();
-            const pass = els.loginPass.value.trim();
-            els.loginError.classList.add('hidden');
-            els.btnLogin.disabled = true;
-            els.btnLogin.textContent = 'Memeriksa...';
-
-            try {
-                if (nik.toLowerCase() === 'admin' && pass === 'admin123') {
-                    updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
-                    return; 
-                }
-                if (!auth.currentUser) {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token);
-                        else await signInAnonymously(auth);
-                    } catch(e) {}
-                }
-                
-                const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
-                const snap = await getDocs(q);
-
-                if (!snap.empty) {
-                    const u = snap.docs[0].data();
-                    if (u.can_login === true) updateLocalState(u.role, u); 
-                    else throw new Error('Akun tidak memiliki akses login.');
-                } else {
-                    throw new Error('Invalid Credentials');
-                }
-            } catch (err) {
-                els.loginError.textContent = err.message === 'Akun tidak memiliki akses login.' ? err.message : 'NIK atau Password salah.';
-                els.loginError.classList.remove('hidden');
-                els.btnLogin.disabled = false;
-                els.btnLogin.textContent = 'Masuk';
-            }
-        });
-
-        function updateLocalState(role, userData) {
-            state.role = role === 'admin' ? 'admin' : (role === 'leader' ? 'leader' : 'leader'); 
-            state.userData = userData;
-            localStorage.setItem('userRole', state.role);
-            localStorage.setItem('userData', JSON.stringify(userData));
-            showApp();
-        }
-
-        window.handleLogout = async () => {
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('userData');
-            window.location.reload();
-        };
-
-        // ==========================================
-        // SETTINGS LOGIC
-        // ==========================================
+        // --- SETTINGS LOGIC ---
         let unsubscribeHubs = null;
         let unsubscribeEmployees = null;
 
@@ -1111,7 +1198,6 @@
                     renderEmployeesTable();
                 });
             }
-            // Load Security Config
             getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config')).then(snap => {
                 if(snap.exists()) els.configSecureCode.value = snap.data().secure_code || '123456';
             });
@@ -1122,7 +1208,6 @@
             if(els.userHub) els.userHub.innerHTML = options;
         }
 
-        // --- HUB LOGIC ---
         els.formAddHub.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = els.editHubId.value;
@@ -1143,20 +1228,14 @@
         window.editHub = (h) => {
             if(typeof h === 'string') h = JSON.parse(h);
             secureCheck(() => {
-                els.editHubId.value = h.id;
-                els.hubCode.value = h.code;
-                els.hubName.value = h.name;
-                els.btnSaveHub.textContent = 'Update';
-                els.btnCancelHub.classList.remove('hidden');
+                els.editHubId.value = h.id; els.hubCode.value = h.code; els.hubName.value = h.name;
+                els.btnSaveHub.textContent = 'Update'; els.btnCancelHub.classList.remove('hidden');
                 els.formAddHub.scrollIntoView({ behavior: 'smooth' });
             });
         }
 
         window.resetHubForm = () => {
-            els.formAddHub.reset();
-            els.editHubId.value = '';
-            els.btnSaveHub.textContent = 'Simpan';
-            els.btnCancelHub.classList.add('hidden');
+            els.formAddHub.reset(); els.editHubId.value = ''; els.btnSaveHub.textContent = 'Simpan'; els.btnCancelHub.classList.add('hidden');
         }
 
         function renderHubsTable() {
@@ -1173,7 +1252,6 @@
             lucide.createIcons();
         }
 
-        // --- EMPLOYEE LOGIC ---
         els.formAddUser.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = els.editUserId.value;

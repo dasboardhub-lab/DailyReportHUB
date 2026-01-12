@@ -957,7 +957,13 @@
                 showToast(`Selamat datang, ${uData.name}!`, 'success');
                 setTimeout(showApp, 800);
             } catch (err) { 
-                els.loginErrorText.textContent = err.message || 'Login Gagal'; els.loginError.classList.remove('hidden'); 
+                // Catch specific Firebase Config error
+                if (err.code === 'auth/configuration-not-found' || err.code === 'auth/admin-restricted-operation') {
+                    els.loginErrorText.innerHTML = "<strong>Error Konfigurasi:</strong><br>Fitur 'Anonymous Auth' belum aktif.<br>Silakan aktifkan di Firebase Console.";
+                } else {
+                    els.loginErrorText.textContent = err.message || 'Login Gagal';
+                }
+                els.loginError.classList.remove('hidden'); 
                 setButtonLoading(els.btnLogin, false, '<span>Masuk Aplikasi</span><i data-lucide="arrow-right" class="w-4 h-4"></i>');
             }
         });

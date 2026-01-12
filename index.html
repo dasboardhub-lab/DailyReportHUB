@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DailyReport (Online)</title>
+    <title>DailyReport</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -27,6 +27,10 @@
                         success: '#10b981', // Emerald 500
                         danger: '#ef4444', // Red 500
                         dark: '#0f172a', // Slate 900
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(79, 70, 229, 0.3)',
                     }
                 }
             }
@@ -34,30 +38,29 @@
     </script>
 
     <style>
-        body { background-color: #f8fafc; }
+        body { background-color: #f1f5f9; }
         
         /* Dynamic Island Animations */
         #dynamic-island-container {
-            pointer-events: none; /* Container tembus klik agar tidak halangi tombol di bawahnya */
-            z-index: 100;
+            pointer-events: none;
+            z-index: 9999;
         }
 
         #dynamic-island {
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            transform-origin: top center;
-            pointer-events: auto; /* Island itu sendiri bisa diklik */
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            pointer-events: auto;
         }
 
         /* States */
-        .island-hidden { opacity: 0; transform: translateY(-20px) scale(0.8); pointer-events: none !important; }
-        .island-loading { width: 48px; height: 32px; border-radius: 9999px; background: #0f172a; }
-        .island-expanded { width: auto; min-width: 200px; height: 48px; border-radius: 9999px; padding: 0 20px; background: #0f172a; }
+        .island-hidden { opacity: 0; transform: translateY(-20px) scale(0.9); pointer-events: none !important; }
+        .island-loading { width: 40px; height: 40px; border-radius: 50%; background: #0f172a; }
+        .island-expanded { width: auto; min-width: 180px; height: 44px; border-radius: 22px; padding: 0 16px; background: #0f172a; }
         
         .island-error { background: #ef4444 !important; }
         .island-success { background: #10b981 !important; }
 
-        /* Custom Scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -70,142 +73,153 @@
         .attendance-checkbox:active { transform: scale(0.9); }
 
         /* Navbar & Nav Items */
-        .nav-link { position: relative; color: #94a3b8; transition: color 0.3s; cursor: pointer; }
-        .nav-link:hover { color: #f8fafc; }
-        .nav-link.active { color: #fff; font-weight: 600; }
-        .nav-link.active::after {
-            content: ''; position: absolute; bottom: -22px; left: 0; width: 100%; height: 3px;
-            background: #6366f1; border-radius: 3px 3px 0 0;
-            box-shadow: 0 -4px 10px rgba(99, 102, 241, 0.5);
+        .nav-link { 
+            position: relative; color: #94a3b8; transition: all 0.3s; cursor: pointer; 
+            padding: 0.75rem 1rem; border-radius: 0.5rem;
         }
+        .nav-link:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
+        .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); font-weight: 600; }
         
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,1); transition: opacity 0.3s ease-out; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,1); transition: opacity 0.3s ease-out; }
         .hidden-fade { opacity: 0; pointer-events: none; }
+        
+        /* Button Press Effect */
+        button:active { transform: scale(0.97); }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700">
 
     <!-- DYNAMIC ISLAND (Notification Center) -->
-    <div id="dynamic-island-container" class="fixed top-4 left-0 right-0 flex justify-center">
-        <!-- Default State: Hidden -->
+    <div id="dynamic-island-container" class="fixed top-6 left-0 right-0 flex justify-center">
         <div id="dynamic-island" class="island-hidden flex items-center justify-center overflow-hidden text-white group">
-            <!-- Spinner -->
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                <i class="fas fa-circle-notch fa-spin text-white text-xs"></i>
+                <i class="fas fa-circle-notch fa-spin text-white text-sm"></i>
             </div>
-            
-            <!-- Content (Icon + Text) -->
-            <div id="island-content" class="flex items-center gap-3 opacity-0 transition-opacity duration-300 transform scale-90">
-                <i id="island-icon" class="fas fa-check text-lg"></i>
+            <div id="island-content" class="flex items-center gap-2 opacity-0 transition-opacity duration-300 transform scale-95">
+                <i id="island-icon" class="fas fa-check text-base"></i>
                 <span id="island-message" class="text-sm font-medium whitespace-nowrap">Memuat...</span>
             </div>
         </div>
     </div>
 
     <!-- APP NAVBAR -->
-    <nav id="app-navbar" class="bg-dark/95 backdrop-blur-md text-white shadow-lg z-40 hidden border-b border-white/10">
+    <nav id="app-navbar" class="bg-slate-900 text-white shadow-lg z-50 hidden border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                        <i class="fas fa-cube text-white text-sm"></i>
+                    <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-glow">
+                        <i class="fas fa-chart-bar text-white text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg tracking-tight leading-none">DAILY REPORT</h1>
-                        <p class="text-[10px] text-slate-400 font-medium tracking-wide">ONLINE SYSTEM</p>
+                        <h1 class="font-bold text-lg tracking-tight leading-none text-white">DAILY REPORT</h1>
+                        <p class="text-[10px] text-indigo-300 font-medium tracking-wide">ONLINE SYSTEM</p>
                     </div>
                 </div>
                 
                 <!-- Menu Items -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active h-16 flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
-                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link h-16 flex items-center gap-2"><i class="fas fa-table text-xs"></i> Laporan</a>
-                    <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link h-16 flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-xs"></i> Pengaturan</a>
+                <div class="hidden md:flex items-center space-x-2">
+                    <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active flex items-center gap-2"><i class="fas fa-chart-pie text-sm"></i> Dashboard</a>
+                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-table text-sm"></i> Laporan</a>
+                    <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-sm"></i> Pengaturan</a>
                 </div>
 
                 <!-- User Profile -->
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 pl-4 border-l border-white/10">
                     <div class="text-right hidden sm:block">
-                        <div class="text-xs font-semibold text-white" id="user-name-display">User</div>
-                        <div class="text-[10px] text-indigo-300 font-mono" id="user-badge">ROLE</div>
+                        <div class="text-xs font-semibold text-white truncate max-w-[100px]" id="user-name-display">User</div>
+                        <div class="text-[10px] text-emerald-400 font-mono tracking-wider" id="user-badge">ROLE</div>
                     </div>
-                    <button onclick="window.logout()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition flex items-center justify-center" title="Keluar">
-                        <i class="fas fa-power-off text-xs"></i>
+                    <button onclick="window.doLogout()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-slate-300 transition flex items-center justify-center group" title="Keluar">
+                        <i class="fas fa-power-off text-sm group-hover:scale-110 transition-transform"></i>
                     </button>
                 </div>
             </div>
         </div>
+        
+        <!-- Mobile Menu (Simple Tabs for small screens) -->
+        <div class="md:hidden flex justify-around bg-slate-800 p-2 text-xs border-t border-white/5">
+             <a onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="flex-1 text-center py-2 text-white font-bold bg-white/10 rounded-lg">Dashboard</a>
+             <a onclick="window.navigate('laporan')" id="mob-nav-laporan" class="flex-1 text-center py-2 text-slate-400 hover:text-white">Laporan</a>
+             <a onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="flex-1 text-center py-2 text-slate-400 hover:text-white hidden">Pengaturan</a>
+        </div>
     </nav>
 
     <!-- LOGIN SECTION -->
-    <div id="login-section" class="fixed inset-0 z-30 bg-slate-900 flex items-center justify-center hidden bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-slate-800/90"></div>
-        
-        <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-white/20 relative fade-in">
+    <div id="login-section" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-200/30 blur-3xl"></div>
+            <div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/30 blur-3xl"></div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100 relative fade-in z-10">
             <div class="text-center mb-8">
-                <div class="w-12 h-12 bg-indigo-500 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/40 mb-4">
-                    <i class="fas fa-chart-line text-white text-xl"></i>
+                <div class="w-14 h-14 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-200 mb-4">
+                    <i class="fas fa-chart-line text-white text-2xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white mb-1">Selamat Datang</h2>
-                <p class="text-slate-400 text-sm">Masuk untuk akses data real-time</p>
+                <h2 class="text-2xl font-bold text-slate-800 mb-1">Selamat Datang</h2>
+                <p class="text-slate-500 text-sm">Masuk untuk akses data real-time</p>
             </div>
 
             <!-- Login Tabs -->
-            <div class="flex p-1 bg-slate-900/50 rounded-xl mb-6 border border-white/5">
-                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all shadow-md bg-indigo-600 text-white">User</button>
-                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">Admin</button>
+            <div class="flex p-1.5 bg-slate-100 rounded-xl mb-6">
+                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-indigo-600">User</button>
+                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700">Admin</button>
             </div>
 
             <!-- Forms -->
-            <form id="form-login-user" class="space-y-4">
+            <form id="form-login-user" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1 ml-1">ID User</label>
-                    <input type="text" id="login-id" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Masukkan ID" required>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">ID User</label>
+                    <input type="text" id="login-id" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition" placeholder="Masukkan ID" required>
                 </div>
                 <div>
                     <label class="flex items-center cursor-pointer mb-2 ml-1">
-                        <input type="checkbox" id="is-pic-checkbox" class="w-4 h-4 rounded border-slate-600 text-indigo-600 focus:ring-indigo-500 bg-slate-700" onchange="window.togglePasswordField()">
-                        <span class="ml-2 text-xs text-indigo-300 font-medium">Saya adalah LEADER</span>
+                        <input type="checkbox" id="is-pic-checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" onchange="window.togglePasswordField()">
+                        <span class="ml-2 text-xs text-indigo-600 font-bold">Saya adalah LEADER</span>
                     </label>
-                    <input type="password" id="login-pass-user" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition hidden" placeholder="Kata Sandi">
+                    <input type="password" id="login-pass-user" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition hidden" placeholder="Kata Sandi">
                 </div>
-                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/30 transition transform active:scale-95">Masuk Aplikasi</button>
+                <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition transform active:scale-95">Masuk Aplikasi</button>
             </form>
 
-            <form id="form-login-admin" class="space-y-4 hidden">
+            <form id="form-login-admin" class="space-y-5 hidden">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1 ml-1">Password Admin</label>
-                    <input type="password" id="login-pass-admin" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition" required>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Password Admin</label>
+                    <input type="password" id="login-pass-admin" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition" required>
                 </div>
-                <button type="submit" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold shadow-lg transition transform active:scale-95">Masuk sebagai Admin</button>
+                <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg transition transform active:scale-95">Masuk sebagai Admin</button>
             </form>
 
             <!-- Error Hint -->
-            <div id="init-error-container" class="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl hidden">
-                <p id="init-error-text" class="text-xs text-red-400 text-center font-medium"></p>
-                <button onclick="location.reload()" class="block mx-auto mt-2 text-[10px] text-white bg-red-500/20 px-3 py-1 rounded-full hover:bg-red-500/40">Muat Ulang</button>
+            <div id="init-error-container" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl hidden">
+                <div class="flex items-center gap-2 text-red-600 mb-1">
+                    <i class="fas fa-wifi"></i>
+                    <span class="text-xs font-bold">Koneksi Bermasalah</span>
+                </div>
+                <p id="init-error-text" class="text-[10px] text-red-400 leading-relaxed"></p>
+                <button onclick="location.reload()" class="w-full mt-3 text-xs bg-white border border-red-200 text-red-500 py-2 rounded-lg font-bold hover:bg-red-50">Coba Lagi</button>
             </div>
         </div>
     </div>
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
-        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-5xl text-blue-600 mb-4 transition-all duration-300"></i>
+        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4 transition-all duration-300"></i>
         <div id="loading-logs" class="hidden"></div>
     </div>
 
     <!-- MAIN CONTENT -->
     <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 hidden">
-        <div class="max-w-7xl mx-auto space-y-8">
+        <div class="max-w-7xl mx-auto space-y-8 pb-20">
             
             <!-- VIEW: DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-end md:items-center gap-4 relative z-20">
+                <div class="bg-white rounded-2xl p-5 shadow-soft border border-slate-100 flex flex-col md:flex-row justify-between items-end md:items-center gap-4 relative z-20">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Ringkasan Kinerja</h2>
                         <p class="text-xs text-slate-500">Filter data real-time (Online)</p>
@@ -214,14 +228,14 @@
                     <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
                         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                             <i class="far fa-calendar text-slate-400 text-xs"></i>
-                            <input type="date" id="dash-start-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600" onchange="window.loadDashboardData()">
+                            <input type="date" id="dash-start-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600 font-medium" onchange="window.loadDashboardData()">
                             <span class="text-slate-300">-</span>
-                            <input type="date" id="dash-end-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600" onchange="window.loadDashboardData()">
+                            <input type="date" id="dash-end-date" class="bg-transparent text-sm border-none p-0 w-28 focus:ring-0 text-slate-600 font-medium" onchange="window.loadDashboardData()">
                         </div>
 
                         <!-- Custom Dropdown -->
                         <div class="relative w-48">
-                            <button id="hub-filter-btn" type="button" class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2.5 flex justify-between items-center hover:bg-white transition" onclick="window.toggleHubDropdown(event)">
+                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2.5 flex justify-between items-center hover:bg-slate-50 hover:border-slate-300 transition active:scale-95" onclick="window.toggleHubDropdown(event)">
                                 <span id="hub-filter-label" class="truncate font-medium">Semua HUB</span>
                                 <i class="fas fa-chevron-down text-xs text-slate-400"></i>
                             </button>
@@ -230,7 +244,7 @@
                             </div>
                         </div>
 
-                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition" title="Reset Filter">
+                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 border border-transparent hover:border-slate-200 hover:text-slate-600 hover:bg-white transition" title="Reset Filter">
                             <i class="fas fa-undo-alt"></i>
                         </button>
                     </div>
@@ -238,14 +252,14 @@
 
                 <!-- Charts (Stacked) -->
                 <div class="space-y-6 relative z-10">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
                         <div class="flex items-center gap-2 mb-6">
                             <div class="w-1 h-4 bg-indigo-500 rounded-full"></div>
                             <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Tahunan</h3>
                         </div>
                         <div class="h-64"><canvas id="chart-annual"></canvas></div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
                         <div class="flex items-center gap-2 mb-6">
                             <div class="w-1 h-4 bg-emerald-500 rounded-full"></div>
                             <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Harian (Periode Terpilih)</h3>
@@ -257,14 +271,14 @@
                 <!-- Tables Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
                     <!-- Daily Details -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-                        <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden flex flex-col">
+                        <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
                             <h3 class="font-bold text-slate-700">Rincian Data</h3>
-                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition"><i class="fas fa-download mr-1"></i> CSV</button>
+                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition border border-indigo-100"><i class="fas fa-download mr-1"></i> CSV</button>
                         </div>
                         <div class="overflow-x-auto flex-1">
                             <table id="table-daily-detail" class="w-full text-sm text-center whitespace-nowrap">
-                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-semibold">
+                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-bold tracking-wide">
                                     <tr>
                                         <th class="px-4 py-3 text-left">Tanggal</th>
                                         <th class="px-4 py-3">HUB</th>
@@ -284,18 +298,18 @@
                     </div>
 
                     <!-- HUB Performance -->
-                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-fit">
-                        <div class="p-5 border-b border-slate-50 bg-slate-50/50">
+                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden flex flex-col h-fit">
+                        <div class="p-5 border-b border-slate-50 bg-slate-50/30">
                             <h3 class="font-bold text-slate-700">Performa HUB</h3>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Top Outbound</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5 font-medium">Top Outbound</p>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-center">
-                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-semibold">
+                                <thead class="text-xs text-slate-500 bg-slate-50 uppercase font-bold tracking-wide">
                                     <tr>
                                         <th class="px-4 py-3 text-left">HUB</th>
                                         <th class="px-3 py-3">MPP</th>
-                                        <th class="px-4 py-3 text-indigo-600 font-bold">Out.</th>
+                                        <th class="px-4 py-3 text-indigo-600">Out.</th>
                                         <th class="px-3 py-3 text-emerald-600">Prod</th>
                                         <th class="px-4 py-3 text-right text-slate-400">Cost</th>
                                     </tr>
@@ -314,14 +328,14 @@
                         <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
                         <p class="text-sm text-slate-500">Rekapitulasi data harian dari semua HUB</p>
                     </div>
-                    <button onclick="window.openLaporanModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/20 font-medium transition hidden flex items-center gap-2" id="btn-tambah-laporan">
+                    <button onclick="window.openLaporanModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-500/20 font-bold transition hidden flex items-center gap-2 active:scale-95" id="btn-tambah-laporan">
                         <i class="fas fa-plus"></i> <span>Buat Laporan</span>
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-slate-600">
-                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100 font-bold tracking-wide">
                                 <tr>
                                     <th class="px-6 py-4">Tanggal</th>
                                     <th class="px-6 py-4">HUB</th>
@@ -351,18 +365,18 @@
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex space-x-1 bg-slate-100 p-1 rounded-xl mb-8 w-fit">
-                    <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="px-6 py-2 rounded-lg text-sm font-medium transition bg-white text-indigo-600 shadow-sm">User</button>
-                    <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition">Akses</button>
-                    <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition">Cost</button>
+                <div class="flex space-x-1 bg-slate-100 p-1.5 rounded-xl mb-8 w-fit shadow-inner">
+                    <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="px-6 py-2 rounded-lg text-sm font-bold transition bg-white text-indigo-600 shadow-sm">User</button>
+                    <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition">Akses</button>
+                    <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition">Cost</button>
                 </div>
 
                 <!-- Panel User -->
                 <div id="settings-users" class="settings-panel">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-soft border border-slate-100 overflow-hidden">
                         <div class="p-6 border-b border-slate-50 flex justify-between items-center">
                             <h3 class="font-bold text-slate-800">Daftar Pengguna</h3>
-                            <button onclick="window.openUserModal()" class="text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold transition flex items-center gap-2">
+                            <button onclick="window.openUserModal()" class="text-xs bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-100 font-bold transition flex items-center gap-2 border border-emerald-100">
                                 <i class="fas fa-user-plus"></i> Tambah
                             </button>
                         </div>
@@ -384,7 +398,7 @@
                 <!-- Panel General -->
                 <div id="settings-general" class="settings-panel hidden">
                     <div class="grid md:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
                             <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mb-4">
                                 <i class="fas fa-key"></i>
                             </div>
@@ -395,7 +409,7 @@
                             </div>
                             <button onclick="window.saveAdminPass()" class="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Update</button>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
                             <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 mb-4">
                                 <i class="fas fa-shield-alt"></i>
                             </div>
@@ -413,7 +427,7 @@
                 <!-- Panel Cost -->
                 <div id="settings-cost" class="settings-panel hidden space-y-6">
                     <!-- Global DW -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div class="bg-white p-6 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 text-xl">
                                 <i class="fas fa-coins"></i>
@@ -428,7 +442,7 @@
 
                     <div class="grid md:grid-cols-3 gap-6">
                         <!-- Add Form -->
-                        <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                        <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-soft border border-slate-100 h-fit">
                             <h4 class="font-bold text-slate-800 mb-4">Tambah HUB</h4>
                             <div class="space-y-3">
                                 <input type="text" id="new-hub-name" placeholder="Kode HUB (mis: JKT-01)" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
@@ -438,13 +452,13 @@
                         </div>
 
                         <!-- List -->
-                        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-soft border border-slate-100">
                             <h4 class="font-bold text-slate-800 mb-4">Daftar Biaya HUB (Sorter)</h4>
                             <div id="cost-container" class="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                                 <!-- Generated Rows -->
                             </div>
                             <div class="mt-6 pt-4 border-t border-slate-100">
-                                <button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition">SIMPAN PERUBAHAN</button>
+                                <button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95">SIMPAN PERUBAHAN</button>
                             </div>
                         </div>
                     </div>
@@ -614,7 +628,7 @@
     <!-- MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -762,6 +776,14 @@
             window.initDashboardFilters(); window.navigate('dashboard');
             window.notify(`Halo, ${name}`, 'success');
         };
+        
+        // --- FIXED LOGOUT ---
+        window.doLogout = () => {
+            signOut(auth).then(() => {
+                location.reload();
+            });
+        };
+        window.logout = window.doLogout;
 
         document.getElementById('form-login-admin').onsubmit = (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value===appData.adminPass) doLogin('admin','Administrator','admin','YA','ALL'); else window.notify('Password Salah', 'error'); };
         document.getElementById('form-login-user').onsubmit = (e) => { 

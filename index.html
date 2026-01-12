@@ -39,12 +39,12 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
-        <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+        <i id="loading-icon" class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
         <p class="font-bold text-gray-600 text-lg mb-2">Menghubungkan ke Database...</p>
-        <div id="loading-logs" class="text-xs text-gray-400 font-mono text-center max-w-md">
+        <div id="loading-logs" class="text-xs text-gray-400 font-mono text-center max-w-md p-2 bg-gray-50 rounded border border-gray-200">
             Memuat konfigurasi...
         </div>
-        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm hidden" id="btn-reload">Muat Ulang Halaman</button>
+        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm hidden shadow" id="btn-reload">Muat Ulang Halaman</button>
     </div>
 
     <!-- LOGIN SECTION -->
@@ -841,15 +841,15 @@
             document.getElementById('user-modal').classList.remove('hidden'); const hubSel = document.getElementById('input-kode-hub'); hubSel.innerHTML = '<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c => { if(c.hub) hubSel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`; });
             if (id) { 
                 const u = appData.users.find(x => x.id === id); 
-                document.getElementById('modal-title').innerText = 'Edit User'; document.getElementById('edit-index').value = id; 
+                document.getElementById('modal-title').innerText = 'Edit User'; document.getElementById('edit-user-id').value = id; 
                 document.getElementById('input-nama').value = u.nama; document.getElementById('input-id').value = u.id; document.getElementById('input-sandi').value = u.sandi; document.getElementById('input-kode-hub').value = u.kode_hub; document.getElementById('input-posisi').value = u.posisi; document.getElementsByName('akses_laporan').forEach(r => { if(r.value === u.akses) r.checked = true; }); document.getElementById('input-id').readOnly = true; document.getElementById('input-id').classList.add('bg-gray-100'); 
-            } else { document.getElementById('modal-title').innerText = 'Tambah User'; document.getElementById('edit-index').value = ''; document.getElementById('user-form').reset(); document.getElementById('input-id').readOnly = false; document.getElementById('input-id').classList.remove('bg-gray-100'); }
+            } else { document.getElementById('modal-title').innerText = 'Tambah User'; document.getElementById('edit-user-id').value = ''; document.getElementById('user-form').reset(); document.getElementById('input-id').readOnly = false; document.getElementById('input-id').classList.remove('bg-gray-100'); }
         };
         window.closeUserModal = () => { document.getElementById('user-modal').classList.add('hidden'); };
         
         document.getElementById('user-form').addEventListener('submit', async (e) => {
             e.preventDefault(); 
-            const editId = document.getElementById('edit-index').value; 
+            const editId = document.getElementById('edit-user-id').value; 
             const nu = { nama: document.getElementById('input-nama').value, id: document.getElementById('input-id').value, sandi: document.getElementById('input-sandi').value, kode_hub: document.getElementById('input-kode-hub').value, posisi: document.getElementById('input-posisi').value, akses: document.querySelector('input[name="akses_laporan"]:checked').value }; 
             try {
                 if (!editId && appData.users.some(u => u.id === nu.id)) return Swal.fire('Error', 'ID User sudah ada!', 'error');

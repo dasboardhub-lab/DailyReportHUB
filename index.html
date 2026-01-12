@@ -47,7 +47,7 @@
             </div>
 
             <div class="flex mb-6 bg-gray-100 rounded p-1">
-                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2 rounded shadow bg-white text-blue-600 font-semibold text-sm transition">User (PIC/Sorter)</button>
+                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2 rounded shadow bg-white text-blue-600 font-semibold text-sm transition">User (LEADER/Sorter)</button>
                 <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2 rounded text-gray-500 font-semibold text-sm transition">Admin</button>
             </div>
 
@@ -59,7 +59,7 @@
                 <div class="mb-4">
                     <div class="flex items-center mb-2">
                         <input type="checkbox" id="is-pic-checkbox" class="mr-2" onchange="window.togglePasswordField()">
-                        <label for="is-pic-checkbox" class="text-sm text-gray-600 cursor-pointer">Saya adalah PIC (Input Password)</label>
+                        <label for="is-pic-checkbox" class="text-sm text-gray-600 cursor-pointer">Saya adalah LEADER (Input Password)</label>
                     </div>
                     <input type="password" id="login-pass-user" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 hidden" placeholder="Kata Sandi">
                 </div>
@@ -105,27 +105,104 @@
             <div class="flex-1 overflow-y-auto p-6 relative">
                 <!-- DASHBOARD -->
                 <div id="view-dashboard" class="view-content fade-in">
+                    <!-- Filter Section -->
                     <div class="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200">
-                        <h3 class="font-bold text-gray-700 mb-3 border-b pb-2"><i class="fas fa-filter mr-2"></i>Filter Data</h3>
-                        <div class="flex flex-wrap gap-4 items-end">
-                            <div><label class="block text-xs font-bold text-gray-500 mb-1">Mulai</label><input type="date" id="dash-start-date" class="border p-2 rounded text-sm w-40"></div>
-                            <div><label class="block text-xs font-bold text-gray-500 mb-1">Sampai</label><input type="date" id="dash-end-date" class="border p-2 rounded text-sm w-40"></div>
-                            <div><label class="block text-xs font-bold text-gray-500 mb-1">HUB</label><select id="dash-hub-select" class="border p-2 rounded text-sm w-40"><option value="ALL">Semua HUB</option></select></div>
-                            <button onclick="window.loadDashboardData()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 text-sm font-bold shadow"><i class="fas fa-search mr-2"></i> Tampilkan</button>
+                        <div class="flex justify-between items-center border-b pb-2 mb-3">
+                            <h3 class="font-bold text-gray-700"><i class="fas fa-filter mr-2"></i>Filter Data</h3>
+                            <button onclick="window.resetDashboardFilters()" class="text-xs text-red-500 hover:text-red-700 font-semibold"><i class="fas fa-sync-alt mr-1"></i> Reset Filter</button>
+                        </div>
+                        <div class="flex flex-wrap gap-4 items-start">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Mulai Tanggal</label>
+                                <input type="date" id="dash-start-date" class="border p-2 rounded text-sm w-40" onchange="window.loadDashboardData()">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="dash-end-date" class="border p-2 rounded text-sm w-40" onchange="window.loadDashboardData()">
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Pilih HUB (Bisa lebih dari 1)</label>
+                                <select id="dash-hub-select" multiple class="border p-2 rounded text-sm w-full h-20 bg-gray-50 focus:bg-white transition" onchange="window.loadDashboardData()">
+                                    <!-- Options populated via JS -->
+                                </select>
+                                <p class="text-[10px] text-gray-400 mt-1">*Tahan Ctrl/Shift untuk pilih banyak</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                        <div class="bg-white p-5 rounded-lg shadow border border-gray-200"><h4 class="font-bold text-gray-700 mb-4 text-sm uppercase">Trend Tahunan (Total Paket)</h4><div class="relative h-64"><canvas id="chart-annual"></canvas></div></div>
-                        <div class="bg-white p-5 rounded-lg shadow border border-gray-200"><h4 class="font-bold text-gray-700 mb-4 text-sm uppercase">Trend Periode (Total Paket)</h4><div class="relative h-64"><canvas id="chart-daily"></canvas></div></div>
+
+                    <!-- Charts Area - Stacked Full Width -->
+                    <div class="flex flex-col gap-6 mb-8">
+                        <!-- Chart 1: Annual Trend -->
+                        <div class="bg-white p-5 rounded-lg shadow border border-gray-200 w-full">
+                            <h4 class="font-bold text-gray-700 mb-4 text-sm uppercase border-l-4 border-blue-500 pl-2">Trend Tahunan</h4>
+                            <div class="relative h-72 w-full">
+                                <canvas id="chart-annual"></canvas>
+                            </div>
+                        </div>
+                        <!-- Chart 2: Daily Trend -->
+                        <div class="bg-white p-5 rounded-lg shadow border border-gray-200 w-full">
+                            <h4 class="font-bold text-gray-700 mb-4 text-sm uppercase border-l-4 border-green-500 pl-2">Trend Daily</h4>
+                            <div class="relative h-72 w-full">
+                                <canvas id="chart-daily"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-8 bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-                        <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-800">Rincian Data per Tanggal</h3><button onclick="window.exportTableToCSV('table-daily-detail', 'rincian_harian.csv')" class="text-xs text-blue-600 hover:underline"><i class="fas fa-download"></i> Export CSV</button></div>
-                        <div class="overflow-x-auto"><table id="table-daily-detail" class="w-full text-sm text-center"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-3 py-3 text-left">Tanggal</th><th class="px-3 py-3">HUB</th><th class="px-3 py-3 text-blue-700">MPP</th><th class="px-3 py-3">Staging</th><th class="px-3 py-3">Gateway</th><th class="px-3 py-3">JNE</th><th class="px-3 py-3">SAP</th><th class="px-3 py-3 font-bold">Outbound</th><th class="px-3 py-3 text-green-700">Prod.</th><th class="px-3 py-3 text-right text-red-600">Cost</th></tr></thead><tbody id="tbody-daily-detail" class="text-gray-600"></tbody></table></div>
+
+                    <!-- Tables Area - Side by Side (Asymmetric) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                        
+                        <!-- Table 1: Rincian Data Harian (Larger 2/3) -->
+                        <div class="lg:col-span-2 bg-white rounded-lg shadow overflow-hidden border border-gray-200 flex flex-col">
+                            <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                                <h3 class="font-bold text-gray-800">Rincian Data per Tanggal</h3>
+                                <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian_harian.csv')" class="text-xs text-blue-600 hover:underline"><i class="fas fa-download"></i> CSV</button>
+                            </div>
+                            <div class="overflow-x-auto flex-1">
+                                <table id="table-daily-detail" class="w-full text-sm text-center whitespace-nowrap">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                                        <tr>
+                                            <th class="px-3 py-3 text-left">Tanggal</th>
+                                            <th class="px-3 py-3">HUB</th>
+                                            <th class="px-3 py-3 text-blue-700">MPP</th>
+                                            <th class="px-3 py-3">Staging</th>
+                                            <th class="px-3 py-3">Gateway</th>
+                                            <th class="px-3 py-3">JNE</th>
+                                            <th class="px-3 py-3">SAP</th>
+                                            <th class="px-3 py-3 font-bold bg-gray-200">Total</th>
+                                            <th class="px-3 py-3 text-green-700">Prod.</th>
+                                            <th class="px-3 py-3 text-right text-red-600">Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-daily-detail" class="text-gray-600 divide-y">
+                                        <!-- Data rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Table 2: Breakdown Performa HUB (Smaller 1/3) -->
+                        <div class="lg:col-span-1 bg-white rounded-lg shadow overflow-hidden border border-gray-200 flex flex-col h-fit">
+                            <div class="p-4 bg-gray-50 border-b">
+                                <h3 class="font-bold text-gray-800">Breakdown Performa HUB</h3>
+                                <p class="text-[10px] text-gray-500">Diurutkan berdasarkan Total Outbound tertinggi</p>
+                            </div>
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-sm text-center">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                                        <tr>
+                                            <th class="px-3 py-3 text-left">HUB</th>
+                                            <th class="px-3 py-3 font-bold bg-gray-200">Total Outbound</th>
+                                            <th class="px-3 py-3 text-right text-red-600">Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-hub-breakdown" class="text-gray-600 divide-y">
+                                        <!-- Data rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-                        <div class="p-4 bg-gray-50 border-b"><h3 class="font-bold text-gray-800">Breakdown Performa HUB</h3></div>
-                        <div class="overflow-x-auto"><table class="w-full text-sm text-center"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-4 py-3 text-left">Nama HUB</th><th class="px-4 py-3">Total MPP</th><th class="px-4 py-3 font-bold">Total Outbound</th><th class="px-4 py-3 text-green-700">Rata-rata Prod.</th><th class="px-4 py-3 text-right text-red-600">Total Cost</th></tr></thead><tbody id="tbody-hub-breakdown" class="text-gray-600"></tbody></table></div>
-                    </div>
+                    
                     <div class="h-10"></div>
                 </div>
 
@@ -147,7 +224,7 @@
                     <!-- Panel General -->
                     <div id="settings-general" class="settings-panel hidden"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-gray-700 mb-4">Password Admin</h3><div class="mb-4"><label class="block text-sm mb-1">Baru</label><input type="password" id="new-admin-pass" class="w-full border p-2 rounded"></div><button onclick="window.saveAdminPass()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Simpan</button></div><div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-gray-700 mb-4">Kode Akses Leader</h3><div class="mb-4"><label class="block text-sm mb-1">Kode</label><input type="text" id="access-code-input" class="w-full border p-2 rounded"></div><button onclick="window.saveAccessCode()" class="bg-purple-600 text-white px-4 py-2 rounded text-sm">Simpan</button></div></div></div>
                     
-                    <!-- Panel Cost (MODIFIED) -->
+                    <!-- Panel Cost -->
                     <div id="settings-cost" class="settings-panel hidden">
                         <div class="bg-white p-6 rounded shadow max-w-2xl">
                             <!-- Global DW Cost -->
@@ -156,7 +233,7 @@
                                 <input type="text" id="global-cost-dw" placeholder="Rp" class="border p-2 rounded w-full" onkeyup="window.formatCostInput(this)">
                             </div>
                             
-                            <!-- Form Tambah HUB (BARU) -->
+                            <!-- Form Tambah HUB -->
                             <div class="mb-6 p-4 bg-gray-50 border rounded-lg">
                                 <h4 class="font-bold text-sm text-gray-700 mb-3 uppercase">Tambah HUB Baru</h4>
                                 <div class="flex gap-2">
@@ -183,8 +260,8 @@
     </div>
 
     <!-- MODALS -->
-    <div id="user-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50"><div class="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="modal-title">User</h3><button onclick="window.closeUserModal()">&times;</button></div><form id="user-form"><input type="hidden" id="edit-user-id"><div class="grid grid-cols-2 gap-4"><div class="col-span-2"><label class="text-xs font-bold uppercase">Nama</label><input type="text" id="input-nama" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">ID User</label><input type="text" id="input-id" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">Sandi</label><input type="text" id="input-sandi" class="w-full border p-2 rounded"></div><div><label class="text-xs font-bold uppercase">HUB</label><select id="input-kode-hub" class="w-full border p-2 rounded" required></select></div><div><label class="text-xs font-bold uppercase">Posisi</label><select id="input-posisi" class="w-full border p-2 rounded"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="PIC">PIC</option><option value="Admin">Admin</option></select></div><div class="col-span-2"><label class="text-xs font-bold uppercase">Akses Laporan</label><div class="flex gap-4"><label><input type="radio" name="akses_laporan" value="YA"> YA</label><label><input type="radio" name="akses_laporan" value="TIDAK" checked> TIDAK</label></div></div></div><div class="mt-6 flex justify-end gap-2"><button type="button" onclick="window.closeUserModal()" class="px-4 py-2 border rounded">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button></div></form></div></div>
-    <div id="laporan-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 hidden flex items-center justify-center z-50 overflow-y-auto"><div class="bg-white rounded-lg w-full max-w-4xl shadow-2xl my-10 flex flex-col max-h-screen"><div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-lg"><h3 class="text-xl font-bold" id="laporan-modal-title">Laporan</h3><button onclick="window.closeLaporanModal()" class="text-2xl">&times;</button></div><div class="p-6 overflow-y-auto"><form id="laporan-form"><input type="hidden" id="edit-laporan-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border"><div><label class="text-xs font-bold uppercase">Tanggal</label><input type="date" id="lap-tanggal" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">HUB</label><select id="lap-hub-select" class="w-full border p-2 rounded hidden" onchange="window.loadHubUsersForAttendance()"></select><input type="text" id="lap-hub-text" class="w-full border p-2 rounded bg-gray-200 hidden" readonly></div></div><h4 class="font-bold text-gray-700 mb-2 border-b pb-1">Metrix</h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div><label class="text-xs">Gateway</label><input type="text" id="lap-gateway" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">Staging</label><input type="text" id="lap-staging" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">JNE</label><input type="text" id="lap-jne" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">SAP</label><input type="text" id="lap-sap" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div></div><div class="grid grid-cols-2 gap-4 mb-6 bg-blue-50 p-4 rounded border border-blue-100"><div class="text-center"><p class="text-xs uppercase">Total Paket</p><p class="text-2xl font-bold text-blue-700" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div><div class="text-center"><p class="text-xs uppercase">Productivity</p><p class="text-2xl font-bold text-green-600" id="disp-productivity">0</p></div></div><div class="flex justify-between items-end mb-2 border-b pb-1"><h4 class="font-bold">Absensi</h4><div class="text-right"><span class="text-xs">MPP:</span><span class="font-bold text-lg ml-1" id="disp-total-mpp">0</span></div></div><div class="overflow-x-auto border rounded mb-2"><table class="w-full text-sm text-center"><thead class="bg-gray-100 text-xs uppercase font-bold"><tr><th class="p-2 text-left w-1/3">Nama</th><th class="p-2 w-10">1</th><th class="p-2 w-10">2</th><th class="p-2 w-10">3</th><th class="p-2 w-10 text-yellow-600">I</th><th class="p-2 w-10 text-blue-600">S</th><th class="p-2 w-10 text-red-600">A</th><th class="p-2 text-left">Ket</th><th class="p-2 w-8"></th></tr></thead><tbody id="attendance-tbody"></tbody></table></div><button type="button" onclick="window.addManualDWRow()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded w-full border border-dashed border-gray-400 mb-6">+ DW Manual</button><div class="flex justify-end gap-3 pt-4 border-t"><button type="button" onclick="window.closeLaporanModal()" class="px-5 py-2 border rounded">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded font-bold">Simpan</button></div></form></div></div></div>
+    <div id="user-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50"><div class="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="modal-title">User</h3><button onclick="window.closeUserModal()">&times;</button></div><form id="user-form"><input type="hidden" id="edit-user-id"><div class="grid grid-cols-2 gap-4"><div class="col-span-2"><label class="text-xs font-bold uppercase">Nama</label><input type="text" id="input-nama" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">ID User</label><input type="text" id="input-id" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">Sandi</label><input type="text" id="input-sandi" class="w-full border p-2 rounded"></div><div><label class="text-xs font-bold uppercase">HUB</label><select id="input-kode-hub" class="w-full border p-2 rounded" required></select></div><div><label class="text-xs font-bold uppercase">Posisi</label><select id="input-posisi" class="w-full border p-2 rounded"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="LEADER">LEADER</option><option value="Admin">Admin</option></select></div><div class="col-span-2"><label class="text-xs font-bold uppercase">Akses Laporan</label><div class="flex gap-4"><label><input type="radio" name="akses_laporan" value="YA"> YA</label><label><input type="radio" name="akses_laporan" value="TIDAK" checked> TIDAK</label></div></div></div><div class="mt-6 flex justify-end gap-2"><button type="button" onclick="window.closeUserModal()" class="px-4 py-2 border rounded">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button></div></form></div></div>
+    <div id="laporan-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 hidden flex items-center justify-center z-50 overflow-y-auto"><div class="bg-white rounded-lg w-full max-w-4xl shadow-2xl my-10 flex flex-col max-h-screen"><div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-lg"><h3 class="text-xl font-bold" id="laporan-modal-title">Laporan</h3><button onclick="window.closeLaporanModal()" class="text-2xl">&times;</button></div><div class="p-6 overflow-y-auto"><form id="laporan-form"><input type="hidden" id="edit-laporan-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border"><div><label class="text-xs font-bold uppercase">Tanggal</label><input type="date" id="lap-tanggal" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">HUB</label><select id="lap-hub-select" class="w-full border p-2 rounded hidden" onchange="window.loadHubUsersForAttendance()"></select><input type="text" id="lap-hub-text" class="w-full border p-2 rounded bg-gray-200 hidden" readonly></div></div><h4 class="font-bold text-gray-700 mb-2 border-b pb-1">Metrix</h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div><label class="text-xs">Gateway</label><input type="text" id="lap-gateway" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">Staging</label><input type="text" id="lap-staging" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">JNE</label><input type="text" id="lap-jne" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">SAP</label><input type="text" id="lap-sap" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div></div><div class="grid grid-cols-2 gap-4 mb-6 bg-blue-50 p-4 rounded border border-blue-100"><div class="text-center"><p class="text-xs uppercase">Total Paket</p><p class="text-2xl font-bold text-blue-700" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div><div class="text-center"><p class="text-xs uppercase">Productivity</p><p class="text-2xl font-bold text-green-600" id="disp-productivity">0</p></div></div><div class="flex justify-between items-end mb-2 border-b pb-1"><h4 class="font-bold">Absensi</h4><div class="text-right"><span class="text-xs">MPP:</span><span class="font-bold text-lg ml-1" id="disp-total-mpp">0</span></div></div><div class="overflow-x-auto border rounded mb-2"><table class="w-full text-sm text-center"><thead class="bg-gray-100 text-xs uppercase font-bold"><tr><th class="p-2 text-left w-1/3">Nama</th><th class="p-2 w-10">1</th><th class="p-2 w-10">2</th><th class="p-2 w-10">3</th><th class="p-2 w-10 text-yellow-600">I</th><th class="p-2 w-10 text-blue-600">S</th><th class="p-2 w-10 text-red-600">A</th><th class="p-2 text-left">Ket</th><th class="p-2 w-8"></th></tr></thead><tbody id="attendance-tbody"></tbody></table></div><button type="button" onclick="window.addManualDWRow()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded w-full border border-dashed border-gray-400 mb-6">+ DW Manual</button><div class="flex justify-end gap-3 pt-4 border-t"><button type="button" onclick="window.closeLaporanModal()" class="px-5 py-2 border rounded">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded font-bold">Simpan</button></div></form></div></div>
 
     <!-- MODULE SCRIPT (Firebase) -->
     <script type="module">
@@ -192,7 +269,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, query } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // KONFIGURASI DARI USER
         const firebaseConfig = {
             apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
             authDomain: "hub-dashboard-92428.firebaseapp.com",
@@ -206,7 +282,6 @@
         let app, auth, db;
         let unsubscribeUsers, unsubscribeCosts, unsubscribeLaporan, unsubscribeSettings;
 
-        // Global State
         let appData = {
             adminPass: '123456',
             accessCode: 'SUPERHUB',
@@ -218,7 +293,6 @@
         let currentUser = null;
         let annualChart = null, dailyChart = null;
 
-        // --- INIT FIREBASE & ERROR HANDLING ---
         function updateLoadingLog(msg, isError = false) {
             const el = document.getElementById('loading-logs');
             if (el) {
@@ -233,7 +307,6 @@
             }
         }
 
-        // FUNGSI UTAMA: Mengatur transisi Login berhasil
         function handleAuthSuccess(user) {
             const overlay = document.getElementById('loading-overlay');
             if (!overlay.classList.contains('hidden-fade')) {
@@ -278,11 +351,9 @@
             updateLoadingLog(`Config Error: ${e.message}`, true);
         }
 
-        // --- DATABASE LISTENERS ---
         function initListeners() {
             const publicPath = (col) => collection(db, 'artifacts', storageId, 'public', 'data', col);
 
-            // Settings
             unsubscribeSettings = onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (docSnap) => {
                 if (docSnap.exists()) {
                     const d = docSnap.data();
@@ -299,18 +370,30 @@
             });
 
             unsubscribeUsers = onSnapshot(publicPath('users'), (s) => { appData.users = []; s.forEach(d => appData.users.push(d.data())); if(!document.getElementById('view-pengaturan').classList.contains('hidden')) window.renderUserTable(); });
-            unsubscribeCosts = onSnapshot(publicPath('costs'), (s) => { appData.costs = []; s.forEach(d => appData.costs.push(d.data())); if(!document.getElementById('view-pengaturan').classList.contains('hidden')) window.renderCostInputs(); });
+            unsubscribeCosts = onSnapshot(publicPath('costs'), (s) => { 
+                appData.costs = []; 
+                s.forEach(d => appData.costs.push(d.data())); 
+                // Populate Dashboard Filter
+                const hubSel = document.getElementById('dash-hub-select');
+                if (hubSel) {
+                    // Save current selection if possible, otherwise reset
+                    const currentSelection = Array.from(hubSel.selectedOptions).map(opt => opt.value);
+                    hubSel.innerHTML = ''; // removed ALL option from multi-select usually, or keep as special
+                    appData.costs.forEach(c => { 
+                        hubSel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`; 
+                    });
+                    // Restore selection? Not critical for now
+                }
+                if(!document.getElementById('view-pengaturan').classList.contains('hidden')) window.renderCostInputs(); 
+            });
             unsubscribeLaporan = onSnapshot(publicPath('laporan'), (s) => { appData.laporan = []; s.forEach(d => appData.laporan.push(d.data())); if(!document.getElementById('view-dashboard').classList.contains('hidden')) window.loadDashboardData(); if(!document.getElementById('view-laporan').classList.contains('hidden')) window.renderLaporanList(); });
         }
 
-        // --- GLOBAL FUNCTIONS & LOGIC ---
         window.Chart.register(ChartDataLabels);
 
         window.formatNumber = (num) => (!num && num !== 0) ? '' : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        // PERBAIKAN: Parsing angka dari format rupiah yang aman (membuang 'Rp', titik, spasi)
         window.parseFormattedNumber = (str) => {
             if (!str) return 0;
-            // Hanya ambil digit 0-9
             const cleanStr = str.toString().replace(/[^0-9]/g, ''); 
             return parseInt(cleanStr, 10) || 0;
         };
@@ -345,7 +428,7 @@
             const u = appData.users.find(u => u.id === id);
             if (!u) return Swal.fire('Error', 'ID User tidak ditemukan.', 'error');
             if (isPic) { if (u.sandi === pass) { currentUser = { role: 'pic', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; window.enterApp(); } else Swal.fire('Error', 'Password Salah!', 'error'); }
-            else { if (u.posisi === 'PIC' || u.posisi === 'Admin') return Swal.fire('Warning', 'Gunakan login PIC.', 'warning'); currentUser = { role: 'sorter', name: u.nama, id: u.id, akses_laporan: 'TIDAK', kode_hub: u.kode_hub }; window.enterApp(); }
+            else { if (u.posisi === 'LEADER' || u.posisi === 'Admin') return Swal.fire('Warning', 'Gunakan login LEADER.', 'warning'); currentUser = { role: 'sorter', name: u.nama, id: u.id, akses_laporan: 'TIDAK', kode_hub: u.kode_hub }; window.enterApp(); }
         });
 
         window.enterApp = () => {
@@ -377,21 +460,51 @@
 
         // -- DASHBOARD --
         window.initDashboardFilters = () => {
-            const end = new Date(); const start = new Date(); start.setDate(end.getDate() - 30);
-            document.getElementById('dash-end-date').valueAsDate = end; document.getElementById('dash-start-date').valueAsDate = start;
-            const hubSel = document.getElementById('dash-hub-select'); hubSel.innerHTML = '<option value="ALL">Semua HUB</option>';
+            window.resetDashboardFilters();
+            const hubSel = document.getElementById('dash-hub-select'); 
+            hubSel.innerHTML = '';
             appData.costs.forEach(c => { hubSel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`; });
-            if (currentUser.role !== 'admin') { hubSel.value = currentUser.kode_hub; hubSel.disabled = true; hubSel.classList.add('bg-gray-100'); }
-            else { hubSel.disabled = false; hubSel.classList.remove('bg-gray-100'); }
+            
+            if (currentUser.role !== 'admin') { 
+                hubSel.value = currentUser.kode_hub; 
+                hubSel.disabled = true; 
+                hubSel.classList.add('bg-gray-100'); 
+            } else { 
+                hubSel.disabled = false; 
+                hubSel.classList.remove('bg-gray-100'); 
+            }
+        };
+
+        window.resetDashboardFilters = () => {
+            const end = new Date(); const start = new Date(); start.setDate(end.getDate() - 30);
+            document.getElementById('dash-end-date').valueAsDate = end; 
+            document.getElementById('dash-start-date').valueAsDate = start;
+            if (currentUser.role === 'admin') {
+                document.getElementById('dash-hub-select').selectedIndex = -1; // Deselect all
+            }
+            window.loadDashboardData();
         };
 
         window.loadDashboardData = () => {
-            const startStr = document.getElementById('dash-start-date').value; const endStr = document.getElementById('dash-end-date').value; const hubFilter = document.getElementById('dash-hub-select').value;
+            const startStr = document.getElementById('dash-start-date').value; const endStr = document.getElementById('dash-end-date').value; 
+            const hubSelect = document.getElementById('dash-hub-select');
+            
+            // Get Multiple Selected HUBs
+            const selectedHubs = Array.from(hubSelect.selectedOptions).map(opt => opt.value);
+            
             if(!startStr || !endStr) return;
             const startDate = new Date(startStr); const endDate = new Date(endStr);
-            let filtered = appData.laporan.filter(l => { const lDate = new Date(l.tanggal); return lDate >= startDate && lDate <= endDate && (hubFilter === 'ALL' || l.hub === hubFilter); });
+            
+            let filtered = appData.laporan.filter(l => { 
+                const lDate = new Date(l.tanggal); 
+                const dateMatch = lDate >= startDate && lDate <= endDate;
+                // If no HUB selected, assume ALL
+                const hubMatch = (selectedHubs.length === 0) || selectedHubs.includes(l.hub);
+                return dateMatch && hubMatch; 
+            });
+
             filtered.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-            window.updateCharts(filtered, hubFilter); window.updateDashboardTables(filtered);
+            window.updateCharts(filtered, selectedHubs); window.updateDashboardTables(filtered);
         };
 
         window.getHubCostRate = (hubName) => { const cfg = appData.costs.find(c => c.hub === hubName); return cfg ? cfg.cost : 0; };
@@ -410,11 +523,15 @@
             return total;
         };
 
-        window.updateCharts = (periodData, hubFilter) => {
+        window.updateCharts = (periodData, selectedHubs) => {
             const currentYear = new Date().getFullYear();
             const monthlyData = Array(12).fill(0).map(() => ({ pkg: 0, mpp: 0 }));
+            
             let annualSource = appData.laporan.filter(l => new Date(l.tanggal).getFullYear() === currentYear);
-            if (hubFilter !== 'ALL') annualSource = annualSource.filter(l => l.hub === hubFilter);
+            if (selectedHubs.length > 0) {
+                annualSource = annualSource.filter(l => selectedHubs.includes(l.hub));
+            }
+
             annualSource.forEach(l => { const m = new Date(l.tanggal).getMonth(); monthlyData[m].pkg += l.total_paket; monthlyData[m].mpp += l.total_mpp; });
             const dataPkgMonth = monthlyData.map(d => d.pkg); const dataProdMonth = monthlyData.map(d => d.mpp > 0 ? Math.round(d.pkg / d.mpp) : 0);
             window.renderChart('chart-annual', ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], dataPkgMonth, dataProdMonth, 'Total Paket', 'Prod.');
@@ -448,15 +565,20 @@
                 const totalCost = window.calculateReportCost(l);
                 tbodyDetail.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-3 py-2 text-left whitespace-nowrap">${l.tanggal}</td><td class="px-3 py-2 font-semibold">${l.hub}</td><td class="px-3 py-2 text-blue-700 font-bold">${l.total_mpp}</td><td class="px-3 py-2">${window.formatNumber(l.staging)}</td><td class="px-3 py-2">${window.formatNumber(l.gateway)}</td><td class="px-3 py-2">${window.formatNumber(l.jne)}</td><td class="px-3 py-2">${window.formatNumber(l.sap)}</td><td class="px-3 py-2 font-bold">${window.formatNumber(l.total_paket)}</td><td class="px-3 py-2 text-green-700 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-3 py-2 text-right text-red-600 text-xs">${window.formatRupiah(totalCost)}</td></tr>`;
             });
+            
             const tbodyHub = document.getElementById('tbody-hub-breakdown'); tbodyHub.innerHTML = '';
             const hubAgg = {};
             data.forEach(l => {
                 if(!hubAgg[l.hub]) hubAgg[l.hub] = { mpp: 0, out: 0, cost: 0 };
                 hubAgg[l.hub].mpp += l.total_mpp; hubAgg[l.hub].out += l.total_paket; hubAgg[l.hub].cost += window.calculateReportCost(l);
             });
-            Object.keys(hubAgg).forEach(hub => {
+            
+            // Sort by Total Outbound (Largest to Smallest)
+            const sortedHubs = Object.keys(hubAgg).sort((a, b) => hubAgg[b].out - hubAgg[a].out);
+
+            sortedHubs.forEach(hub => {
                 const d = hubAgg[hub]; const avgProd = d.mpp > 0 ? Math.round(d.out / d.mpp) : 0;
-                tbodyHub.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${hub}</td><td class="px-4 py-3">${d.mpp}</td><td class="px-4 py-3 font-bold">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-green-700 font-bold">${window.formatNumber(avgProd)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`;
+                tbodyHub.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${hub}</td><td class="px-4 py-3 font-bold">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`;
             });
         };
         window.exportTableToCSV = (tableId, filename) => {
@@ -534,7 +656,6 @@
             Swal.fire('Sukses', 'Kode Akses Updated', 'success'); 
         };
         
-        // --- IMPROVED COST LOGIC: ADD VIA FORM ---
         window.updateLocalCosts = () => {
             const container = document.getElementById('cost-container');
             const rows = container.children;
@@ -561,8 +682,7 @@
         };
         
         window.addHubToTable = () => {
-            window.updateLocalCosts(); // 1. Sync pending edits
-            
+            window.updateLocalCosts();
             const name = document.getElementById('new-hub-name').value.toUpperCase();
             const costStr = document.getElementById('new-hub-cost').value;
             const cost = window.parseFormattedNumber(costStr);
@@ -572,10 +692,8 @@
                 return;
             }
 
-            appData.costs.push({ hub: name, cost: cost }); // 2. Add new
-            window.renderCostInputs(); // 3. Re-render
-            
-            // Clear Form
+            appData.costs.push({ hub: name, cost: cost });
+            window.renderCostInputs();
             document.getElementById('new-hub-name').value = '';
             document.getElementById('new-hub-cost').value = '';
         };
@@ -587,7 +705,7 @@
         };
 
         window.saveCosts = async () => { 
-            window.updateLocalCosts(); // Ensure latest state from inputs is captured
+            window.updateLocalCosts();
             const dw = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
             try {
                 await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { costDW: dw });
@@ -653,7 +771,7 @@
             const users = appData.users.filter(u => u.kode_hub === h);
             const map = {}; if(existing) existing.forEach(x => map[x.userId] = x);
             users.forEach(u => {
-                const isL = (u.posisi==='PIC'||u.posisi==='Admin'); const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
+                const isL = (u.posisi==='LEADER'||u.posisi==='Admin'); const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
                 window.renderRow(tb, u.id, u.nama, u.posisi, isL?'<span class="text-xs bg-yellow-200 px-1 rounded ml-1">L</span>':'', isL?'bg-yellow-50':'bg-white', sv, false);
             });
             if(existing) existing.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', '<span class="text-xs bg-gray-200 px-1 rounded ml-1">Man</span>', 'bg-white', map[x.userId], true); });
@@ -682,7 +800,7 @@
             let mpp = 0;
             document.querySelectorAll('#attendance-tbody tr').forEach(r => {
                 const role = r.getAttribute('data-role');
-                if(role!=='PIC' && role!=='Admin') { if(r.querySelector('input[name="s1[]"]').checked || r.querySelector('input[name="s2[]"]').checked || r.querySelector('input[name="s3[]"]').checked) mpp++; }
+                if(role!=='LEADER' && role!=='Admin') { if(r.querySelector('input[name="s1[]"]').checked || r.querySelector('input[name="s2[]"]').checked || r.querySelector('input[name="s3[]"]').checked) mpp++; }
             });
             document.getElementById('disp-total-mpp').innerText = mpp;
             document.getElementById('disp-productivity').innerText = mpp>0 ? window.formatNumber(Math.round(tot/mpp)) : 0;
@@ -697,7 +815,7 @@
                 const uid=r.querySelector('input[name="user_id[]"]').value, nm=r.querySelector('input[name="user_nama[]"]').value, man=r.querySelector('input[name="is_manual[]"]').value==='true';
                 if(man && !nm.trim()) err=true;
                 const s1=r.querySelector('input[name="s1[]"]').checked, s2=r.querySelector('input[name="s2[]"]').checked, s3=r.querySelector('input[name="s3[]"]').checked;
-                if((s1||s2||s3) && r.getAttribute('data-role')!=='PIC' && r.getAttribute('data-role')!=='Admin') mpp++;
+                if((s1||s2||s3) && r.getAttribute('data-role')!=='LEADER' && r.getAttribute('data-role')!=='Admin') mpp++;
                 att.push({ userId:uid, nama:nm, s1, s2, s3, i:r.querySelector('input[name="ijin[]"]').checked, s:r.querySelector('input[name="sakit[]"]').checked, a:r.querySelector('input[name="alfa[]"]').checked, ket:r.querySelector('input[name="ket[]"]').value });
             });
             if(err) return Swal.fire('Error', 'Nama DW Manual kosong', 'warning');

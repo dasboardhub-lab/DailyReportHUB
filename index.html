@@ -22,11 +22,7 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#4f46e5', // Indigo 600
-                        secondary: '#64748b', // Slate 500
-                        success: '#10b981', // Emerald 500
-                        danger: '#ef4444', // Red 500
-                        dark: '#0f172a', // Slate 900
+                        primary: '#4f46e5', secondary: '#64748b', success: '#10b981', danger: '#ef4444', dark: '#0f172a',
                     },
                     boxShadow: {
                         'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
@@ -40,13 +36,9 @@
     <style>
         body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
         
-        /* Dynamic Island Animations */
+        /* Dynamic Island */
         #dynamic-island-container { pointer-events: none; z-index: 9999; }
-        #dynamic-island {
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            pointer-events: auto;
-        }
+        #dynamic-island { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 8px 30px rgba(0,0,0,0.12); pointer-events: auto; }
         .island-hidden { opacity: 0; transform: translateY(-20px) scale(0.9); pointer-events: none !important; }
         .island-loading { width: 40px; height: 40px; border-radius: 50%; background: #0f172a; }
         .island-expanded { width: auto; min-width: 180px; height: 44px; border-radius: 22px; padding: 0 16px; background: #0f172a; }
@@ -59,13 +51,15 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Navbar Items */
+        .attendance-checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: #4f46e5; border-radius: 4px; transition: transform 0.1s; }
+        .attendance-checkbox:active { transform: scale(0.9); }
+
+        /* Navigation */
         .nav-link { position: relative; color: #94a3b8; transition: all 0.3s; cursor: pointer; padding: 0.75rem 1rem; border-radius: 0.5rem; }
         .nav-link:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
         .nav-link.active { color: #fff; background: rgba(255,255,255,0.1); font-weight: 600; }
         
-        /* Bottom Mobile Nav */
-        .mobile-nav-item { color: #94a3b8; transition: all 0.3s; }
+        .mobile-nav-item { color: #64748b; transition: all 0.3s; }
         .mobile-nav-item.active { color: #4f46e5; font-weight: 600; }
         .mobile-nav-item.active i { transform: translateY(-2px); }
 
@@ -75,11 +69,16 @@
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,1); transition: opacity 0.3s ease-out; }
         .hidden-fade { opacity: 0; pointer-events: none; }
         button:active { transform: scale(0.97); }
+
+        /* Absensi Table */
+        .abs-cell { min-width: 36px; text-align: center; border-right: 1px solid #f1f5f9; }
+        .abs-header { position: sticky; top: 0; background: #f8fafc; z-index: 10; font-size: 10px; }
+        .abs-name-col { position: sticky; left: 0; background: white; z-index: 20; border-right: 2px solid #e2e8f0; min-width: 140px; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700">
 
-    <!-- DYNAMIC ISLAND (Notification Center) -->
+    <!-- DYNAMIC ISLAND -->
     <div id="dynamic-island-container" class="fixed top-6 left-0 right-0 flex justify-center">
         <div id="dynamic-island" class="island-hidden flex items-center justify-center overflow-hidden text-white group">
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
@@ -92,7 +91,7 @@
         </div>
     </div>
 
-    <!-- DESKTOP NAVBAR (Fixed: Removed md:block to hide initially) -->
+    <!-- DESKTOP NAVBAR -->
     <nav id="app-navbar" class="bg-slate-900 text-white shadow-lg z-50 hidden border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -107,7 +106,8 @@
                 </div>
                 <div class="flex items-center space-x-2">
                     <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active flex items-center gap-2"><i class="fas fa-chart-pie text-sm"></i> Dashboard</a>
-                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-table text-sm"></i> Laporan</a>
+                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-file-alt text-sm"></i> Laporan</a>
+                    <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link flex items-center gap-2"><i class="fas fa-calendar-check text-sm"></i> Absensi</a>
                     <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-sm"></i> Pengaturan</a>
                 </div>
                 <div class="flex items-center gap-3 pl-4 border-l border-white/10">
@@ -145,11 +145,15 @@
     <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden">
         <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-3 flex flex-col items-center gap-1">
             <i class="fas fa-chart-pie text-xl"></i>
-            <span class="text-[10px] font-medium">Dashboard</span>
+            <span class="text-[10px] font-medium">Dash</span>
         </button>
         <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1">
-            <i class="fas fa-table text-xl"></i>
+            <i class="fas fa-file-alt text-xl"></i>
             <span class="text-[10px] font-medium">Laporan</span>
+        </button>
+        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1">
+            <i class="fas fa-calendar-check text-xl"></i>
+            <span class="text-[10px] font-medium">Absensi</span>
         </button>
         <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-3 flex flex-col items-center gap-1 hidden">
             <i class="fas fa-sliders-h text-xl"></i>
@@ -159,10 +163,6 @@
 
     <!-- LOGIN SECTION -->
     <div id="login-section" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-200/30 blur-3xl"></div>
-            <div class="absolute top-[40%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/30 blur-3xl"></div>
-        </div>
         <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100 relative fade-in z-10 m-4">
             <div class="text-center mb-8">
                 <div class="w-14 h-14 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-200 mb-4">
@@ -176,24 +176,12 @@
                 <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700">Admin</button>
             </div>
             <form id="form-login-user" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">ID User</label>
-                    <input type="text" id="login-id" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition" placeholder="Masukkan ID" required>
-                </div>
-                <div>
-                    <label class="flex items-center cursor-pointer mb-2 ml-1">
-                        <input type="checkbox" id="is-pic-checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" onchange="window.togglePasswordField()">
-                        <span class="ml-2 text-xs text-indigo-600 font-bold">Saya adalah LEADER</span>
-                    </label>
-                    <input type="password" id="login-pass-user" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition hidden" placeholder="Kata Sandi">
-                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">ID User</label><input type="text" id="login-id" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition" placeholder="Masukkan ID" required></div>
+                <div><label class="flex items-center cursor-pointer mb-2 ml-1"><input type="checkbox" id="is-pic-checkbox" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" onchange="window.togglePasswordField()"><span class="ml-2 text-xs text-indigo-600 font-bold">Saya adalah LEADER</span></label><input type="password" id="login-pass-user" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition hidden" placeholder="Kata Sandi"></div>
                 <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition transform active:scale-95">Masuk Aplikasi</button>
             </form>
             <form id="form-login-admin" class="space-y-5 hidden">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Password Admin</label>
-                    <input type="password" id="login-pass-admin" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition" required>
-                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Password Admin</label><input type="password" id="login-pass-admin" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition" required></div>
                 <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg transition transform active:scale-95">Masuk sebagai Admin</button>
             </form>
             <div id="init-error-container" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl hidden">
@@ -218,10 +206,7 @@
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800">Dashboard</h2>
-                        <p class="text-xs text-slate-500">Ringkasan Kinerja Online</p>
-                    </div>
+                    <div><h2 class="text-lg font-bold text-slate-800">Dashboard</h2><p class="text-xs text-slate-500">Ringkasan Kinerja Online</p></div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
                         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 md:flex-none">
                             <i class="far fa-calendar text-slate-400 text-xs"></i>
@@ -240,7 +225,27 @@
                     </div>
                 </div>
 
-                <!-- Charts (Cleaned) -->
+                <!-- KPI CARDS (NEW) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Paket</p><i class="fas fa-box text-indigo-100 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-indigo-600" id="kpi-total-paket">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total MPP</p><i class="fas fa-users text-blue-100 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-blue-600" id="kpi-total-mpp">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Rata-rata Prod</p><i class="fas fa-chart-line text-emerald-100 text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-emerald-600" id="kpi-avg-prod">0</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-24">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Cost</p><i class="fas fa-coins text-rose-100 text-xl"></i></div>
+                        <h3 class="text-lg font-bold text-rose-600" id="kpi-total-cost">Rp 0</h3>
+                    </div>
+                </div>
+
+                <!-- Charts (Dual Axis, No Grid) -->
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-4 border-l-4 border-indigo-500 pl-2">Trend Tahunan</h3>
@@ -254,7 +259,7 @@
 
                 <!-- Tables Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Daily Details -->
+                    <!-- Daily Details (Has Cost) -->
                     <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                         <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <h3 class="font-bold text-slate-700 text-sm">Rincian Data</h3>
@@ -264,15 +269,10 @@
                             <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
                                 <thead class="text-slate-500 bg-slate-50 uppercase font-bold">
                                     <tr>
-                                        <th class="px-3 py-3 text-left">Tanggal</th>
-                                        <th class="px-3 py-3">HUB</th>
-                                        <th class="px-3 py-3 text-blue-600">MPP</th>
-                                        <th class="px-3 py-3 text-slate-400">Stg</th>
-                                        <th class="px-3 py-3 text-slate-400">Gtw</th>
-                                        <th class="px-3 py-3 text-slate-400">JNE</th>
-                                        <th class="px-3 py-3 text-slate-400">SAP</th>
-                                        <th class="px-3 py-3 font-bold text-slate-700 bg-slate-100">Total</th>
-                                        <th class="px-3 py-3 text-emerald-600">Prod.</th>
+                                        <th class="px-3 py-3 text-left">Tanggal</th><th class="px-3 py-3">HUB</th><th class="px-3 py-3 text-blue-600">MPP</th>
+                                        <th class="px-3 py-3 text-slate-400">Stg</th><th class="px-3 py-3 text-slate-400">Gtw</th>
+                                        <th class="px-3 py-3 text-slate-400">JNE</th><th class="px-3 py-3 text-slate-400">SAP</th>
+                                        <th class="px-3 py-3 font-bold text-slate-700 bg-slate-100">Total</th><th class="px-3 py-3">Prod.</th>
                                         <th class="px-3 py-3 text-right text-rose-500">Cost</th>
                                     </tr>
                                 </thead>
@@ -281,7 +281,7 @@
                         </div>
                     </div>
 
-                    <!-- HUB Performance -->
+                    <!-- HUB Performance (Has Cost) -->
                     <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-fit">
                         <div class="p-4 border-b border-slate-100 bg-slate-50/50">
                             <h3 class="font-bold text-slate-700 text-sm">Performa HUB</h3>
@@ -290,10 +290,8 @@
                             <table class="w-full text-xs text-center">
                                 <thead class="text-slate-500 bg-slate-50 uppercase font-bold">
                                     <tr>
-                                        <th class="px-3 py-3 text-left">HUB</th>
-                                        <th class="px-2 py-3 text-blue-600">MPP</th>
-                                        <th class="px-3 py-3 text-indigo-600">Out.</th>
-                                        <th class="px-2 py-3 text-emerald-600">Prod</th>
+                                        <th class="px-3 py-3 text-left">HUB</th><th class="px-2 py-3 text-blue-600">MPP</th>
+                                        <th class="px-3 py-3 text-indigo-600">Out.</th><th class="px-2 py-3">Prod</th>
                                         <th class="px-3 py-3 text-right text-slate-400">Cost</th>
                                     </tr>
                                 </thead>
@@ -304,7 +302,7 @@
                 </div>
             </div>
 
-            <!-- VIEW: LAPORAN -->
+            <!-- VIEW: LAPORAN (No Cost) -->
             <div id="view-laporan" class="view-content hidden fade-in space-y-4">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
@@ -314,14 +312,13 @@
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left text-slate-600">
+                        <table class="w-full text-xs text-left text-slate-600 whitespace-nowrap">
                             <thead class="text-slate-500 uppercase bg-slate-50 border-b border-slate-100 font-bold">
                                 <tr>
-                                    <th class="px-4 py-4">Tanggal</th>
-                                    <th class="px-4 py-4">HUB</th>
-                                    <th class="px-4 py-4">Total Paket</th>
-                                    <th class="px-4 py-4">MPP</th>
-                                    <th class="px-4 py-4">Productivity</th>
+                                    <th class="px-4 py-4">Tanggal</th><th class="px-4 py-4">HUB</th>
+                                    <th class="px-2 py-4">Gtw</th><th class="px-2 py-4">Stg</th><th class="px-2 py-4">JNE</th><th class="px-2 py-4">SAP</th>
+                                    <th class="px-4 py-4 bg-slate-50 font-bold text-slate-800">Total</th>
+                                    <th class="px-4 py-4 text-blue-600">MPP</th><th class="px-4 py-4">Prod</th>
                                     <th class="px-4 py-4 text-right">Aksi</th>
                                 </tr>
                             </thead>
@@ -329,10 +326,31 @@
                         </table>
                     </div>
                     <div id="empty-laporan-msg" class="hidden text-center py-16">
-                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3">
-                            <i class="fas fa-folder-open text-xl text-slate-300"></i>
-                        </div>
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3"><i class="fas fa-folder-open text-xl text-slate-300"></i></div>
                         <p class="text-slate-500 text-xs font-medium">Belum ada laporan.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ABSENSI -->
+            <div id="view-absensi" class="view-content hidden fade-in space-y-4">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+                    <div class="flex flex-wrap gap-2 items-center justify-between">
+                         <div class="flex items-center gap-2 flex-1 min-w-[250px]">
+                            <input type="date" id="abs-start-date" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-600 focus:ring-0">
+                            <span class="text-slate-300">-</span>
+                            <input type="date" id="abs-end-date" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-600 focus:ring-0">
+                            <select id="abs-hub-select" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-600 focus:ring-0"><option value="ALL">Semua HUB</option></select>
+                         </div>
+                         <div class="flex gap-2">
+                             <button onclick="window.loadAbsensiData()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700">Tampilkan</button>
+                             <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-slate-600 px-2 text-xs"><i class="fas fa-sync-alt"></i></button>
+                         </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <div id="absensi-table-container"><p class="text-center text-slate-400 text-xs py-8">Silakan pilih filter dan klik Tampilkan</p></div>
                     </div>
                 </div>
             </div>
@@ -340,66 +358,28 @@
             <!-- VIEW: PENGATURAN -->
             <div id="view-pengaturan" class="view-content hidden fade-in space-y-6">
                 <h2 class="text-xl font-bold text-slate-800">Pengaturan</h2>
-                
                 <div class="flex space-x-1 bg-white p-1 rounded-xl w-full md:w-fit shadow-sm border border-slate-200">
                     <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition bg-indigo-50 text-indigo-600">User</button>
                     <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition">Akses</button>
                     <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition">Cost</button>
                 </div>
-
                 <div id="settings-users" class="settings-panel">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="p-4 border-b border-slate-50 flex justify-between items-center">
-                            <h3 class="font-bold text-slate-800 text-sm">Daftar Pengguna</h3>
-                            <button onclick="window.openUserModal()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold transition border border-emerald-100"><i class="fas fa-user-plus mr-1"></i> Tambah</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-xs text-left text-slate-600">
-                                <thead class="text-slate-400 uppercase bg-slate-50/50">
-                                    <tr><th class="px-4 py-3">Nama</th><th class="px-4 py-3">ID</th><th class="px-4 py-3">HUB</th><th class="px-4 py-3">Posisi</th><th class="px-4 py-3 text-right">Aksi</th></tr>
-                                </thead>
-                                <tbody id="user-table-body" class="divide-y divide-slate-50"></tbody>
-                            </table>
-                        </div>
+                        <div class="p-4 border-b border-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-800 text-sm">Daftar Pengguna</h3><button onclick="window.openUserModal()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-100 font-bold transition border border-emerald-100"><i class="fas fa-user-plus mr-1"></i> Tambah</button></div>
+                        <div class="overflow-x-auto"><table class="w-full text-xs text-left text-slate-600"><thead class="text-slate-400 uppercase bg-slate-50/50"><tr><th class="px-4 py-3">Nama</th><th class="px-4 py-3">ID</th><th class="px-4 py-3">HUB</th><th class="px-4 py-3">Posisi</th><th class="px-4 py-3 text-right">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-50"></tbody></table></div>
                     </div>
                 </div>
-
                 <div id="settings-general" class="settings-panel hidden">
                     <div class="grid md:grid-cols-2 gap-4">
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Password Admin</h3>
-                            <div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Password Baru</label><input type="password" id="new-admin-pass" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></div>
-                            <button onclick="window.saveAdminPass()" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition">Update</button>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-800 mb-4 text-sm">Kode Akses Leader</h3>
-                            <div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Baru</label><input type="text" id="access-code-input" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none"></div>
-                            <button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-purple-700 transition">Simpan</button>
-                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h3 class="font-bold text-slate-800 mb-4 text-sm">Password Admin</h3><div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Password Baru</label><input type="password" id="new-admin-pass" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></div><button onclick="window.saveAdminPass()" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 transition">Update</button></div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h3 class="font-bold text-slate-800 mb-4 text-sm">Kode Akses Leader</h3><div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Baru</label><input type="text" id="access-code-input" class="w-full border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none"></div><button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-purple-700 transition">Simpan</button></div>
                     </div>
                 </div>
-
                 <div id="settings-cost" class="settings-panel hidden space-y-4">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-                        <div><h3 class="font-bold text-slate-800 text-sm">Biaya DW (Global)</h3><p class="text-[10px] text-slate-400">Berlaku untuk semua DW</p></div>
-                        <input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-32 text-right font-mono font-bold text-slate-700 border-none bg-slate-50 rounded-lg focus:ring-0 text-sm" onkeyup="window.formatCostInput(this)">
-                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between"><div><h3 class="font-bold text-slate-800 text-sm">Biaya DW (Global)</h3><p class="text-[10px] text-slate-400">Berlaku untuk semua DW</p></div><input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-32 text-right font-mono font-bold text-slate-700 border-none bg-slate-50 rounded-lg focus:ring-0 text-sm" onkeyup="window.formatCostInput(this)"></div>
                     <div class="grid md:grid-cols-3 gap-4">
-                        <div class="md:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-fit">
-                            <h4 class="font-bold text-slate-800 mb-3 text-sm">Tambah HUB</h4>
-                            <div class="space-y-3">
-                                <input type="text" id="new-hub-name" placeholder="Kode HUB" class="w-full border border-slate-200 p-2.5 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
-                                <input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-2.5 rounded-xl text-xs font-mono text-right focus:ring-2 focus:ring-indigo-500 outline-none" onkeyup="window.formatCostInput(this)">
-                                <button onclick="window.addHubToTable()" class="w-full bg-indigo-600 text-white py-2 rounded-xl font-bold text-xs hover:bg-indigo-700 transition">Tambah</button>
-                            </div>
-                        </div>
-                        <div class="md:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                            <h4 class="font-bold text-slate-800 mb-3 text-sm">Daftar Biaya HUB (Sorter)</h4>
-                            <div id="cost-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-2"></div>
-                            <div class="mt-4 pt-3 border-t border-slate-100">
-                                <button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95">SIMPAN PERUBAHAN</button>
-                            </div>
-                        </div>
+                        <div class="md:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-fit"><h4 class="font-bold text-slate-800 mb-3 text-sm">Tambah HUB</h4><div class="space-y-3"><input type="text" id="new-hub-name" placeholder="Kode HUB" class="w-full border border-slate-200 p-2.5 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none"><input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-2.5 rounded-xl text-xs font-mono text-right focus:ring-2 focus:ring-indigo-500 outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.addHubToTable()" class="w-full bg-indigo-600 text-white py-2 rounded-xl font-bold text-xs hover:bg-indigo-700 transition">Tambah</button></div></div>
+                        <div class="md:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200"><h4 class="font-bold text-slate-800 mb-3 text-sm">Daftar Biaya HUB (Sorter)</h4><div id="cost-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-2"></div><div class="mt-4 pt-3 border-t border-slate-100"><button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95">SIMPAN PERUBAHAN</button></div></div>
                     </div>
                 </div>
             </div>
@@ -409,10 +389,7 @@
     <!-- MODAL USER -->
     <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
         <div class="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0" id="user-modal-content">
-            <div class="flex justify-between items-center mb-5">
-                <h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3>
-                <button onclick="window.closeUserModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="flex justify-between items-center mb-5"><h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3><button onclick="window.closeUserModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button></div>
             <form id="user-form" class="space-y-4">
                 <input type="hidden" id="edit-user-id">
                 <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama Lengkap</label><input type="text" id="input-nama" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition" required></div>
@@ -567,16 +544,18 @@
             });
 
             onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
-            onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); window.renderHubDropdownOptions(); if(currentUser) window.renderCostInputs(); });
+            onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); window.renderHubDropdownOptions(); if(currentUser) { 
+                window.renderCostInputs(); 
+                if(document.getElementById('view-absensi').classList.contains('hidden')===false) window.renderAbsensiHubSelect();
+            } });
             
-            // Fix: Always populate appData regardless of currentUser state to ensure data readiness
             onSnapshot(pub('laporan'), (s) => { 
                 appData.laporan=[]; 
                 s.forEach(d=>appData.laporan.push(d.data())); 
-                // Only render if user is logged in (views are active)
                 if(currentUser) { 
                     if(!document.getElementById('view-dashboard').classList.contains('hidden')) window.loadDashboardData(); 
                     if(!document.getElementById('view-laporan').classList.contains('hidden')) window.renderLaporanList(); 
+                    if(!document.getElementById('view-absensi').classList.contains('hidden')) window.loadAbsensiData();
                 } 
             });
         }
@@ -588,6 +567,7 @@
         window.formatCostInput = (e) => { let v=e.value.replace(/[^0-9]/g,''); e.value=window.formatNumber(v); };
         window.formatRupiah = (n) => n==null?'': 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
+        window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded' : 'bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded';
 
         // Auth
         window.switchLoginTab = (t) => {
@@ -601,7 +581,6 @@
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('app-navbar').classList.remove('hidden');
-            // document.getElementById('app-navbar').classList.add('md:block'); // Allow navbar to show on desktop
             document.getElementById('mobile-topbar').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.add('flex');
@@ -663,6 +642,7 @@
             if(id==='dashboard') window.loadDashboardData();
             if(id==='pengaturan') window.loadSettingsUI();
             if(id==='laporan') window.renderLaporanList();
+            if(id==='absensi') window.initAbsensiFilters();
         };
 
         // Dashboard
@@ -691,7 +671,22 @@
         window.loadDashboardData = () => {
             const s = new Date(document.getElementById('dash-start-date').value), e = new Date(document.getElementById('dash-end-date').value);
             const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
-            const data = appData.laporan.filter(l => { const d = new Date(l.tanggal); return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); }).sort((a,b)=>new Date(a.tanggal)-new Date(b.tanggal));
+            const data = appData.laporan.filter(l => { const d = new Date(l.tanggal); return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); }).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+            
+            // Calc Totals for KPI
+            let totP=0, totM=0, totC=0;
+            data.forEach(d => {
+                totP += d.total_paket;
+                totM += d.total_mpp;
+                totC += window.calculateReportCost(d);
+            });
+            const avgP = totM > 0 ? Math.round(totP/totM) : 0;
+            
+            document.getElementById('kpi-total-paket').innerText = window.formatNumber(totP);
+            document.getElementById('kpi-total-mpp').innerText = window.formatNumber(totM);
+            document.getElementById('kpi-avg-prod').innerText = window.formatNumber(avgP);
+            document.getElementById('kpi-total-cost').innerText = window.formatRupiah(totC);
+
             window.updateCharts(data, hubs); window.updateDashboardTables(data);
         };
 
@@ -710,27 +705,214 @@
             if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
             yrData.forEach(l=>{ const m=new Date(l.tanggal).getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
             
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { type: 'linear', display: false, position: 'left' },
+                    y1: { type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        backgroundColor: function(context) {
+                             if (context.datasetIndex === 1) { // Productivity Line
+                                 return context.dataset.data[context.dataIndex] < 600 ? '#ef4444' : '#10b981';
+                             }
+                             return 'rgba(15, 23, 42, 0.7)';
+                        },
+                        borderRadius: 4,
+                        color: 'white',
+                        font: { weight: 'bold', size: 10 },
+                        padding: 4
+                    }
+                }
+            };
+
             const ctx1=document.getElementById('chart-annual').getContext('2d');
             if(annualChart) annualChart.destroy();
-            annualChart=new Chart(ctx1, { type:'bar', data:{ labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], datasets:[{label:'Paket',data:mD.map(d=>d.p),backgroundColor:'#6366f1',borderRadius:4,barPercentage:0.6},{label:'Prod',data:mD.map(d=>d.m?Math.round(d.p/d.m):0),type:'line',borderColor:'#10b981',borderWidth:2,tension:0.3,pointRadius:0}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{display:false}}} });
+            annualChart=new Chart(ctx1, { 
+                type:'bar', 
+                data:{ 
+                    labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
+                    datasets:[
+                        {label:'Paket', data:mD.map(d=>d.p), backgroundColor:'#6366f1', borderRadius:4, barPercentage:0.6, yAxisID: 'y'},
+                        {label:'Prod', data:mD.map(d=>d.m?Math.round(d.p/d.m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.3, pointRadius:5, pointBackgroundColor: mD.map(d=>(d.m && Math.round(d.p/d.m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
+                    ] 
+                }, 
+                options: chartOptions 
+            });
 
             const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
-            const sD=Object.keys(agg).sort(), lbs=sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
+            const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b)), lbs=sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
             
             const ctx2=document.getElementById('chart-daily').getContext('2d');
             if(dailyChart) dailyChart.destroy();
-            dailyChart=new Chart(ctx2, { type:'bar', data:{ labels:lbs, datasets:[{label:'Paket',data:sD.map(d=>agg[d].p),backgroundColor:'#10b981',borderRadius:4,barPercentage:0.6}] }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{display:false}}} });
+            dailyChart=new Chart(ctx2, { 
+                type:'bar', 
+                data:{ 
+                    labels:lbs, 
+                    datasets:[
+                        {label:'Paket', data:sD.map(d=>agg[d].p), backgroundColor:'#6366f1', borderRadius:4, barPercentage:0.6, yAxisID: 'y'},
+                        {label:'Prod', data:sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.3, pointRadius:5, pointBackgroundColor: sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
+                    ] 
+                }, 
+                options: chartOptions 
+            });
         };
 
         window.updateDashboardTables = (data) => {
             const tb1 = document.getElementById('tbody-daily-detail'); tb1.innerHTML='';
-            data.forEach(l => { tb1.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-medium text-slate-800">${l.tanggal}</td><td class="px-4 py-3">${l.hub}</td><td class="px-4 py-3 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-bold bg-slate-100">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3 text-emerald-600 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; });
+            data.forEach(l => { 
+                const prod = Math.round(l.productivity);
+                const prodClass = window.getProdColorClass(prod);
+                tb1.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-medium text-slate-800">${l.tanggal}</td><td class="px-4 py-3">${l.hub}</td><td class="px-4 py-3 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-bold bg-slate-100">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; 
+            });
             
             const hAg={}; data.forEach(l=>{ if(!hAg[l.hub])hAg[l.hub]={m:0,o:0,c:0}; hAg[l.hub].m+=l.total_mpp; hAg[l.hub].o+=l.total_paket; hAg[l.hub].c+=window.calculateReportCost(l); });
             const tb2 = document.getElementById('tbody-hub-breakdown'); tb2.innerHTML='';
-            Object.keys(hAg).sort((a,b)=>hAg[b].o-hAg[a].o).forEach(h=>{ const d=hAg[h]; tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 text-emerald-600 font-medium">${window.formatNumber(d.m?Math.round(d.o/d.m):0)}</td><td class="px-4 py-3 text-right text-slate-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; });
+            Object.keys(hAg).sort((a,b)=>hAg[b].o-hAg[a].o).forEach(h=>{ 
+                const d=hAg[h]; 
+                const prod = d.m?Math.round(d.o/d.m):0;
+                const prodClass = window.getProdColorClass(prod);
+                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
+            });
         };
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
+
+        // --- ABSENSI MATRIX ---
+        window.initAbsensiFilters = () => {
+             const d = new Date(); document.getElementById('abs-end-date').valueAsDate = d;
+             d.setDate(d.getDate()-7); document.getElementById('abs-start-date').valueAsDate = d;
+             window.renderAbsensiHubSelect();
+             window.loadAbsensiData();
+        };
+
+        window.renderAbsensiHubSelect = () => {
+             const s = document.getElementById('abs-hub-select'); 
+             const val = s.value;
+             s.innerHTML = '<option value="ALL">Semua HUB</option>';
+             appData.costs.forEach(c => s.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
+             s.value = val !== 'ALL' ? val : 'ALL';
+             
+             if (currentUser.role !== 'admin') {
+                 s.value = currentUser.kode_hub;
+                 s.disabled = true;
+             }
+        };
+
+        window.getDatesInRange = (startDate, endDate) => {
+            const date = new Date(startDate.getTime());
+            const dates = [];
+            while (date <= endDate) {
+                dates.push(new Date(date));
+                date.setDate(date.getDate() + 1);
+            }
+            return dates;
+        };
+
+        window.loadAbsensiData = () => {
+            const startStr = document.getElementById('abs-start-date').value;
+            const endStr = document.getElementById('abs-end-date').value;
+            const hubFilter = document.getElementById('abs-hub-select').value;
+            const container = document.getElementById('absensi-table-container');
+            
+            if(!startStr || !endStr) return;
+            const sDate = new Date(startStr), eDate = new Date(endStr);
+            const dateRange = window.getDatesInRange(sDate, eDate);
+
+            const reports = appData.laporan.filter(l => {
+                const d = new Date(l.tanggal);
+                return d >= sDate && d <= eDate && (hubFilter === 'ALL' || l.hub === hubFilter);
+            });
+
+            const attMap = {};
+            const colTotals = {}; 
+
+            reports.forEach(r => {
+                if(!attMap[r.hub]) attMap[r.hub] = {};
+                if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
+
+                if(r.attendance_data) {
+                    r.attendance_data.forEach(a => {
+                         let status = '';
+                         if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3';
+                         else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
+                         
+                         if(status) {
+                             if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
+                             attMap[r.hub][a.userId][r.tanggal] = status;
+                             if(['1','2','3'].includes(status)) colTotals[r.tanggal]++;
+                         }
+                    });
+                }
+            });
+
+            let hubsToShow = (hubFilter === 'ALL') ? appData.costs.map(c=>c.hub) : [hubFilter];
+            let html = `<table class="w-full text-xs border-collapse">`;
+            
+            html += `<thead class="abs-header"><tr>
+                        <th class="p-2 border bg-slate-100 text-left min-w-[150px] abs-name-col">Nama / HUB</th>`;
+            dateRange.forEach(d => {
+                const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
+                html += `<th class="p-1 border bg-slate-100 abs-cell">${dStr}</th>`;
+            });
+            html += `<th class="p-1 border bg-slate-200 font-bold w-12">Total</th></tr></thead><tbody>`;
+
+            hubsToShow.forEach(h => {
+                let users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => {
+                     const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
+                     const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
+                     if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id);
+                });
+
+                html += `<tr class="bg-indigo-50"><td class="p-2 border font-bold text-indigo-700 abs-name-col" colspan="${dateRange.length + 2}">${h}</td></tr>`;
+
+                let currentRole = '';
+
+                users.forEach(u => {
+                     let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
+                     if(roleType !== currentRole) {
+                         currentRole = roleType;
+                         html += `<tr class="bg-slate-50"><td class="p-1 border text-[10px] font-bold text-slate-400 pl-4 abs-name-col" colspan="${dateRange.length + 2}">${currentRole}</td></tr>`;
+                     }
+
+                     let rowTotal = 0;
+                     html += `<tr><td class="p-2 border font-medium text-slate-700 abs-name-col">${u.nama}</td>`;
+                     
+                     dateRange.forEach(d => {
+                         const dateKey = d.toISOString().split('T')[0];
+                         let status = '';
+                         if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
+                             status = attMap[h][u.id][dateKey];
+                         }
+                         
+                         let cellClass = '';
+                         if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; rowTotal++; }
+                         else if(status==='I') cellClass='bg-yellow-50 text-amber-500';
+                         else if(status==='S') cellClass='bg-purple-50 text-purple-500';
+                         else if(status==='A') cellClass='bg-red-50 text-red-500';
+
+                         html += `<td class="p-1 border abs-cell ${cellClass}">${status}</td>`;
+                     });
+                     
+                     html += `<td class="p-1 border text-center font-bold bg-slate-50">${rowTotal}</td></tr>`;
+                });
+            });
+            
+            html += `<tr class="bg-slate-100 font-bold"><td class="p-2 border text-right abs-name-col">Total Hadir:</td>`;
+            let rangeTotal = 0;
+            dateRange.forEach(d => {
+                 const dateKey = d.toISOString().split('T')[0];
+                 const tot = colTotals[dateKey] || 0;
+                 rangeTotal += tot;
+                 html += `<td class="p-1 border text-center text-indigo-600">${tot}</td>`;
+            });
+            html += `<td class="p-1 border text-center text-indigo-800 text-sm">${rangeTotal}</td></tr>`;
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        };
 
         // Settings
         window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
@@ -817,7 +999,24 @@
                 d.forEach(l => {
                     const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
                     const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 hover:bg-blue-50 p-1 rounded transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 hover:bg-rose-50 p-1 rounded transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
-                    tb.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50"><td class="px-6 py-4 font-medium text-slate-700">${l.tanggal}</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${l.hub}</span></td><td class="px-6 py-4 font-bold text-slate-800">${window.formatNumber(l.total_paket)}</td><td class="px-6 py-4 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-6 py-4 text-emerald-600 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-6 py-4 text-right">${acts}</td></tr>`;
+                    
+                    const prod = Math.round(l.productivity);
+                    const prodClass = window.getProdColorClass(prod);
+
+                    // UPDATE: Removed COST, Added Details, Apply Prod Color
+                    tb.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                            <td class="px-6 py-4 font-medium text-slate-700">${l.tanggal}</td>
+                            <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${l.hub}</span></td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.gateway)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.staging)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.jne)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.sap)}</td>
+                            <td class="px-4 py-4 font-bold text-slate-800 bg-slate-50/50 text-right">${window.formatNumber(l.total_paket)}</td>
+                            <td class="px-4 py-4 text-blue-600 font-bold text-right">${l.total_mpp}</td>
+                            <td class="px-4 py-4 text-right"><span class="${prodClass}">${window.formatNumber(prod)}</span></td>
+                            <td class="px-4 py-4 text-right">${acts}</td>
+                        </tr>`;
                 });
             }
         };
@@ -830,6 +1029,8 @@
         window.deleteLaporan = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
+        
+        window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded text-xs' : 'bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded text-xs';
     </script>
 </body>
 </html>

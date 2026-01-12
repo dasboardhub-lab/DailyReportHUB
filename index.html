@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DailyReport</title>
+    <title>DailyReport (Online)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -37,12 +37,23 @@
         body { background-color: #f8fafc; }
         
         /* Dynamic Island Animations */
+        #dynamic-island-container {
+            pointer-events: none; /* Container tembus klik agar tidak halangi tombol di bawahnya */
+            z-index: 100;
+        }
+
         #dynamic-island {
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transform-origin: top center;
+            pointer-events: auto; /* Island itu sendiri bisa diklik */
         }
-        .island-loading { width: 48px; height: 32px; border-radius: 9999px; background: #000; }
-        .island-expanded { width: auto; min-width: 200px; height: 48px; border-radius: 9999px; padding: 0 20px; background: #000; }
+
+        /* States */
+        .island-hidden { opacity: 0; transform: translateY(-20px) scale(0.8); pointer-events: none !important; }
+        .island-loading { width: 48px; height: 32px; border-radius: 9999px; background: #0f172a; }
+        .island-expanded { width: auto; min-width: 200px; height: 48px; border-radius: 9999px; padding: 0 20px; background: #0f172a; }
+        
         .island-error { background: #ef4444 !important; }
         .island-success { background: #10b981 !important; }
 
@@ -59,11 +70,11 @@
         .attendance-checkbox:active { transform: scale(0.9); }
 
         /* Navbar & Nav Items */
-        .nav-link { position: relative; color: #94a3b8; transition: color 0.3s; }
+        .nav-link { position: relative; color: #94a3b8; transition: color 0.3s; cursor: pointer; }
         .nav-link:hover { color: #f8fafc; }
         .nav-link.active { color: #fff; font-weight: 600; }
         .nav-link.active::after {
-            content: ''; position: absolute; bottom: -24px; left: 0; width: 100%; height: 3px;
+            content: ''; position: absolute; bottom: -22px; left: 0; width: 100%; height: 3px;
             background: #6366f1; border-radius: 3px 3px 0 0;
             box-shadow: 0 -4px 10px rgba(99, 102, 241, 0.5);
         }
@@ -71,7 +82,6 @@
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Faster Loading Transition */
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,1); transition: opacity 0.3s ease-out; }
         .hidden-fade { opacity: 0; pointer-events: none; }
     </style>
@@ -79,8 +89,9 @@
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700">
 
     <!-- DYNAMIC ISLAND (Notification Center) -->
-    <div class="fixed top-4 left-0 right-0 flex justify-center pointer-events-none z-[100]">
-        <div id="dynamic-island" class="island-loading pointer-events-auto flex items-center justify-center overflow-hidden text-white group">
+    <div id="dynamic-island-container" class="fixed top-4 left-0 right-0 flex justify-center">
+        <!-- Default State: Hidden -->
+        <div id="dynamic-island" class="island-hidden flex items-center justify-center overflow-hidden text-white group">
             <!-- Spinner -->
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                 <i class="fas fa-circle-notch fa-spin text-white text-xs"></i>
@@ -104,16 +115,16 @@
                         <i class="fas fa-cube text-white text-sm"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg tracking-tight leading-none">HUB REPORT</h1>
-                        <p class="text-[10px] text-slate-400 font-medium tracking-wide">DAILY DASHBOARD</p>
+                        <h1 class="font-bold text-lg tracking-tight leading-none">DAILY REPORT</h1>
+                        <p class="text-[10px] text-slate-400 font-medium tracking-wide">ONLINE SYSTEM</p>
                     </div>
                 </div>
                 
                 <!-- Menu Items -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#" onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active h-16 flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
-                    <a href="#" onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link h-16 flex items-center gap-2"><i class="fas fa-table text-xs"></i> Laporan</a>
-                    <a href="#" onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link h-16 flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-xs"></i> Pengaturan</a>
+                    <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active h-16 flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
+                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link h-16 flex items-center gap-2"><i class="fas fa-table text-xs"></i> Laporan</a>
+                    <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link h-16 flex items-center gap-2 hidden"><i class="fas fa-sliders-h text-xs"></i> Pengaturan</a>
                 </div>
 
                 <!-- User Profile -->
@@ -122,7 +133,7 @@
                         <div class="text-xs font-semibold text-white" id="user-name-display">User</div>
                         <div class="text-[10px] text-indigo-300 font-mono" id="user-badge">ROLE</div>
                     </div>
-                    <button onclick="window.logout()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition flex items-center justify-center">
+                    <button onclick="window.logout()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition flex items-center justify-center" title="Keluar">
                         <i class="fas fa-power-off text-xs"></i>
                     </button>
                 </div>
@@ -140,7 +151,7 @@
                     <i class="fas fa-chart-line text-white text-xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white mb-1">Selamat Datang</h2>
-                <p class="text-slate-400 text-sm">Silakan login untuk melanjutkan</p>
+                <p class="text-slate-400 text-sm">Masuk untuk akses data real-time</p>
             </div>
 
             <!-- Login Tabs -->
@@ -197,7 +208,7 @@
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-end md:items-center gap-4 relative z-20">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Ringkasan Kinerja</h2>
-                        <p class="text-xs text-slate-500">Filter data berdasarkan tanggal dan HUB</p>
+                        <p class="text-xs text-slate-500">Filter data real-time (Online)</p>
                     </div>
                     
                     <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
@@ -627,7 +638,8 @@
 
         window.notify = (msg, type = 'loading') => {
             island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
-            
+            island.classList.remove('island-hidden');
+
             if (type === 'loading') {
                 island.classList.add('island-loading', 'bg-dark');
                 islandSpinner.classList.remove('opacity-0');
@@ -655,8 +667,9 @@
                 setTimeout(() => {
                     islandContent.classList.add('opacity-0', 'scale-90');
                     setTimeout(() => {
-                        island.className = 'island-loading bg-dark pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out';
-                        islandSpinner.classList.remove('opacity-0');
+                        // REVISED: Go to hidden state instead of spinner
+                        island.className = 'island-hidden';
+                        island.classList.remove('island-expanded', 'island-success', 'island-error');
                     }, 200);
                 }, 3000);
             }

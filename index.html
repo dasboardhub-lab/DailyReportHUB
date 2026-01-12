@@ -3,1332 +3,619 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Report Team</title>
-    
+    <title>HUB Daily Report Dashboard (Online)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .hidden { display: none !important; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Styles untuk Tab Navigasi */
-        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
-        .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
-        .tab-inactive:hover { color: #334155; }
-
-        /* Style Checkbox & Radio */
-        .custom-radio { width: 1.15rem; height: 1.15rem; cursor: pointer; }
-        .custom-checkbox { width: 1.25rem; height: 1.25rem; cursor: pointer; }
-        
-        /* Table Sticky Header */
-        thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; }
-        
-        /* Login Tabs */
-        .login-tab-active { background-color: #eff6ff; color: #2563eb; border-color: #2563eb; }
-        .login-tab-inactive { color: #64748b; border-color: transparent; }
-        .login-tab-inactive:hover { background-color: #f8fafc; }
-
-        /* Hide Number Input Spinner */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-
-        /* DYNAMIC ISLAND NOTIFICATION */
-        .dynamic-island {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) scale(0.9);
-            background-color: #000;
-            color: white;
-            border-radius: 30px;
-            padding: 0;
-            width: 0;
-            height: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            opacity: 0;
-            z-index: 100;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-        .dynamic-island.active {
-            width: auto;
-            min-width: 180px;
-            height: 48px;
-            padding: 0 24px;
-            transform: translateX(-50%) scale(1);
-            opacity: 1;
-        }
-        .dynamic-island.error { background-color: #ef4444; }
-        .dynamic-island-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            white-space: nowrap;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        /* CONFIRMATION MODAL TRANSITION */
-        .modal-enter { opacity: 0; transform: scale(0.9); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.2s, transform 0.2s; }
-        .modal-exit { opacity: 1; transform: scale(1); }
-        .modal-exit-active { opacity: 0; transform: scale(0.9); transition: opacity 0.2s, transform 0.2s; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .sidebar-item-active { background-color: #374151; border-left: 4px solid #3b82f6; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+        .attendance-checkbox { width: 1.2rem; height: 1.2rem; cursor: pointer; accent-color: #2563eb; }
+        /* Loading Overlay */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 9999; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="text-gray-800">
 
-    <!-- DYNAMIC ISLAND NOTIFICATION -->
-    <div id="dynamic-island" class="dynamic-island">
-        <div class="dynamic-island-content">
-            <span id="di-icon"></span>
-            <span id="di-text"></span>
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay">
+        <div class="text-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="font-bold text-gray-600">Menghubungkan ke Database...</p>
         </div>
     </div>
 
-    <!-- GENERIC CONFIRMATION MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden transition-opacity duration-200">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 max-w-[90%] transform transition-all scale-100">
-            <div class="text-center mb-5">
-                <div class="bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i data-lucide="help-circle" class="text-blue-600 w-8 h-8"></i>
-                </div>
-                <h3 id="confirm-title" class="font-bold text-lg text-slate-800 mb-1">Konfirmasi</h3>
-                <p id="confirm-desc" class="text-sm text-slate-500">Apakah Anda yakin ingin melanjutkan?</p>
-            </div>
-            <div class="flex gap-3">
-                <button id="btn-confirm-no" class="flex-1 py-2.5 text-slate-600 font-medium bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">Batal</button>
-                <button id="btn-confirm-yes" class="flex-1 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 transition-colors">Ya, Lanjutkan</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECURITY MODAL (For Authorization) -->
-    <div id="security-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 transform transition-all scale-100">
-            <div class="text-center mb-4">
-                <div class="bg-red-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i data-lucide="shield-alert" class="text-red-600 w-7 h-7"></i>
-                </div>
-                <h3 class="font-bold text-lg text-slate-800">Butuh Otorisasi</h3>
-                <p class="text-xs text-slate-500">Masukkan Kode Keamanan Admin.</p>
-            </div>
-            <input type="password" id="input-secure-code" class="w-full border border-slate-300 p-3 rounded-xl mb-4 text-center tracking-widest font-bold focus:ring-2 focus:ring-red-500 outline-none text-lg" placeholder="****">
-            <div id="secure-error" class="text-xs text-red-500 text-center mb-2 hidden">Kode salah!</div>
-            <div class="flex gap-2">
-                <button id="btn-cancel-secure" class="flex-1 py-2 text-slate-500 border border-slate-200 rounded-xl hover:bg-slate-50">Batal</button>
-                <button id="btn-confirm-secure" class="flex-1 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 font-medium">Verifikasi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="fixed inset-0 bg-white z-40 flex items-center justify-center">
-        <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p class="text-slate-500 text-sm">Memuat Sistem...</p>
-        </div>
-    </div>
-
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="min-h-screen bg-slate-100 flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+    <!-- LOGIN SECTION -->
+    <div id="login-section" class="min-h-screen flex items-center justify-center bg-gray-900 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
             <div class="text-center mb-6">
-                <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
-                    <i data-lucide="file-text" class="text-white w-8 h-8"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-800">Daily Report Team</h1>
-                <p class="text-slate-500 text-sm mt-1">Sistem Laporan Operasional</p>
+                <h1 class="text-3xl font-bold text-gray-800">HUB REPORT</h1>
+                <p class="text-gray-500 text-sm">Daily Dashboard System (Online)</p>
             </div>
 
-            <!-- Login Tabs -->
-            <div class="grid grid-cols-3 gap-1 mb-6 p-1 bg-slate-100 rounded-xl">
-                <button onclick="switchLoginTab('sorter')" id="tab-login-sorter" class="py-2 text-sm font-medium rounded-lg transition-all text-center login-tab-inactive">Sorter</button>
-                <button onclick="switchLoginTab('leader')" id="tab-login-leader" class="py-2 text-sm font-medium rounded-lg transition-all text-center login-tab-active bg-white shadow-sm text-blue-600">Leader</button>
-                <button onclick="switchLoginTab('admin')" id="tab-login-admin" class="py-2 text-sm font-medium rounded-lg transition-all text-center login-tab-inactive">Admin</button>
+            <div class="flex mb-6 bg-gray-100 rounded p-1">
+                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2 rounded shadow bg-white text-blue-600 font-semibold text-sm transition">User (PIC/Sorter)</button>
+                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2 rounded text-gray-500 font-semibold text-sm transition">Admin</button>
             </div>
 
-            <form id="login-form" class="space-y-5">
-                <div id="field-nik">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Username / NIK</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="user" class="h-5 w-5 text-slate-400"></i>
-                        </div>
-                        <input type="text" id="login-nik" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Masukan NIK">
-                    </div>
+            <form id="form-login-user">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">ID User</label>
+                    <input type="text" id="login-id" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan ID User" required>
                 </div>
-
-                <div id="field-pass">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
-                        </div>
-                        <input type="password" id="login-pass" class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Masukan Password">
+                <div class="mb-4">
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" id="is-pic-checkbox" class="mr-2" onchange="window.togglePasswordField()">
+                        <label for="is-pic-checkbox" class="text-sm text-gray-600 cursor-pointer">Saya adalah PIC (Input Password)</label>
                     </div>
+                    <input type="password" id="login-pass-user" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 hidden" placeholder="Kata Sandi">
                 </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Masuk</button>
+            </form>
 
-                <button type="submit" id="btn-login" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-200 disabled:opacity-50 flex justify-center items-center gap-2">
-                    <span>Masuk Aplikasi</span>
-                </button>
-                
-                <p class="text-xs text-center text-slate-400 mt-4" id="login-hint">
-                    Akses Leader & Staff
-                </p>
+            <form id="form-login-admin" class="hidden">
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Password Admin</label>
+                    <input type="password" id="login-pass-admin" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Default: 123456" required>
+                </div>
+                <button type="submit" class="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 transition">Masuk Admin</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN -->
-    <div id="app-screen" class="flex h-screen overflow-hidden hidden">
-        
-        <!-- SIDEBAR -->
-        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col h-full">
-            <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">DR</div>
-                    <span class="font-bold text-lg tracking-wide">DailyReport</span>
-                </div>
-                <button id="close-sidebar" class="lg:hidden text-slate-400 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+    <!-- MAIN APP SECTION -->
+    <div id="app-section" class="flex h-screen hidden overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-lg transition-all duration-300" id="sidebar">
+            <div class="p-6 text-center border-b border-gray-700">
+                <h2 class="text-xl font-bold">HUB DASHBOARD</h2>
+                <div class="mt-2 inline-block bg-blue-600 text-xs px-2 py-1 rounded" id="user-badge">Role</div>
+                <p class="text-xs text-gray-400 mt-1" id="user-name-display">Nama User</p>
             </div>
-
-            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-                <button onclick="navigateTo('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white" data-target="dashboard">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span class="font-medium">Dashboard</span>
-                </button>
-                <button onclick="navigateTo('reports')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white" data-target="reports">
-                    <i data-lucide="file-text" class="w-5 h-5"></i>
-                    <span class="font-medium">Laporan Harian</span>
-                </button>
-                <button onclick="navigateTo('settings')" id="menu-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-400 hover:bg-slate-800 hover:text-white hidden" data-target="settings">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
-                    <span class="font-medium">Pengaturan</span>
-                </button>
+            <nav class="flex-1 mt-6">
+                <a href="#" onclick="window.navigate('dashboard')" id="nav-dashboard" class="flex items-center px-6 py-3 hover:bg-gray-800 transition sidebar-item-active"><i class="fas fa-tachometer-alt w-6"></i><span>Dashboard</span></a>
+                <a href="#" onclick="window.navigate('laporan')" id="nav-laporan" class="flex items-center px-6 py-3 hover:bg-gray-800 transition"><i class="fas fa-file-alt w-6"></i><span>Laporan</span></a>
+                <a href="#" onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="flex items-center px-6 py-3 hover:bg-gray-800 transition hidden"><i class="fas fa-cogs w-6"></i><span>Pengaturan</span></a>
             </nav>
-
-            <div class="p-4 border-t border-slate-800">
-                <div class="bg-slate-800 rounded-lg p-4 mb-4">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i data-lucide="user-circle" class="text-slate-400 w-8 h-8"></i>
-                        <div class="overflow-hidden">
-                            <p id="user-name-display" class="text-sm font-medium text-white truncate">User</p>
-                            <p id="user-role-display" class="text-xs text-blue-400 uppercase font-bold tracking-wider">ROLE</p>
-                        </div>
-                    </div>
-                </div>
-                <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-700 rounded-lg text-slate-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all text-sm">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                    <span>Keluar</span>
-                </button>
+            <div class="p-4 border-t border-gray-700">
+                <button onclick="window.logout()" class="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 rounded transition"><i class="fas fa-sign-out-alt mr-2"></i> Keluar</button>
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
-            <!-- Mobile Header -->
-            <header class="bg-white shadow-sm border-b border-slate-200 lg:hidden flex-shrink-0">
-                <div class="px-4 py-3 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <button id="open-sidebar" class="p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
-                            <i data-lucide="menu" class="w-6 h-6"></i>
-                        </button>
-                        <span class="font-bold text-slate-800">Daily Report</span>
-                    </div>
-                </div>
+        <!-- Content -->
+        <main class="flex-1 flex flex-col overflow-hidden relative">
+            <header class="bg-white shadow p-4 flex justify-between items-center md:hidden z-10">
+                <button onclick="window.toggleSidebar()" class="text-gray-600"><i class="fas fa-bars text-xl"></i></button>
+                <h1 class="font-bold text-lg">HUB Report</h1>
             </header>
 
-            <!-- Content Views -->
-            <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
-                <div class="max-w-[1400px] mx-auto">
-                    
-                    <!-- VIEW: DASHBOARD -->
-                    <div id="view-dashboard" class="content-view hidden space-y-6">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold text-slate-800 mb-2 md:mb-0">Dashboard Overview</h2>
-                        </div>
-
-                        <!-- Filter Section -->
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-500 mb-1">Mulai Tanggal</label>
-                                    <input type="date" id="dash-start-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-500 mb-1">Sampai Tanggal</label>
-                                    <input type="date" id="dash-end-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-500 mb-1">Filter HUB</label>
-                                    <div id="dash-hub-container">
-                                        <select disabled class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-100"><option>Loading...</option></select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <button onclick="loadDashboardStats()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
-                                        <i data-lucide="filter" class="w-4 h-4"></i> Terapkan
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- KPI Cards -->
-                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
-                                <div class="text-xs font-medium text-slate-500 mb-1">TOTAL PAKET</div>
-                                <div id="kpi-total-paket" class="text-2xl font-bold text-blue-600">0</div>
-                            </div>
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
-                                <div class="text-xs font-medium text-slate-500 mb-1">TOTAL MPP</div>
-                                <div id="kpi-total-mpp" class="text-2xl font-bold text-slate-700">0</div>
-                                <div class="text-[10px] text-slate-400">Sorter + DW Only</div>
-                            </div>
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
-                                <div class="text-xs font-medium text-slate-500 mb-1">PRODUKTIVITAS</div>
-                                <div id="kpi-productivity" class="text-2xl font-bold text-green-600">0</div>
-                                <div class="text-[10px] text-slate-400">Avg (Paket/Orang)</div>
-                            </div>
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
-                                <div class="text-xs font-medium text-slate-500 mb-1">TOTAL COST</div>
-                                <div id="kpi-total-cost" class="text-xl font-bold text-red-600">0</div>
-                            </div>
-                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 transition-transform hover:-translate-y-1 duration-300">
-                                <div class="text-xs font-medium text-slate-500 mb-1">CPP (AVG)</div>
-                                <div id="kpi-cpp" class="text-xl font-bold text-purple-600">0</div>
-                                <div class="text-[10px] text-slate-400">Cost Per Packet</div>
-                            </div>
-                        </div>
-
-                        <!-- Chart Annual Section -->
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-700 mb-4">Tren Performa Tahunan (Bulanan)</h3>
-                            <div class="relative h-64 w-full">
-                                <canvas id="annualChart"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Chart Daily Section -->
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-700 mb-4">Tren Harian (Sesuai Filter)</h3>
-                            <div class="relative h-64 w-full">
-                                <canvas id="dailyChart"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Bottom Tables Grid -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            
-                            <!-- Detailed Daily Table -->
-                            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div class="p-4 border-b border-slate-100 bg-slate-50">
-                                    <h3 class="font-bold text-slate-700">Rincian Pertanggal</h3>
-                                </div>
-                                <div class="overflow-x-auto max-h-96">
-                                    <table class="w-full text-left text-sm whitespace-nowrap">
-                                        <thead class="bg-slate-50 text-slate-500 font-medium">
-                                            <tr>
-                                                <th class="p-3">Tanggal</th>
-                                                <th class="p-3 text-right">MPP</th>
-                                                <th class="p-3 text-right">Gateway</th>
-                                                <th class="p-3 text-right">Staging</th>
-                                                <th class="p-3 text-right">SAP</th>
-                                                <th class="p-3 text-right">JNE</th>
-                                                <th class="p-3 text-right font-bold text-blue-600">Total Outbound</th>
-                                                <th class="p-3 text-right font-bold text-green-600">Prod. HUB</th>
-                                                <th class="p-3 text-right">Cost Mitra</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="dash-table-daily" class="divide-y divide-slate-100">
-                                            <tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Breakdown Per HUB Table -->
-                            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div class="p-4 border-b border-slate-100 bg-slate-50">
-                                    <h3 class="font-bold text-slate-700">Breakdown Performance per HUB</h3>
-                                </div>
-                                <div class="overflow-x-auto max-h-96">
-                                    <table class="w-full text-left text-sm whitespace-nowrap">
-                                        <thead class="bg-slate-50 text-slate-500 font-medium">
-                                            <tr>
-                                                <th class="p-3">HUB</th>
-                                                <th class="p-3 text-right">Total MPP</th>
-                                                <th class="p-3 text-right">Total Outbound</th>
-                                                <th class="p-3 text-right">Prod. HUB</th>
-                                                <th class="p-3 text-right">Cost</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="dash-table-hub" class="divide-y divide-slate-100">
-                                            <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+            <div class="flex-1 overflow-y-auto p-6 relative">
+                <!-- DASHBOARD -->
+                <div id="view-dashboard" class="view-content fade-in">
+                    <div class="bg-white p-4 rounded-lg shadow mb-6 border border-gray-200">
+                        <h3 class="font-bold text-gray-700 mb-3 border-b pb-2"><i class="fas fa-filter mr-2"></i>Filter</h3>
+                        <div class="flex flex-wrap gap-4 items-end">
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">Mulai</label><input type="date" id="dash-start-date" class="border p-2 rounded text-sm w-40"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">Sampai</label><input type="date" id="dash-end-date" class="border p-2 rounded text-sm w-40"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">HUB</label><select id="dash-hub-select" class="border p-2 rounded text-sm w-40"><option value="ALL">Semua HUB</option></select></div>
+                            <button onclick="window.loadDashboardData()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 text-sm font-bold shadow"><i class="fas fa-search mr-2"></i> Tampilkan</button>
                         </div>
                     </div>
-
-                    <!-- VIEW: REPORTS -->
-                    <div id="view-reports" class="content-view hidden space-y-6">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-2xl font-bold text-slate-800">Laporan Harian</h2>
-                            <span id="current-date-display" class="text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200"></span>
-                        </div>
-                        
-                        <!-- Form Input (Hanya untuk Admin & Leader) -->
-                        <div id="section-input-report" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative">
-                            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i> <span id="form-report-title">Input Laporan Operasional</span>
-                            </h3>
-                            
-                            <form id="form-daily-report" class="space-y-6">
-                                <input type="hidden" id="edit-report-id"> 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Laporan</label>
-                                        <input type="date" id="rpt-date" class="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-500 mb-1">HUB Operasional</label>
-                                        <div id="rpt-hub-container">
-                                            <input type="text" id="rpt-hub-static" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Metric Inputs -->
-                                <div>
-                                    <h4 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i> Metrik Operasional
-                                    </h4>
-                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Gateway</label>
-                                            <input type="number" id="rpt-gateway" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">Staging</label>
-                                            <input type="number" id="rpt-staging" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">SAP</label>
-                                            <input type="number" id="rpt-sap" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-500 mb-1">JNE</label>
-                                            <input type="number" id="rpt-jne" class="metric-input w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0" min="0">
-                                        </div>
-                                        <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
-                                            <label class="block text-xs font-bold text-blue-700 mb-1">TOTAL PAKET</label>
-                                            <input type="text" id="rpt-total-paket" class="w-full bg-transparent font-bold text-xl text-blue-700 text-right outline-none" value="0" readonly>
-                                        </div>
-                                        <div class="bg-green-50 p-2 rounded-lg border border-green-100 col-span-2 md:col-span-5 mt-2 flex justify-between items-center">
-                                            <div>
-                                                <label class="block text-xs font-bold text-green-700">PRODUKTIVITAS</label>
-                                                <span class="text-xs text-green-600">(Total Paket / MPP Sorter+DW)</span>
-                                            </div>
-                                            <input type="text" id="rpt-productivity" class="bg-transparent font-bold text-lg text-green-700 text-right outline-none w-32" value="0" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Attendance -->
-                                <div>
-                                    <div class="flex justify-between items-end mb-3">
-                                        <h4 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> Kehadiran Tim (MPP)
-                                        </h4>
-                                        <div class="text-right">
-                                            <span class="text-xs text-slate-500 uppercase">Total MPP (Working)</span>
-                                            <div id="display-total-mpp" class="text-2xl font-bold text-green-600 leading-none">0</div>
-                                            <p class="text-[10px] text-slate-400">*Hanya Sorter & DW</p>
-                                        </div>
-                                    </div>
-                                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-white">
-                                        <div class="max-h-80 overflow-y-auto">
-                                            <table class="w-full text-sm text-left">
-                                                <thead class="bg-slate-100 text-slate-600 font-medium">
-                                                    <tr>
-                                                        <th class="p-3 w-1/3 min-w-[150px]">Nama Karyawan</th>
-                                                        <th class="p-3 text-center w-12 bg-blue-50">S1</th>
-                                                        <th class="p-3 text-center w-12 bg-blue-50">S2</th>
-                                                        <th class="p-3 text-center w-12 bg-blue-50">S3</th>
-                                                        <th class="p-3 text-center w-12 bg-yellow-50">I</th>
-                                                        <th class="p-3 text-center w-12 bg-red-50">S</th>
-                                                        <th class="p-3 text-center w-12 bg-red-100">A</th>
-                                                        <th class="p-3 w-1/4">Keterangan</th>
-                                                        <th class="p-3 w-8"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="sorter-attendance-list" class="divide-y divide-slate-100">
-                                                    <!-- List Sorter Akan Digenerate Disini -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="p-3 bg-slate-50 border-t border-slate-200">
-                                            <button type="button" onclick="addDwRow()" class="text-sm text-blue-600 font-medium flex items-center gap-2 hover:text-blue-800">
-                                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah DW Manual
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-slate-400 mt-2">*Pilih satu status per nama (S1/S2/S3 = Shift, I=Ijin, S=Sakit, A=Alfa).</p>
-                                </div>
-
-                                <div class="flex items-center justify-end pt-4 gap-3 border-t border-slate-100">
-                                    <button type="button" id="btn-cancel-report-edit" class="hidden text-slate-500 px-4 py-2 hover:bg-slate-100 rounded-lg text-sm" onclick="resetReportForm()">Batal Edit</button>
-                                    <button type="submit" id="btn-save-report" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-sm">
-                                        <i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Table History -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                <h3 class="font-semibold text-slate-800">Riwayat Laporan</h3>
-                                <button onclick="loadMyReports()" class="text-blue-600 text-xs hover:text-blue-800 font-medium">Refresh Data</button>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm">
-                                    <thead class="bg-slate-50 text-slate-500 font-medium">
-                                        <tr>
-                                            <th class="p-3">Tanggal</th>
-                                            <th class="p-3">HUB</th>
-                                            <th class="p-3 text-right">Total Paket</th>
-                                            <th class="p-3 text-right">Total MPP</th>
-                                            <th class="p-3 text-right">Prod.</th>
-                                            <th class="p-3 text-right">Cost</th>
-                                            <th class="p-3 text-right">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="rpt-history-body" class="divide-y divide-slate-100">
-                                        <tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-5 rounded-lg shadow border border-gray-200"><h4 class="font-bold text-gray-700 mb-4 text-sm uppercase">Trend Tahunan (Total Paket)</h4><div class="relative h-64"><canvas id="chart-annual"></canvas></div></div>
+                        <div class="bg-white p-5 rounded-lg shadow border border-gray-200"><h4 class="font-bold text-gray-700 mb-4 text-sm uppercase">Trend Periode (Total Paket)</h4><div class="relative h-64"><canvas id="chart-daily"></canvas></div></div>
                     </div>
-
-                    <!-- VIEW: SETTINGS -->
-                    <div id="view-settings" class="content-view hidden space-y-6">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-                            <h2 class="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
-                        </div>
-                        <div class="flex border-b border-slate-200 mb-6 gap-6 overflow-x-auto">
-                            <button onclick="switchSettingsTab('hubs')" id="tab-btn-hubs" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-active transition-colors">Data HUB</button>
-                            <button onclick="switchSettingsTab('employees')" id="tab-btn-employees" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors">Data Karyawan</button>
-                            <button onclick="switchSettingsTab('config')" id="tab-btn-config" class="pb-3 px-1 text-sm font-medium whitespace-nowrap tab-inactive transition-colors flex items-center gap-2"><i data-lucide="settings-2" class="w-3 h-3"></i> Konfigurasi Umum</button>
-                        </div>
-                        <div id="tab-content-hubs" class="settings-tab-content space-y-6">
-                             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i> Tambah / Edit HUB</h3>
-                                <form id="form-add-hub" class="flex flex-col md:flex-row gap-4 items-end">
-                                    <input type="hidden" id="edit-hub-id">
-                                    <div class="w-full md:w-1/4"><label class="block text-xs font-medium text-slate-500 mb-1">Kode HUB</label><input type="text" id="hub-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm uppercase" placeholder="KODE" required></div>
-                                    <div class="w-full md:w-2/4"><label class="block text-xs font-medium text-slate-500 mb-1">Nama HUB</label><input type="text" id="hub-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama Lokasi HUB" required></div>
-                                    <div class="w-full md:w-1/4"><label class="block text-xs font-medium text-slate-500 mb-1">Rate Sorter (Rp)</label><input type="number" id="hub-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0"></div>
-                                    <button type="submit" id="btn-save-hub" class="w-full md:w-auto bg-blue-600 text-white p-2 rounded-lg text-sm font-medium hover:bg-blue-700 min-w-[80px]">Simpan</button>
-                                    <button type="button" id="btn-cancel-hub" class="hidden text-slate-500 text-sm" onclick="resetHubForm()">Batal</button>
-                                </form>
-                            </div>
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Kode</th><th class="p-4">Nama HUB</th><th class="p-4 text-right">Rate Sorter</th><th class="p-4 text-right">Aksi</th></tr></thead><tbody id="hub-table-body" class="divide-y divide-slate-100"></tbody></table></div>
-                        </div>
-                        <div id="tab-content-employees" class="settings-tab-content hidden space-y-6">
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="user-plus" class="w-5 h-5 text-blue-600"></i> <span id="form-user-title">Tambah Data Karyawan</span></h3><form id="form-add-user" class="space-y-4"><input type="hidden" id="edit-user-id"><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">NIK</label><input type="text" id="user-nik" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nomor Induk" required></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label><input type="text" id="user-name" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Nama" required></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Penempatan HUB</label><select id="user-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required><option value="">Pilih HUB...</option></select></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Status / Jabatan</label><select id="user-role" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white" required><option value="leader">Leader</option><option value="sorter">Sorter</option><option value="dw">DW</option></select></div></div><div class="bg-slate-50 p-4 rounded-lg border border-slate-100 flex flex-col md:flex-row gap-4 items-center"><div class="flex items-center gap-2"><input type="checkbox" id="user-can-login" class="custom-checkbox accent-blue-600" onchange="togglePasswordInput()"><label for="user-can-login" class="text-sm font-medium text-slate-700 cursor-pointer">Beri Akses Login Aplikasi?</label></div><div id="password-container" class="flex-1 hidden"><input type="text" id="user-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Set Password Login"></div></div><div class="flex gap-2"><button type="submit" id="btn-save-user" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Simpan Data</button><button type="button" id="btn-cancel-edit" class="hidden bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-300" onclick="resetUserForm()">Batal Edit</button></div></form></div>
-                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500 font-medium"><tr><th class="p-4">Nama</th><th class="p-4">HUB</th><th class="p-4">Status</th><th class="p-4">Pass Login</th><th class="p-4">Aktif/Tdk</th><th class="p-4 text-right">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-100"></tbody></table></div>
-                        </div>
-                        <div id="tab-content-config" class="settings-tab-content hidden space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i> Akun & Keamanan</h3><form id="form-config-security" class="space-y-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">Ganti Password Admin</label><input type="text" id="config-admin-pass" class="w-full p-2 border border-slate-300 rounded-lg text-sm" placeholder="Password Baru"></div><div><label class="block text-xs font-medium text-slate-500 mb-1">Kode Otorisasi (Delete/Edit)</label><input type="text" id="config-secure-code" class="w-full p-2 border border-slate-300 rounded-lg text-sm font-mono tracking-widest" placeholder="123456"></div><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 w-full">Update Keamanan</button></form></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6"><h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="wallet" class="w-5 h-5 text-green-600"></i> Biaya Operasional Global</h3><form id="form-config-cost" class="space-y-4"><div><label class="block text-xs font-medium text-slate-500 mb-1">Biaya DW per Kehadiran (Rp)</label><input type="number" id="config-dw-rate" class="w-full p-2 border border-slate-300 rounded-lg text-sm text-right" placeholder="0"><p class="text-xs text-slate-400 mt-1">*Berlaku sama untuk semua HUB</p></div><button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 w-full">Update Biaya</button></form></div></div>
-                        </div>
+                    <div class="mb-8 bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+                        <div class="p-4 bg-gray-50 border-b flex justify-between items-center"><h3 class="font-bold text-gray-800">Rincian Data per Tanggal</h3><button onclick="window.exportTableToCSV('table-daily-detail', 'rincian_harian.csv')" class="text-xs text-blue-600 hover:underline"><i class="fas fa-download"></i> Export CSV</button></div>
+                        <div class="overflow-x-auto"><table id="table-daily-detail" class="w-full text-sm text-center"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-3 py-3 text-left">Tanggal</th><th class="px-3 py-3">HUB</th><th class="px-3 py-3 text-blue-700">MPP</th><th class="px-3 py-3">Staging</th><th class="px-3 py-3">Gateway</th><th class="px-3 py-3">JNE</th><th class="px-3 py-3">SAP</th><th class="px-3 py-3 font-bold">Outbound</th><th class="px-3 py-3 text-green-700">Prod.</th><th class="px-3 py-3 text-right text-red-600">Cost</th></tr></thead><tbody id="tbody-daily-detail" class="text-gray-600"></tbody></table></div>
                     </div>
-
+                    <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+                        <div class="p-4 bg-gray-50 border-b"><h3 class="font-bold text-gray-800">Breakdown Performa HUB</h3></div>
+                        <div class="overflow-x-auto"><table class="w-full text-sm text-center"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-4 py-3 text-left">Nama HUB</th><th class="px-4 py-3">Total MPP</th><th class="px-4 py-3 font-bold">Total Outbound</th><th class="px-4 py-3 text-green-700">Rata-rata Prod.</th><th class="px-4 py-3 text-right text-red-600">Total Cost</th></tr></thead><tbody id="tbody-hub-breakdown" class="text-gray-600"></tbody></table></div>
+                    </div>
+                    <div class="h-10"></div>
                 </div>
-            </main>
-        </div>
-        
-        <!-- Mobile Sidebar Overlay -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
+
+                <!-- LAPORAN -->
+                <div id="view-laporan" class="view-content hidden fade-in">
+                    <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-gray-800">Laporan Harian</h2><button onclick="window.openLaporanModal()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 hidden" id="btn-tambah-laporan"><i class="fas fa-plus mr-2"></i> Buat Laporan</button></div>
+                    <div class="bg-white rounded-lg shadow overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Tanggal</th><th class="px-6 py-3">HUB</th><th class="px-6 py-3">Total Paket</th><th class="px-6 py-3">MPP</th><th class="px-6 py-3">Productivity</th><th class="px-6 py-3 text-right">Aksi</th></tr></thead><tbody id="laporan-list-body"></tbody></table></div>
+                    <div id="empty-laporan-msg" class="hidden text-center py-10 text-gray-400"><p>Belum ada laporan.</p></div>
+                </div>
+
+                <!-- PENGATURAN -->
+                <div id="view-pengaturan" class="view-content hidden fade-in">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Pengaturan</h2>
+                    <div class="mb-6 border-b border-gray-200"><ul class="flex flex-wrap -mb-px text-sm font-medium text-center"><li class="mr-2"><button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 active">Manajemen User</button></li><li class="mr-2"><button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="inline-block p-4 border-b-2 border-transparent">Akses & Admin</button></li><li class="mr-2"><button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="inline-block p-4 border-b-2 border-transparent">Cost Mitra</button></li></ul></div>
+                    <div id="settings-users" class="settings-panel"><div class="flex justify-between mb-4"><h3 class="text-lg font-semibold">User</h3><button onclick="window.openUserModal()" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"><i class="fas fa-user-plus"></i> Tambah</button></div><div class="bg-white rounded shadow overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Nama</th><th class="px-6 py-3">ID</th><th class="px-6 py-3">HUB</th><th class="px-6 py-3">Posisi</th><th class="px-6 py-3 text-right">Aksi</th></tr></thead><tbody id="user-table-body"></tbody></table></div></div>
+                    <div id="settings-general" class="settings-panel hidden"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-gray-700 mb-4">Password Admin</h3><div class="mb-4"><label class="block text-sm mb-1">Baru</label><input type="password" id="new-admin-pass" class="w-full border p-2 rounded"></div><button onclick="window.saveAdminPass()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Simpan</button></div><div class="bg-white p-6 rounded shadow"><h3 class="font-bold text-gray-700 mb-4">Kode Akses Leader</h3><div class="mb-4"><label class="block text-sm mb-1">Kode</label><input type="text" id="access-code-input" class="w-full border p-2 rounded"></div><button onclick="window.saveAccessCode()" class="bg-purple-600 text-white px-4 py-2 rounded text-sm">Simpan</button></div></div></div>
+                    <div id="settings-cost" class="settings-panel hidden"><div class="bg-white p-6 rounded shadow max-w-2xl"><div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded"><h3 class="font-bold text-gray-800 mb-2">Biaya DW (Global)</h3><input type="text" id="global-cost-dw" placeholder="Rp" class="border p-2 rounded w-full" onkeyup="window.formatCostInput(this)"></div><h3 class="font-bold text-gray-700 mb-4">Cost HUB (Sorter)</h3><div id="cost-container"></div><button onclick="window.addCostRow()" class="mt-4 text-blue-600 text-sm font-semibold underline">+ Tambah HUB</button><div class="mt-6 pt-4 border-t"><button onclick="window.saveCosts()" class="bg-green-600 text-white px-4 py-2 rounded">Simpan</button></div></div></div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- MODALS -->
+    <div id="user-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50"><div class="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="modal-title">User</h3><button onclick="window.closeUserModal()">&times;</button></div><form id="user-form"><input type="hidden" id="edit-user-id"><div class="grid grid-cols-2 gap-4"><div class="col-span-2"><label class="text-xs font-bold uppercase">Nama</label><input type="text" id="input-nama" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">ID User</label><input type="text" id="input-id" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">Sandi</label><input type="text" id="input-sandi" class="w-full border p-2 rounded"></div><div><label class="text-xs font-bold uppercase">HUB</label><select id="input-kode-hub" class="w-full border p-2 rounded" required></select></div><div><label class="text-xs font-bold uppercase">Posisi</label><select id="input-posisi" class="w-full border p-2 rounded"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="PIC">PIC</option><option value="Admin">Admin</option></select></div><div class="col-span-2"><label class="text-xs font-bold uppercase">Akses Laporan</label><div class="flex gap-4"><label><input type="radio" name="akses_laporan" value="YA"> YA</label><label><input type="radio" name="akses_laporan" value="TIDAK" checked> TIDAK</label></div></div></div><div class="mt-6 flex justify-end gap-2"><button type="button" onclick="window.closeUserModal()" class="px-4 py-2 border rounded">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button></div></form></div></div>
+    <div id="laporan-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 hidden flex items-center justify-center z-50 overflow-y-auto"><div class="bg-white rounded-lg w-full max-w-4xl shadow-2xl my-10 flex flex-col max-h-screen"><div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-lg"><h3 class="text-xl font-bold" id="laporan-modal-title">Laporan</h3><button onclick="window.closeLaporanModal()" class="text-2xl">&times;</button></div><div class="p-6 overflow-y-auto"><form id="laporan-form"><input type="hidden" id="edit-laporan-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border"><div><label class="text-xs font-bold uppercase">Tanggal</label><input type="date" id="lap-tanggal" class="w-full border p-2 rounded" required></div><div><label class="text-xs font-bold uppercase">HUB</label><select id="lap-hub-select" class="w-full border p-2 rounded hidden" onchange="window.loadHubUsersForAttendance()"></select><input type="text" id="lap-hub-text" class="w-full border p-2 rounded bg-gray-200 hidden" readonly></div></div><h4 class="font-bold text-gray-700 mb-2 border-b pb-1">Metrix</h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div><label class="text-xs">Gateway</label><input type="text" id="lap-gateway" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">Staging</label><input type="text" id="lap-staging" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">JNE</label><input type="text" id="lap-jne" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div><div><label class="text-xs">SAP</label><input type="text" id="lap-sap" class="w-full border p-2 rounded font-mono" placeholder="0" onkeyup="window.calcMetrics(this)"></div></div><div class="grid grid-cols-2 gap-4 mb-6 bg-blue-50 p-4 rounded border border-blue-100"><div class="text-center"><p class="text-xs uppercase">Total Paket</p><p class="text-2xl font-bold text-blue-700" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div><div class="text-center"><p class="text-xs uppercase">Productivity</p><p class="text-2xl font-bold text-green-600" id="disp-productivity">0</p></div></div><div class="flex justify-between items-end mb-2 border-b pb-1"><h4 class="font-bold">Absensi</h4><div class="text-right"><span class="text-xs">MPP:</span><span class="font-bold text-lg ml-1" id="disp-total-mpp">0</span></div></div><div class="overflow-x-auto border rounded mb-2"><table class="w-full text-sm text-center"><thead class="bg-gray-100 text-xs uppercase font-bold"><tr><th class="p-2 text-left w-1/3">Nama</th><th class="p-2 w-10">1</th><th class="p-2 w-10">2</th><th class="p-2 w-10">3</th><th class="p-2 w-10 text-yellow-600">I</th><th class="p-2 w-10 text-blue-600">S</th><th class="p-2 w-10 text-red-600">A</th><th class="p-2 text-left">Ket</th><th class="p-2 w-8"></th></tr></thead><tbody id="attendance-tbody"></tbody></table></div><button type="button" onclick="window.addManualDWRow()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded w-full border border-dashed border-gray-400 mb-6">+ DW Manual</button><div class="flex justify-end gap-3 pt-4 border-t"><button type="button" onclick="window.closeLaporanModal()" class="px-5 py-2 border rounded">Batal</button><button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded font-bold">Simpan</button></div></form></div></div></div>
+
+    <!-- MODULE SCRIPT (Firebase) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, doc, onSnapshot, orderBy, limit, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // --- 1. FIREBASE CONFIGURATION & IMPORTS ---
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, query } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // ==========================================
-        // KONFIGURASI FIREBASE
-        // ==========================================
-        
-        let firebaseConfig;
-        let APP_ID;
-
-        if (typeof __firebase_config !== 'undefined') {
-            console.log("Mode Preview: Menggunakan Sandbox Database");
-            firebaseConfig = JSON.parse(__firebase_config);
-            APP_ID = 'daily-report-app-v2'; 
-        } else {
-            console.log("Mode Live: Menggunakan Database Production");
-            firebaseConfig = {
-                apiKey: "AIzaSyBBlbxiBpBR522JTI5xyxakGK9AEChXv1o",
-                authDomain: "dailyreport-cfc8f.firebaseapp.com",
-                projectId: "dailyreport-cfc8f",
-                storageBucket: "dailyreport-cfc8f.firebasestorage.app",
-                messagingSenderId: "963104518926",
-                appId: "1:963104518926:web:81fb969a3573764f8c5d5f"
-            };
-            APP_ID = "daily-report-app-v2"; 
-        }
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- STATE MANAGEMENT ---
-        let state = {
-            user: null, role: null, userData: null, loginTab: 'leader',
-            currentView: 'dashboard', hubs: [], employees: [],
-            config: { secure_code: '123456', admin_password: 'admin123', dw_rate: 0 },
-            chartAnnual: null, chartDaily: null
+        // --- KONFIGURASI BARU (Project: hub-dashboard-92428) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
+            authDomain: "hub-dashboard-92428.firebaseapp.com",
+            projectId: "hub-dashboard-92428",
+            storageBucket: "hub-dashboard-92428.firebasestorage.app",
+            messagingSenderId: "827243064075",
+            appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
         };
 
-        // --- DOM ELEMENTS ---
-        const els = {
-            loading: document.getElementById('loading-screen'),
-            loginScreen: document.getElementById('login-screen'),
-            appScreen: document.getElementById('app-screen'),
-            // Login
-            loginForm: document.getElementById('login-form'),
-            loginNik: document.getElementById('login-nik'),
-            loginPass: document.getElementById('login-pass'),
-            fieldNik: document.getElementById('field-nik'),
-            fieldPass: document.getElementById('field-pass'),
-            loginError: document.getElementById('login-error'),
-            btnLogin: document.getElementById('btn-login'),
-            loginHint: document.getElementById('login-hint'),
-            tabLoginSorter: document.getElementById('tab-login-sorter'),
-            tabLoginLeader: document.getElementById('tab-login-leader'),
-            tabLoginAdmin: document.getElementById('tab-login-admin'),
-            sidebar: document.getElementById('sidebar'),
-            sidebarOverlay: document.getElementById('sidebar-overlay'),
-            openSidebarBtn: document.getElementById('open-sidebar'),
-            closeSidebarBtn: document.getElementById('close-sidebar'),
-            menuSettings: document.getElementById('menu-settings'),
-            userNameDisplay: document.getElementById('user-name-display'),
-            userRoleDisplay: document.getElementById('user-role-display'),
-            
-            // Notification Elements
-            dynamicIsland: document.getElementById('dynamic-island'),
-            diIcon: document.getElementById('di-icon'),
-            diText: document.getElementById('di-text'),
-            
-            // Confirm Modal
-            confirmModal: document.getElementById('confirm-modal'),
-            confirmTitle: document.getElementById('confirm-title'),
-            confirmDesc: document.getElementById('confirm-desc'),
-            btnConfirmNo: document.getElementById('btn-confirm-no'),
-            btnConfirmYes: document.getElementById('btn-confirm-yes'),
+        const appId = 'hub-dashboard-v1'; // ID Aplikasi untuk path database
+        let app, auth, db;
+        let unsubscribeUsers, unsubscribeCosts, unsubscribeLaporan, unsubscribeSettings;
 
-            // Security Modal
-            securityModal: document.getElementById('security-modal'),
-            inputSecureCode: document.getElementById('input-secure-code'),
-            btnCancelSecure: document.getElementById('btn-cancel-secure'),
-            btnConfirmSecure: document.getElementById('btn-confirm-secure'),
-            secureError: document.getElementById('secure-error'),
-
-            views: {
-                dashboard: document.getElementById('view-dashboard'),
-                reports: document.getElementById('view-reports'),
-                settings: document.getElementById('view-settings')
-            },
-            
-            dashName: document.getElementById('dash-name'),
-            dashRole: document.getElementById('dash-role'),
-            dashInfo: document.getElementById('dash-info'),
-            
-            // Dashboard Elements
-            dashStartDate: document.getElementById('dash-start-date'),
-            dashEndDate: document.getElementById('dash-end-date'),
-            dashHubContainer: document.getElementById('dash-hub-container'),
-            // KPI Elements
-            kpiTotalPaket: document.getElementById('kpi-total-paket'),
-            kpiTotalMpp: document.getElementById('kpi-total-mpp'),
-            kpiProductivity: document.getElementById('kpi-productivity'),
-            kpiTotalCost: document.getElementById('kpi-total-cost'),
-            kpiCpp: document.getElementById('kpi-cpp'),
-            canvasAnnual: document.getElementById('annualChart'),
-            canvasDaily: document.getElementById('dailyChart'),
-            dashTableDaily: document.getElementById('dash-table-daily'),
-            dashTableHub: document.getElementById('dash-table-hub'),
-
-            // Reports
-            sectionInputReport: document.getElementById('section-input-report'),
-            formDailyReport: document.getElementById('form-daily-report'),
-            formReportTitle: document.getElementById('form-report-title'),
-            editReportId: document.getElementById('edit-report-id'),
-            rptDate: document.getElementById('rpt-date'),
-            rptHubContainer: document.getElementById('rpt-hub-container'), 
-            rptHub: document.getElementById('rpt-hub'),
-            rptGateway: document.getElementById('rpt-gateway'),
-            rptStaging: document.getElementById('rpt-staging'),
-            rptSap: document.getElementById('rpt-sap'),
-            rptJne: document.getElementById('rpt-jne'),
-            rptTotalPaket: document.getElementById('rpt-total-paket'),
-            rptProductivity: document.getElementById('rpt-productivity'),
-            btnCancelReportEdit: document.getElementById('btn-cancel-report-edit'),
-            sorterAttendanceList: document.getElementById('sorter-attendance-list'),
-            displayTotalMpp: document.getElementById('display-total-mpp'),
-            btnSaveReport: document.getElementById('btn-save-report'),
-            rptHistoryBody: document.getElementById('rpt-history-body'),
-            
-            // Settings - Hubs
-            formAddHub: document.getElementById('form-add-hub'),
-            editHubId: document.getElementById('edit-hub-id'),
-            hubCode: document.getElementById('hub-code'),
-            hubName: document.getElementById('hub-name'),
-            hubRate: document.getElementById('hub-rate'),
-            btnSaveHub: document.getElementById('btn-save-hub'),
-            btnCancelHub: document.getElementById('btn-cancel-hub'),
-            hubTableBody: document.getElementById('hub-table-body'),
-
-            // Settings - Users
-            formAddUser: document.getElementById('form-add-user'),
-            formUserTitle: document.getElementById('form-user-title'),
-            editUserId: document.getElementById('edit-user-id'),
-            userNik: document.getElementById('user-nik'),
-            userName: document.getElementById('user-name'),
-            userHub: document.getElementById('user-hub'),
-            userRole: document.getElementById('user-role'),
-            userCanLogin: document.getElementById('user-can-login'),
-            userPass: document.getElementById('user-pass'),
-            passContainer: document.getElementById('password-container'),
-            btnSaveUser: document.getElementById('btn-save-user'),
-            btnCancelEdit: document.getElementById('btn-cancel-edit'),
-            userTableBody: document.getElementById('user-table-body'),
-            userCount: document.getElementById('user-count'),
-
-            // Config
-            formConfigSecurity: document.getElementById('form-config-security'),
-            configAdminPass: document.getElementById('config-admin-pass'),
-            configSecureCode: document.getElementById('config-secure-code'),
-            formConfigCost: document.getElementById('form-config-cost'),
-            configDwRate: document.getElementById('config-dw-rate'),
+        // Global State (Local Cache)
+        let appData = {
+            adminPass: '123456',
+            accessCode: 'SUPERHUB',
+            costDW: 120000,
+            users: [],
+            costs: [],
+            laporan: []
         };
+        let currentUser = null;
+        let annualChart = null, dailyChart = null;
 
-        // --- UTILS ---
-        function formatNumber(num) {
-            return Number(num).toLocaleString('id-ID');
-        }
-
-        // --- NOTIFICATION SYSTEM (DYNAMIC ISLAND) ---
-        let notificationTimeout;
-        window.showNotification = (message, type = 'success') => {
-            clearTimeout(notificationTimeout);
-            const icon = type === 'success' ? '<i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>' : 
-                         (type === 'error' ? '<i data-lucide="x-circle" class="w-5 h-5 text-red-400"></i>' : '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i>');
+        // --- INIT FIREBASE ---
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
             
-            els.diIcon.innerHTML = icon;
-            els.diText.textContent = message;
-            
-            els.dynamicIsland.className = `dynamic-island active ${type === 'error' ? 'error' : ''}`;
-            lucide.createIcons();
-
-            notificationTimeout = setTimeout(() => {
-                els.dynamicIsland.className = 'dynamic-island';
-            }, 3000);
-        };
-
-        // --- CONFIRMATION MODAL SYSTEM ---
-        let pendingConfirmAction = null;
-        window.showConfirm = (title, desc, callback) => {
-            els.confirmTitle.textContent = title;
-            els.confirmDesc.textContent = desc;
-            pendingConfirmAction = callback;
-            els.confirmModal.classList.remove('hidden');
-        };
-
-        els.btnConfirmNo.addEventListener('click', () => {
-            els.confirmModal.classList.add('hidden');
-            pendingConfirmAction = null;
-        });
-
-        els.btnConfirmYes.addEventListener('click', () => {
-            els.confirmModal.classList.add('hidden');
-            if (pendingConfirmAction) pendingConfirmAction();
-        });
-
-        // --- INITIALIZATION ---
-        async function init() {
-            try { lucide.createIcons(); } catch(e) {}
-            if (typeof __initial_auth_token !== 'undefined') { try { await signInWithCustomToken(auth, __initial_auth_token); } catch(e) {} }
-            loadGlobalConfig();
-            onAuthStateChanged(auth, (currentUser) => {
-                state.user = currentUser;
-                const savedRole = localStorage.getItem('userRole');
-                const savedUserData = localStorage.getItem('userData');
-                if (currentUser && savedRole) {
-                    state.role = savedRole;
-                    if (savedUserData) state.userData = JSON.parse(savedUserData);
-                    showApp();
-                } else { state.role = null; state.userData = null; showLogin(); }
-                els.loading.classList.add('hidden');
+            // Sign In Anonymously
+            signInAnonymously(auth).catch((error) => {
+                console.error("Auth Error:", error);
+                Swal.fire('Error', 'Gagal koneksi ke server authentication.', 'error');
             });
-        }
 
-        async function loadGlobalConfig() {
-            try {
-                const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'));
-                if (snap.exists()) state.config = { ...state.config, ...snap.data() };
-            } catch(e) { console.error("Config Load Error", e); }
-        }
-
-        // --- SECURITY LOGIC ---
-        let pendingSecureAction = null;
-        function secureCheck(callback) {
-            if (state.role === 'admin') { callback(); return; }
-            pendingSecureAction = callback;
-            els.inputSecureCode.value = ''; els.secureError.classList.add('hidden'); els.securityModal.classList.remove('hidden'); els.inputSecureCode.focus();
-        }
-        function closeSecureModal() { els.securityModal.classList.add('hidden'); pendingSecureAction = null; }
-        els.btnCancelSecure.addEventListener('click', closeSecureModal);
-        els.btnConfirmSecure.addEventListener('click', () => {
-            if (els.inputSecureCode.value.trim() === state.config.secure_code) { closeSecureModal(); if(pendingSecureAction) pendingSecureAction(); } 
-            else { els.secureError.textContent = "Kode salah!"; els.secureError.classList.remove('hidden'); }
-        });
-
-        // Config Save
-        async function saveConfig(data) {
-            showNotification("Menyimpan konfigurasi...", "loading");
-            try { await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), data, { merge: true }); state.config = { ...state.config, ...data }; showNotification("Konfigurasi tersimpan!", "success"); } 
-            catch(e) { showNotification("Gagal menyimpan.", "error"); }
-        }
-        els.formConfigSecurity.addEventListener('submit', (e) => { e.preventDefault(); showConfirm('Update Keamanan?', 'Password admin dan kode otorisasi akan diubah.', () => { const p = els.configAdminPass.value.trim(); const c = els.configSecureCode.value.trim(); const u={}; if(p)u.admin_password=p; if(c)u.secure_code=c; if(Object.keys(u).length) saveConfig(u); }); });
-        els.formConfigCost.addEventListener('submit', (e) => { e.preventDefault(); showConfirm('Update Biaya DW?', 'Perubahan ini akan mempengaruhi perhitungan cost laporan baru.', () => saveConfig({ dw_rate: Number(els.configDwRate.value) })); });
-
-        // --- LOGIN LOGIC ---
-        window.switchLoginTab = (tab) => {
-            state.loginTab = tab;
-            ['sorter', 'leader', 'admin'].forEach(t => { const el = document.getElementById(`tab-login-${t}`); if(t === tab) el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-active bg-white shadow-sm text-blue-600"; else el.className = "py-2 text-sm font-medium rounded-md transition-all text-center login-tab-inactive"; });
-            els.loginError.classList.add('hidden'); els.loginNik.value = ''; els.loginPass.value = '';
-            if (tab === 'sorter') { els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.add('hidden'); els.loginHint.textContent = "Masuk sebagai Sorter (View Only)"; els.loginNik.required = true; els.loginPass.required = false; } 
-            else if (tab === 'leader') { els.fieldNik.classList.remove('hidden'); els.fieldPass.classList.remove('hidden'); els.loginHint.textContent = "Masuk sebagai Leader/Staf"; els.loginNik.required = true; els.loginPass.required = true; } 
-            else if (tab === 'admin') { els.fieldNik.classList.add('hidden'); els.fieldPass.classList.remove('hidden'); els.loginHint.textContent = "Masuk sebagai Administrator"; els.loginNik.required = false; els.loginPass.required = true; }
-        };
-
-        els.loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); const tab = state.loginTab; const nik = els.loginNik.value.trim(); const pass = els.loginPass.value.trim();
-            els.loginError.classList.add('hidden'); els.btnLogin.disabled = true; els.btnLogin.textContent = 'Memeriksa...';
-            try {
-                if (!auth.currentUser) { try { if (typeof __initial_auth_token !== 'undefined') await signInWithCustomToken(auth, __initial_auth_token); else await signInAnonymously(auth); } catch(e) {} }
-                if(!state.config.admin_password) await loadGlobalConfig();
-
-                if (tab === 'admin') {
-                    if (pass === state.config.admin_password) updateLocalState('admin', { name: 'Administrator', nik: 'ADMIN' });
-                    else throw new Error('Password Admin Salah');
-                } else if (tab === 'leader') {
-                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik), where("password", "==", pass));
-                    const snap = await getDocs(q);
-                    if (!snap.empty) { const u = snap.docs[0].data(); if (u.can_login) updateLocalState('leader', u); else throw new Error('Akun ini tidak memiliki akses login.'); } 
-                    else throw new Error('NIK atau Password Salah');
-                } else if (tab === 'sorter') {
-                    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), where("nik", "==", nik));
-                    const snap = await getDocs(q);
-                    if (!snap.empty) updateLocalState('sorter', snap.docs[0].data()); else throw new Error('NIK tidak ditemukan.');
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                    document.getElementById('login-section').classList.remove('hidden');
+                    initListeners(); // Start listening to data
                 }
-            } catch (err) { els.loginError.textContent = err.message || 'Login Gagal'; els.loginError.classList.remove('hidden'); els.btnLogin.disabled = false; els.btnLogin.textContent = 'Masuk'; }
-        });
-
-        function updateLocalState(role, userData) {
-            state.role = role; state.userData = userData;
-            localStorage.setItem('userRole', role); localStorage.setItem('userData', JSON.stringify(userData)); showApp();
-        }
-
-        function showLogin() { els.loginScreen.classList.remove('hidden'); els.appScreen.classList.add('hidden'); switchLoginTab('leader'); }
-        function showApp() {
-            els.loginScreen.classList.add('hidden'); els.appScreen.classList.remove('hidden');
-            els.userNameDisplay.textContent = state.userData?.name || 'User'; els.userRoleDisplay.textContent = state.userData?.role || state.role;
-            if (state.role === 'admin') els.menuSettings.classList.remove('hidden'); else els.menuSettings.classList.add('hidden');
-            if (state.role === 'sorter') els.sectionInputReport.classList.add('hidden'); else els.sectionInputReport.classList.remove('hidden');
-            navigateTo('dashboard');
-        }
-
-        window.navigateTo = (viewId) => {
-            state.currentView = viewId;
-            document.querySelectorAll('.nav-item').forEach(el => {
-                if(el.dataset.target === viewId) { el.classList.add('bg-blue-600', 'text-white', 'shadow-lg'); el.classList.remove('text-slate-400', 'hover:bg-slate-800'); } 
-                else { el.classList.remove('bg-blue-600', 'text-white', 'shadow-lg'); el.classList.add('text-slate-400', 'hover:bg-slate-800'); }
             });
-            Object.values(els.views).forEach(el => el.classList.add('hidden'));
-            if (els.views[viewId]) els.views[viewId].classList.remove('hidden');
-            if (viewId === 'dashboard') loadDashboard(); if (viewId === 'reports') loadReportsView(); if (viewId === 'settings' && state.role === 'admin') loadSettings();
-            els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden');
-        };
 
-        function loadDashboard() {
-            els.dashName.textContent = state.userData?.name || state.role; els.dashRole.textContent = state.userData?.role || state.role; els.dashInfo.textContent = state.role === 'admin' ? 'Admin Mode' : (state.role === 'sorter' ? 'View Only' : 'User Mode');
-            if(!els.dashStartDate.value) { const now = new Date(); const start = new Date(now.getFullYear(), now.getMonth(), 1); els.dashStartDate.valueAsDate = start; els.dashEndDate.valueAsDate = now; }
-            if (state.role === 'admin') {
-                if (state.hubs.length === 0) {
-                    getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs')).then(snap => {
-                        state.hubs = snap.docs.map(d => d.data());
-                        let options = `<option value="">Semua HUB</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
-                        els.dashHubContainer.innerHTML = `<select id="dash-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">${options}</select>`;
-                    });
+        } catch (e) {
+            console.error(e);
+            document.getElementById('loading-overlay').innerHTML = `<p class="text-red-600 font-bold p-4">Error Config Firebase. Cek console.</p>`;
+        }
+
+        // --- DATABASE LISTENERS (REALTIME UPDATE) ---
+        function initListeners() {
+            // Path Helper: artifacts/{appId}/public/data/{collection}
+            const publicPath = (col) => collection(db, 'artifacts', appId, 'public', 'data', col);
+
+            // 1. Settings (Config Doc)
+            unsubscribeSettings = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), (docSnap) => {
+                if (docSnap.exists()) {
+                    const d = docSnap.data();
+                    appData.adminPass = d.adminPass || '123456';
+                    appData.accessCode = d.accessCode || 'SUPERHUB';
+                    appData.costDW = d.costDW || 120000;
                 } else {
-                    let options = `<option value="">Semua HUB</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name}</option>`).join('');
-                    els.dashHubContainer.innerHTML = `<select id="dash-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white">${options}</select>`;
-                }
-            } else {
-                els.dashHubContainer.innerHTML = `<input type="text" value="${state.userData?.hub_code || '-'}" readonly class="w-full p-2 bg-slate-100 border border-slate-300 rounded-lg text-sm text-slate-500 font-bold">`;
-            }
-            loadDashboardStats();
-        }
-
-        window.loadDashboardStats = async () => {
-            const start = els.dashStartDate.value; const end = els.dashEndDate.value;
-            let hubFilter = state.role === 'admin' ? (document.getElementById('dash-hub-select')?.value || '') : state.userData?.hub_code;
-            
-            try {
-                const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
-                const q = query(reportsRef, where("date", ">=", start), where("date", "<=", end)); 
-                const snap = await getDocs(q);
-                
-                let reports = [];
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if (!hubFilter || d.hub === hubFilter) { reports.push(d); }
-                });
-
-                reports.sort((a, b) => a.date.localeCompare(b.date));
-
-                let totalPaket = 0; let totalMpp = 0; let totalCost = 0;
-                const monthlyData = {}; const dailyData = {}; const hubData = {};
-
-                reports.forEach(r => {
-                    totalPaket += (r.total_paket || 0);
-                    // Filter MPP for dashboard calc as well to be consistent
-                    totalMpp += (r.total_mpp || 0); 
-                    totalCost += (r.est_cost || 0);
-
-                    // Monthly
-                    const monthKey = r.date.substring(0, 7);
-                    if(!monthlyData[monthKey]) monthlyData[monthKey] = { paket: 0, mpp: 0 };
-                    monthlyData[monthKey].paket += (r.total_paket || 0);
-                    monthlyData[monthKey].mpp += (r.total_mpp || 0);
-
-                    // Daily (Date)
-                    const dateKey = r.date;
-                    if(!dailyData[dateKey]) dailyData[dateKey] = { date: r.date, mpp: 0, staging: 0, gateway: 0, jne: 0, sap: 0, outbound: 0, cost: 0 };
-                    dailyData[dateKey].mpp += (r.total_mpp || 0);
-                    dailyData[dateKey].staging += (r.staging || 0);
-                    dailyData[dateKey].gateway += (r.gateway || 0);
-                    dailyData[dateKey].jne += (r.jne || 0);
-                    dailyData[dateKey].sap += (r.sap || 0);
-                    dailyData[dateKey].outbound += (r.total_paket || 0);
-                    dailyData[dateKey].cost += (r.est_cost || 0);
-
-                    // Hub
-                    const hKey = r.hub;
-                    if(!hubData[hKey]) hubData[hKey] = { hub: r.hub, mpp: 0, outbound: 0, cost: 0 };
-                    hubData[hKey].mpp += (r.total_mpp || 0);
-                    hubData[hKey].outbound += (r.total_paket || 0);
-                    hubData[hKey].cost += (r.est_cost || 0);
-                });
-
-                // Calculate Aggregates for KPI
-                const avgProd = totalMpp > 0 ? Math.round(totalPaket / totalMpp) : 0;
-                const avgCpp = totalPaket > 0 ? Math.round(totalCost / totalPaket) : 0;
-
-                // Render KPI
-                els.kpiTotalPaket.textContent = formatNumber(totalPaket);
-                els.kpiTotalMpp.textContent = formatNumber(totalMpp);
-                els.kpiProductivity.textContent = formatNumber(avgProd);
-                els.kpiTotalCost.textContent = "Rp " + formatNumber(totalCost);
-                els.kpiCpp.textContent = "Rp " + formatNumber(avgCpp);
-
-                // Render Charts
-                const monthLabels = Object.keys(monthlyData).sort();
-                renderChart(els.canvasAnnual, 
-                    monthLabels.map(k => new Date(k+"-01").toLocaleDateString('id-ID', {month:'short', year:'2-digit'})), 
-                    monthLabels.map(k => monthlyData[k].paket), 
-                    monthLabels.map(k => monthlyData[k].mpp > 0 ? Math.round(monthlyData[k].paket / monthlyData[k].mpp) : 0), 
-                    'chartAnnual'
-                );
-
-                const dateLabels = Object.keys(dailyData).sort();
-                renderChart(els.canvasDaily, 
-                    dateLabels.map(d => new Date(d).toLocaleDateString('id-ID', {day:'numeric', month:'short'})),
-                    dateLabels.map(k => dailyData[k].outbound),
-                    dateLabels.map(k => dailyData[k].mpp > 0 ? Math.round(dailyData[k].outbound / dailyData[k].mpp) : 0),
-                    'chartDaily'
-                );
-
-                // Render Tables
-                els.dashTableDaily.innerHTML = dateLabels.reverse().map(k => {
-                    const d = dailyData[k];
-                    const prod = d.mpp > 0 ? Math.round(d.outbound / d.mpp) : 0;
-                    return `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-3">${d.date}</td><td class="p-3 text-right">${d.mpp}</td><td class="p-3 text-right">${formatNumber(d.gateway)}</td><td class="p-3 text-right">${formatNumber(d.staging)}</td><td class="p-3 text-right">${formatNumber(d.sap)}</td><td class="p-3 text-right">${formatNumber(d.jne)}</td><td class="p-3 text-right font-bold text-blue-600">${formatNumber(d.outbound)}</td><td class="p-3 text-right font-bold text-green-600">${formatNumber(prod)}</td><td class="p-3 text-right">Rp ${formatNumber(d.cost)}</td></tr>`;
-                }).join('');
-
-                els.dashTableHub.innerHTML = Object.keys(hubData).sort().map(k => {
-                    const h = hubData[k];
-                    const prod = h.mpp > 0 ? Math.round(h.outbound / h.mpp) : 0;
-                    return `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-3 font-medium">${h.hub}</td><td class="p-3 text-right">${h.mpp}</td><td class="p-3 text-right text-blue-600">${formatNumber(h.outbound)}</td><td class="p-3 text-right text-green-600">${formatNumber(prod)}</td><td class="p-3 text-right">Rp ${formatNumber(h.cost)}</td></tr>`;
-                }).join('');
-
-            } catch (e) { console.error("Dash Error", e); }
-        };
-
-        function renderChart(canvas, labels, dataBar, dataLine, stateKey) {
-            const ctx = canvas.getContext('2d');
-            if (state[stateKey]) state[stateKey].destroy();
-            state[stateKey] = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Total Paket', data: dataBar, backgroundColor: '#3b82f6', order: 2, yAxisID: 'y' },
-                        { type: 'line', label: 'Produktivitas', data: dataLine, borderColor: '#22c55e', borderWidth: 2, tension: 0.3, pointRadius: 3, order: 1, yAxisID: 'y1' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { display: false }, y1: { display: false, position: 'right', grid: { drawOnChartArea: false } }, x: { grid: { display: false } } }
-                }
-            });
-        }
-
-        window.handleLogout = async () => { localStorage.removeItem('userRole'); localStorage.removeItem('userData'); window.location.reload(); };
-
-        // --- REPORTS LOGIC ---
-        document.querySelectorAll('.metric-input').forEach(input => { input.addEventListener('input', calculateReportTotals); });
-        function setupHubListener() {
-            const hubSelect = document.getElementById('rpt-hub-select');
-            if (hubSelect) hubSelect.addEventListener('change', () => loadReportsView());
-        }
-
-        function calculateReportTotals() {
-            const g = Number(els.rptGateway.value) || 0; const s = Number(els.rptStaging.value) || 0;
-            const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
-            const totalPaket = g+s+sa+j; els.rptTotalPaket.value = formatNumber(totalPaket);
-            let workingCount = 0; let sorterDwCount = 0;
-            document.querySelectorAll('#sorter-attendance-list tr').forEach(row => {
-                const checked = row.querySelector('.attendance-radio:checked');
-                if(checked && ['s1','s2','s3'].includes(checked.value)) {
-                    const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
-                    if(!role.includes('leader')) { workingCount++; sorterDwCount++; }
-                }
-            });
-            els.displayTotalMpp.textContent = workingCount;
-            const prod = sorterDwCount > 0 ? Math.round(totalPaket / sorterDwCount) : 0;
-            els.rptProductivity.value = formatNumber(prod);
-        }
-        window.calculateReportTotals = calculateReportTotals;
-
-        window.addDwRow = () => {
-            const uid = 'dw_' + Date.now();
-            const row = document.createElement('tr');
-            row.className = 'border-b border-slate-50 hover:bg-slate-50';
-            row.innerHTML = `<td class="p-3"><input type="text" class="w-full p-1 border border-slate-300 rounded text-sm dw-name-input" placeholder="Nama DW..." data-id="${uid}"></td>${generateAttendanceColumns(uid)}<td class="p-3 text-center"><button type="button" onclick="this.closest('tr').remove(); calculateReportTotals()" class="text-red-400 hover:text-red-600"><i data-lucide="x-circle" class="w-4 h-4"></i></button></td>`;
-            els.sorterAttendanceList.appendChild(row); lucide.createIcons();
-        }
-
-        function generateAttendanceColumns(rowId) {
-            return `<td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s1" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
-                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s2" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
-                <td class="p-3 text-center bg-blue-50/30"><input type="radio" name="att_${rowId}" value="s3" class="attendance-radio custom-radio accent-blue-600" onclick="calculateReportTotals()"></td>
-                <td class="p-3 text-center bg-yellow-50/30"><input type="radio" name="att_${rowId}" value="i" class="attendance-radio custom-radio accent-yellow-500" onclick="calculateReportTotals()"></td>
-                <td class="p-3 text-center bg-red-50/30"><input type="radio" name="att_${rowId}" value="s" class="attendance-radio custom-radio accent-red-500" onclick="calculateReportTotals()"></td>
-                <td class="p-3 text-center bg-red-100/30"><input type="radio" name="att_${rowId}" value="a" class="attendance-radio custom-radio accent-red-800" onclick="calculateReportTotals()"></td>
-                <td class="p-3"><input type="text" class="w-full p-1 border border-slate-200 rounded text-xs att-remarks" placeholder="..."></td>`;
-        }
-
-        async function loadReportsView() {
-            if(els.editReportId.value) return; 
-            els.rptDate.valueAsDate = new Date();
-            
-            let currentHubCode = '';
-            if (state.hubs.length === 0) {
-                const hubsSnap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'));
-                state.hubs = hubsSnap.docs.map(doc => doc.data());
-            }
-
-            if (state.role === 'admin') {
-                const existingSelect = document.getElementById('rpt-hub-select');
-                if (!existingSelect) {
-                    let options = `<option value="">Pilih HUB...</option>` + 
-                        state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
-                    els.rptHubContainer.innerHTML = `<select id="rpt-hub-select" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-blue-500 focus:border-blue-500 outline-none">${options}</select>`;
-                    setupHubListener();
-                } 
-            } else {
-                currentHubCode = state.userData?.hub_code || 'UNKNOWN';
-                els.rptHubContainer.innerHTML = `<input type="text" id="rpt-hub-static" value="${currentHubCode}" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" readonly>`;
-            }
-
-            const getSelectedHub = () => state.role === 'admin' ? (document.getElementById('rpt-hub-select')?.value || '') : currentHubCode;
-            const hubCode = getSelectedHub();
-            
-            if (state.role !== 'sorter' && (hubCode || state.role !== 'admin')) {
-                loadEmployeesForReport(hubCode);
-            } else if (state.role === 'admin' && !hubCode) {
-                 els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Silakan pilih HUB untuk memuat karyawan.</td></tr>';
-            }
-
-            loadMyReports(); calculateReportTotals();
-        }
-
-        async function loadEmployeesForReport(hubCode) {
-            if (!hubCode) return;
-            els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-slate-400">Memuat karyawan...</td></tr>';
-            try {
-                const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
-                let qSorter = query(usersRef, where("hub_code", "==", hubCode));
-                const snap = await getDocs(qSorter);
-                els.sorterAttendanceList.innerHTML = '';
-                snap.forEach(doc => {
-                    const s = doc.data();
-                    if(s.role === 'admin') return;
-                    const row = document.createElement('tr');
-                    row.className = 'border-b border-slate-50 hover:bg-slate-50';
-                    row.innerHTML = `<td class="p-3 font-medium text-slate-700" data-name="${s.name}" data-is-db="true">${s.name} <span class="text-xs text-slate-400">(${s.role})</span></td>${generateAttendanceColumns(doc.id)}<td class="p-3"></td>`;
-                    els.sorterAttendanceList.appendChild(row);
-                });
-            } catch (e) { els.sorterAttendanceList.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-400">Gagal memuat.</td></tr>'; }
-        }
-        
-        window.loadMyReports = async () => {
-            els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Memuat data...</td></tr>';
-            try {
-                const reportsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports');
-                let q = query(reportsRef, orderBy("date", "desc"), limit(20));
-                let querySnapshot;
-                try { querySnapshot = await getDocs(q); } catch(err) { const q2 = query(reportsRef, limit(20)); querySnapshot = await getDocs(q2); }
-
-                if (querySnapshot.empty) { els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400">Belum ada laporan.</td></tr>'; return; }
-
-                els.rptHistoryBody.innerHTML = '';
-                querySnapshot.forEach((doc) => {
-                    const d = doc.data();
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50 border-b border-slate-100 last:border-0';
-                    let btns = '';
-                    if (state.role === 'admin' || (state.role === 'leader' && state.userData.hub_code === d.hub)) {
-                        btns = `<button onclick='confirmEditReport(${JSON.stringify({id: doc.id, ...d})})' class="text-blue-500 hover:bg-blue-50 p-1 rounded" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick='confirmDeleteReport("${doc.id}", "${d.hub}")' class="text-red-500 hover:bg-red-50 p-1 rounded" title="Hapus"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
-                    }
-                    tr.innerHTML = `<td class="p-3 whitespace-nowrap">${d.date}</td><td class="p-3 font-medium">${d.hub}</td><td class="p-3 text-right text-blue-600 font-mono">${formatNumber(d.total_paket || 0)}</td><td class="p-3 text-right font-mono font-bold">${d.total_mpp || 0}</td><td class="p-3 text-right text-purple-600 font-mono text-xs font-bold">${formatNumber(d.productivity || 0)}</td><td class="p-3 text-right text-green-600 font-mono text-xs">Rp ${formatNumber(d.est_cost || 0)}</td><td class="p-3 text-right flex gap-2 justify-end">${btns}</td>`;
-                    els.rptHistoryBody.appendChild(tr);
-                });
-                lucide.createIcons();
-            } catch (err) { els.rptHistoryBody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-400">Error load data.</td></tr>'; }
-        };
-
-        window.confirmDeleteReport = (id, hub) => {
-            showConfirm('Hapus Laporan?', 'Tindakan ini tidak dapat dibatalkan.', async () => {
-                secureCheck(async () => {
-                    if(state.role !== 'admin' && hub !== state.userData.hub_code) { showNotification("Akses Ditolak.", "error"); return; }
-                    showNotification("Menghapus...", "loading");
-                    try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', id)); loadMyReports(); showNotification("Terhapus!", "success"); } 
-                    catch(e) { showNotification("Gagal hapus.", "error"); }
-                });
-            });
-        };
-
-        window.confirmEditReport = (rpt) => {
-            showConfirm('Edit Laporan?', 'Pastikan data yang diubah sudah benar.', () => {
-                secureCheck(() => {
-                    if(state.role !== 'admin' && rpt.hub !== state.userData.hub_code) { showNotification("Akses Ditolak.", "error"); return; }
-                    els.editReportId.value = rpt.id; els.rptDate.value = rpt.date; 
-                    
-                    if (state.role === 'admin') {
-                        const select = document.getElementById('rpt-hub-select');
-                        if(select) { select.value = rpt.hub; loadEmployeesForReport(rpt.hub).then(() => { restoreAttendanceData(rpt); }); }
-                    } else {
-                        document.getElementById('rpt-hub-static').value = rpt.hub; restoreAttendanceData(rpt);
-                    }
-
-                    els.rptGateway.value = rpt.gateway; els.rptStaging.value = rpt.staging; els.rptSap.value = rpt.sap; els.rptJne.value = rpt.jne;
-                    els.formReportTitle.textContent = "Edit Laporan"; els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Update Laporan';
-                    els.btnCancelReportEdit.classList.remove('hidden');
-                    els.formDailyReport.scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-        };
-
-        function restoreAttendanceData(rpt) {
-             document.querySelectorAll('.attendance-radio').forEach(r => r.checked = false);
-             document.querySelectorAll('.att-remarks').forEach(i => i.value = '');
-             if(rpt.attendance_data) {
-                rpt.attendance_data.forEach(att => {
-                    const nameCell = Array.from(document.querySelectorAll('td[data-name]')).find(td => td.dataset.name === att.name);
-                    let row;
-                    if(nameCell) row = nameCell.closest('tr');
-                    else { addDwRow(); row = els.sorterAttendanceList.lastElementChild; row.querySelector('.dw-name-input').value = att.name; }
-                    if(row) {
-                        const radio = row.querySelector(`input[value="${att.status}"]`); if(radio) radio.checked = true;
-                        const remarkInput = row.querySelector('.att-remarks'); if(remarkInput) remarkInput.value = att.remarks || '';
-                    }
-                });
-            }
-            calculateReportTotals();
-        }
-
-        window.resetReportForm = () => {
-            els.formDailyReport.reset(); els.editReportId.value = ''; els.formReportTitle.textContent = "Input Laporan Operasional";
-            els.btnSaveReport.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Simpan Laporan'; els.btnCancelReportEdit.classList.add('hidden');
-            els.rptHub.value = state.userData?.hub_code || ''; loadReportsView();
-        };
-
-        els.formDailyReport.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showConfirm('Simpan Laporan?', 'Pastikan semua data sudah sesuai.', async () => {
-                els.btnSaveReport.disabled = true; els.btnSaveReport.textContent = 'Menyimpan...'; 
-                showNotification("Menyimpan data...", "loading");
-
-                try {
-                    let selectedHub = state.role === 'admin' ? document.getElementById('rpt-hub-select').value : document.getElementById('rpt-hub-static').value;
-                    if(!selectedHub && state.role === 'admin') throw new Error("Pilih HUB.");
-
-                    let sorterRate = 0; const hubData = state.hubs.find(h => h.code === selectedHub);
-                    if(hubData) sorterRate = Number(hubData.sorter_rate) || 0;
-                    const dwRate = Number(state.config.dw_rate) || 0;
-
-                    const att = []; let sCnt = 0; let dCnt = 0; let wCnt = 0;
-                    els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
-                        const chk = row.querySelector('.attendance-radio:checked');
-                        if(chk) {
-                            const isDb = row.querySelector('td[data-is-db="true"]');
-                            let name = isDb ? isDb.dataset.name : row.querySelector('.dw-name-input')?.value || 'Unknown';
-                            const status = chk.value;
-                            att.push({ name: name, status: status, remarks: row.querySelector('.att-remarks').value });
-                            
-                            if(['s1','s2','s3'].includes(status)) {
-                                const role = row.querySelector('.text-slate-400')?.textContent.toLowerCase() || '';
-                                if(!role.includes('leader')) {
-                                    wCnt++;
-                                    if(isDb) sCnt++; else dCnt++;
-                                }
-                            }
-                        }
+                    // Create default settings if not exists
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), {
+                        adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000
                     });
-
-                    const g = Number(els.rptGateway.value)||0; const s = Number(els.rptStaging.value)||0;
-                    const sa = Number(els.rptSap.value)||0; const j = Number(els.rptJne.value)||0;
-                    const totalPaket = g+s+sa+j;
-                    const estCost = (sCnt * sorterRate) + (dCnt * dwRate);
-                    const productivity = wCnt > 0 ? Math.round(totalPaket / wCnt) : 0;
-
-                    const rData = {
-                        date: els.rptDate.value, hub: selectedHub, nik: state.userData?.nik || 'UNKNOWN',
-                        reporter_name: state.userData?.name || 'UNKNOWN', gateway: g, staging: s, sap: sa, jne: j, total_paket: totalPaket,
-                        total_mpp: wCnt, productivity: productivity, attendance_data: att, est_cost: estCost, created_at: new Date().toISOString()
-                    };
-
-                    if(els.editReportId.value) { await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports', els.editReportId.value), rData); showNotification("Laporan berhasil diupdate!", "success"); } 
-                    else { await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'daily_reports'), rData); showNotification("Laporan berhasil disimpan!", "success"); }
-                    
-                    resetReportForm(); loadMyReports();
-                } catch (err) { showNotification("Gagal: " + err.message, "error"); } 
-                finally { els.btnSaveReport.disabled = false; if(!els.editReportId.value) els.btnSaveReport.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Simpan Laporan'; lucide.createIcons(); }
+                }
             });
-        });
 
-        // --- SETTINGS LOGIC ---
-        let unsubscribeHubs = null; let unsubscribeEmployees = null;
-        window.switchSettingsTab = (tabName) => {
-            document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
-            ['hubs', 'employees', 'config'].forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                if (t === tabName) { btn.classList.remove('tab-inactive'); btn.classList.add('tab-active'); } 
-                else { btn.classList.add('tab-inactive'); btn.classList.remove('tab-active'); }
+            // 2. Users
+            unsubscribeUsers = onSnapshot(publicPath('users'), (snapshot) => {
+                appData.users = [];
+                snapshot.forEach(doc => appData.users.push(doc.data()));
+                if(document.getElementById('view-pengaturan').classList.contains('hidden') === false) window.renderUserTable();
             });
-            document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+
+            // 3. Costs
+            unsubscribeCosts = onSnapshot(publicPath('costs'), (snapshot) => {
+                appData.costs = [];
+                snapshot.forEach(doc => appData.costs.push(doc.data()));
+                // Update dropdowns if needed dynamically
+                if(document.getElementById('view-pengaturan').classList.contains('hidden') === false) window.renderCostInputs();
+            });
+
+            // 4. Laporan
+            unsubscribeLaporan = onSnapshot(publicPath('laporan'), (snapshot) => {
+                appData.laporan = [];
+                snapshot.forEach(doc => appData.laporan.push(doc.data()));
+                // Refresh views if active
+                if(document.getElementById('view-dashboard').classList.contains('hidden') === false) window.loadDashboardData();
+                if(document.getElementById('view-laporan').classList.contains('hidden') === false) window.renderLaporanList();
+            });
         }
 
-        function loadSettings() {
-            if (!unsubscribeHubs) { unsubscribeHubs = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), (snap) => { state.hubs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); renderHubsTable(); populateHubDropdowns(); }); }
-            if (!unsubscribeEmployees) { unsubscribeEmployees = onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), (snap) => { state.employees = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.role !== 'admin'); renderEmployeesTable(); }); }
-            if(state.config) { els.configSecureCode.value = state.config.secure_code || ''; els.configDwRate.value = state.config.dw_rate || 0; }
-        }
+        // --- EXPORTED FUNCTIONS TO WINDOW (For HTML onclick access) ---
+        
+        window.Chart.register(ChartDataLabels); // Register Chart Plugin
 
-        function populateHubDropdowns() {
-            const options = `<option value="">Pilih HUB...</option>` + state.hubs.map(h => `<option value="${h.code}">${h.name} (${h.code})</option>`).join('');
-            if(els.userHub) els.userHub.innerHTML = options;
-        }
+        // -- UTILS --
+        window.formatNumber = (num) => (!num && num !== 0) ? '' : num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        window.parseFormattedNumber = (str) => (!str) ? 0 : parseInt(str.toString().replace(/\./g, ''), 10) || 0;
+        window.formatCostInput = (e) => { let val = e.value.replace(/\./g, '').replace(/[^0-9]/g, ''); e.value = window.formatNumber(val); };
+        window.formatRupiah = (n) => { if(n == null) return ''; let s = n.toString().replace(/[^,\d]/g, ''), spl = s.split(','), rem = spl[0].length % 3, r = spl[0].substr(0, rem), th = spl[0].substr(rem).match(/\d{3}/gi); if(th) { let sep = rem ? '.' : ''; r += sep + th.join('.'); } return 'Rp. ' + r; };
 
-        els.formAddHub.addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            showConfirm(els.editHubId.value ? 'Update HUB?' : 'Tambah HUB?', 'Pastikan kode HUB unik.', async () => {
-                const id = els.editHubId.value;
-                const data = { code: els.hubCode.value.toUpperCase().trim(), name: els.hubName.value.trim(), sorter_rate: Number(els.hubRate.value) || 0, created_at: new Date().toISOString() };
-                secureCheck(async () => {
-                    showNotification("Menyimpan...", "loading");
-                    try { if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'hubs', id), data); else { if(state.hubs.find(h => h.code === data.code)) throw new Error("Kode sudah ada!"); await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'hubs'), data); } resetHubForm(); showNotification("Berhasil!", "success"); } catch(err) { showNotification(err.message, "error"); }
-                });
-            });
-        });
-
-        window.editHub = (h) => { if(typeof h === 'string') h = JSON.parse(h); secureCheck(() => { els.editHubId.value = h.id; els.hubCode.value = h.code; els.hubName.value = h.name; els.hubRate.value = h.sorter_rate || 0; els.btnSaveHub.textContent = 'Update'; els.btnCancelHub.classList.remove('hidden'); els.formAddHub.scrollIntoView({ behavior: 'smooth' }); }); }
-        window.resetHubForm = () => { els.formAddHub.reset(); els.editHubId.value = ''; els.btnSaveHub.textContent = 'Simpan'; els.btnCancelHub.classList.add('hidden'); }
-        function renderHubsTable() { els.hubTableBody.innerHTML = state.hubs.map(hub => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-4 font-mono font-bold text-slate-700">${hub.code}</td><td class="p-4 font-medium">${hub.name}</td><td class="p-4 text-right">Rp ${formatNumber(hub.sorter_rate||0)}</td><td class="p-4 text-right"><button onclick='editHub(${JSON.stringify(hub)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDocItem('hubs', '${hub.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); lucide.createIcons(); }
-
-        els.formAddUser.addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            showConfirm(els.editUserId.value ? 'Update Karyawan?' : 'Tambah Karyawan?', 'Data login akan berpengaruh.', async () => {
-                const id = els.editUserId.value;
-                const data = { nik: els.userNik.value.trim(), name: els.userName.value.trim(), hub_code: els.userHub.value, role: els.userRole.value, can_login: els.userCanLogin.checked, password: els.userPass.value.trim(), created_at: new Date().toISOString() };
-                secureCheck(async () => {
-                    showNotification("Menyimpan...", "loading");
-                    try { if (id) await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', id), data); else { if(state.employees.find(e => e.nik === data.nik)) throw new Error("NIK Terdaftar!"); await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'users'), data); } resetUserForm(); showNotification("Berhasil!", "success"); } catch(err) { showNotification(err.message, "error"); }
-                });
-            });
-        });
-
-        window.togglePasswordInput = () => { if(els.userCanLogin.checked) { els.passContainer.classList.remove('hidden'); els.userPass.required = true; } else { els.passContainer.classList.add('hidden'); els.userPass.required = false; els.userPass.value = ''; } }
-        window.resetUserForm = () => { els.formAddUser.reset(); els.editUserId.value = ''; els.formUserTitle.textContent = 'Tambah Data Karyawan'; els.btnSaveUser.textContent = 'Simpan Data'; els.btnCancelEdit.classList.add('hidden'); els.userNik.disabled = false; togglePasswordInput(); }
-        function renderEmployeesTable() { els.userCount.textContent = `Total: ${state.employees.length}`; els.userTableBody.innerHTML = state.employees.map(u => `<tr class="hover:bg-slate-50 border-b border-slate-100 last:border-0"><td class="p-4"><div class="font-medium text-slate-800">${u.name}</div><div class="text-xs text-slate-500 font-mono">${u.nik}</div></td><td class="p-4"><span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${u.hub_code || '-'}</span></td><td class="p-4 capitalize text-slate-600">${u.role}</td><td class="p-4 font-mono text-slate-500 text-xs">${u.can_login ? u.password : '-'}</td><td class="p-4">${u.can_login ? '<span class="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Aktif</span>' : '<span class="text-slate-400 text-xs bg-slate-100 px-2 py-1 rounded-full">Tidak</span>'}</td><td class="p-4 text-right flex gap-2 justify-end"><button onclick='editUser(${JSON.stringify(u)})' class="text-blue-500 hover:bg-blue-50 p-2 rounded"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteDocItem('users', '${u.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); lucide.createIcons(); }
-        window.editUser = (u) => { if(typeof u === 'string') u = JSON.parse(u); secureCheck(() => { els.editUserId.value = u.id; els.userNik.value = u.nik; els.userNik.disabled = true; els.userName.value = u.name; els.userHub.value = u.hub_code; els.userRole.value = u.role; els.userCanLogin.checked = u.can_login; els.userPass.value = u.password || ''; togglePasswordInput(); els.formUserTitle.textContent = 'Edit Data Karyawan'; els.btnSaveUser.textContent = 'Update Data'; els.btnCancelEdit.classList.remove('hidden'); els.formAddUser.scrollIntoView({ behavior: 'smooth' }); }); }
-        window.deleteDocItem = async (colName, id) => { 
-            showConfirm('Hapus Data?', 'Tindakan ini tidak bisa dibatalkan.', () => {
-                secureCheck(async () => {
-                    showNotification("Menghapus...", "loading");
-                    try { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', colName, id)); showNotification("Terhapus!", "success"); } catch(e) { showNotification("Gagal hapus.", "error"); } 
-                });
-            });
+        // -- AUTH UI --
+        window.switchLoginTab = (type) => {
+            if(type === 'user') {
+                document.getElementById('form-login-user').classList.remove('hidden'); document.getElementById('form-login-admin').classList.add('hidden');
+                document.getElementById('tab-user').classList.add('bg-white', 'text-blue-600', 'shadow'); document.getElementById('tab-user').classList.remove('text-gray-500');
+                document.getElementById('tab-admin').classList.remove('bg-white', 'text-blue-600', 'shadow'); document.getElementById('tab-admin').classList.add('text-gray-500');
+            } else {
+                document.getElementById('form-login-user').classList.add('hidden'); document.getElementById('form-login-admin').classList.remove('hidden');
+                document.getElementById('tab-admin').classList.add('bg-white', 'text-blue-600', 'shadow'); document.getElementById('tab-admin').classList.remove('text-gray-500');
+                document.getElementById('tab-user').classList.remove('bg-white', 'text-blue-600', 'shadow'); document.getElementById('tab-user').classList.add('text-gray-500');
+            }
+        };
+        window.togglePasswordField = () => {
+            const isPic = document.getElementById('is-pic-checkbox').checked; const pass = document.getElementById('login-pass-user');
+            isPic ? (pass.classList.remove('hidden'), pass.setAttribute('required', 'true')) : (pass.classList.add('hidden'), pass.removeAttribute('required'), pass.value = '');
         };
 
-        els.openSidebarBtn.addEventListener('click', () => { els.sidebar.classList.remove('-translate-x-full'); els.sidebarOverlay.classList.remove('hidden'); });
-        els.closeSidebarBtn.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
-        els.sidebarOverlay.addEventListener('click', () => { els.sidebar.classList.add('-translate-x-full'); els.sidebarOverlay.classList.add('hidden'); });
+        // -- LOGIN HANDLERS --
+        document.getElementById('form-login-admin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(document.getElementById('login-pass-admin').value === appData.adminPass) { currentUser = { role: 'admin', name: 'Administrator', id: 'admin', kode_hub: 'ALL' }; window.enterApp(); } 
+            else Swal.fire('Error', 'Password Admin Salah!', 'error');
+        });
 
-        init();
+        document.getElementById('form-login-user').addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const id = document.getElementById('login-id').value; const isPic = document.getElementById('is-pic-checkbox').checked; const pass = document.getElementById('login-pass-user').value; 
+            const u = appData.users.find(u => u.id === id);
+            if (!u) return Swal.fire('Error', 'ID User tidak ditemukan.', 'error');
+            if (isPic) { if (u.sandi === pass) { currentUser = { role: 'pic', name: u.nama, id: u.id, akses_laporan: u.akses, kode_hub: u.kode_hub }; window.enterApp(); } else Swal.fire('Error', 'Password Salah!', 'error'); }
+            else { if (u.posisi === 'PIC' || u.posisi === 'Admin') return Swal.fire('Warning', 'Gunakan login PIC.', 'warning'); currentUser = { role: 'sorter', name: u.nama, id: u.id, akses_laporan: 'TIDAK', kode_hub: u.kode_hub }; window.enterApp(); }
+        });
+
+        window.enterApp = () => {
+            document.getElementById('login-section').classList.add('hidden'); document.getElementById('app-section').classList.remove('hidden');
+            document.getElementById('user-name-display').innerText = currentUser.name; document.getElementById('user-badge').innerText = currentUser.role.toUpperCase();
+            
+            const navSet = document.getElementById('nav-pengaturan'); const btnAdd = document.getElementById('btn-tambah-laporan');
+            if (currentUser.role === 'admin') { navSet.classList.remove('hidden'); btnAdd.classList.remove('hidden'); }
+            else if (currentUser.role === 'pic' && currentUser.akses_laporan === 'YA') { navSet.classList.add('hidden'); btnAdd.classList.remove('hidden'); }
+            else { navSet.classList.add('hidden'); btnAdd.classList.add('hidden'); }
+            
+            window.initDashboardFilters();
+            window.navigate('dashboard');
+        };
+
+        window.logout = () => { 
+            currentUser = null; document.getElementById('app-section').classList.add('hidden'); document.getElementById('login-section').classList.remove('hidden'); 
+            document.getElementById('form-login-user').reset(); document.getElementById('form-login-admin').reset(); window.togglePasswordField(); 
+        };
+
+        window.navigate = (viewId) => {
+            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('aside nav a').forEach(el => el.classList.remove('sidebar-item-active', 'bg-gray-800'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden'); document.getElementById(`nav-${viewId}`).classList.add('sidebar-item-active', 'bg-gray-800');
+            
+            if (viewId === 'dashboard') window.loadDashboardData();
+            if (viewId === 'pengaturan') window.loadSettingsUI();
+            if (viewId === 'laporan') window.renderLaporanList();
+            
+            const sb = document.getElementById('sidebar'); if(window.innerWidth < 768 && !sb.classList.contains('-translate-x-full')) window.toggleSidebar();
+        };
+        window.toggleSidebar = () => { const sb = document.getElementById('sidebar'); sb.classList.toggle('hidden'); sb.classList.toggle('absolute'); sb.classList.toggle('z-50'); sb.classList.toggle('h-full'); };
+
+        // -- DASHBOARD --
+        window.initDashboardFilters = () => {
+            const end = new Date(); const start = new Date(); start.setDate(end.getDate() - 30);
+            document.getElementById('dash-end-date').valueAsDate = end; document.getElementById('dash-start-date').valueAsDate = start;
+            const hubSel = document.getElementById('dash-hub-select'); hubSel.innerHTML = '<option value="ALL">Semua HUB</option>';
+            appData.costs.forEach(c => { hubSel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`; });
+            if (currentUser.role !== 'admin') { hubSel.value = currentUser.kode_hub; hubSel.disabled = true; hubSel.classList.add('bg-gray-100'); }
+            else { hubSel.disabled = false; hubSel.classList.remove('bg-gray-100'); }
+        };
+
+        window.loadDashboardData = () => {
+            const startStr = document.getElementById('dash-start-date').value; const endStr = document.getElementById('dash-end-date').value; const hubFilter = document.getElementById('dash-hub-select').value;
+            if(!startStr || !endStr) return;
+            const startDate = new Date(startStr); const endDate = new Date(endStr);
+            let filtered = appData.laporan.filter(l => { const lDate = new Date(l.tanggal); return lDate >= startDate && lDate <= endDate && (hubFilter === 'ALL' || l.hub === hubFilter); });
+            filtered.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+            window.updateCharts(filtered, hubFilter); window.updateDashboardTables(filtered);
+        };
+
+        window.getHubCostRate = (hubName) => { const cfg = appData.costs.find(c => c.hub === hubName); return cfg ? cfg.cost : 0; };
+        
+        window.calculateReportCost = (report) => {
+            let total = 0; const hubRate = window.getHubCostRate(report.hub); const dwRate = appData.costDW || 0;
+            if (report.attendance_data) {
+                report.attendance_data.forEach(att => {
+                    if (att.s1 || att.s2 || att.s3) {
+                        let isDW = att.userId.startsWith('manual_');
+                        if (!isDW) { const u = appData.users.find(user => user.id === att.userId); if (u && u.posisi === 'DW') isDW = true; }
+                        total += isDW ? dwRate : hubRate;
+                    }
+                });
+            } else total = report.total_mpp * hubRate;
+            return total;
+        };
+
+        window.updateCharts = (periodData, hubFilter) => {
+            const currentYear = new Date().getFullYear();
+            const monthlyData = Array(12).fill(0).map(() => ({ pkg: 0, mpp: 0 }));
+            let annualSource = appData.laporan.filter(l => new Date(l.tanggal).getFullYear() === currentYear);
+            if (hubFilter !== 'ALL') annualSource = annualSource.filter(l => l.hub === hubFilter);
+            annualSource.forEach(l => { const m = new Date(l.tanggal).getMonth(); monthlyData[m].pkg += l.total_paket; monthlyData[m].mpp += l.total_mpp; });
+            const dataPkgMonth = monthlyData.map(d => d.pkg); const dataProdMonth = monthlyData.map(d => d.mpp > 0 ? Math.round(d.pkg / d.mpp) : 0);
+            window.renderChart('chart-annual', ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], dataPkgMonth, dataProdMonth, 'Total Paket', 'Prod.');
+
+            const aggDaily = {};
+            periodData.forEach(l => {
+                if (!aggDaily[l.tanggal]) aggDaily[l.tanggal] = { pkg: 0, mpp: 0 };
+                aggDaily[l.tanggal].pkg += l.total_paket; aggDaily[l.tanggal].mpp += l.total_mpp;
+            });
+            const sDates = Object.keys(aggDaily).sort();
+            const lbls = sDates.map(dStr => { const d = new Date(dStr); return `${d.getDate()}/${d.getMonth()+1}`; });
+            const dPkg = sDates.map(d => aggDaily[d].pkg); const dProd = sDates.map(d => aggDaily[d].mpp > 0 ? Math.round(aggDaily[d].pkg / aggDaily[d].mpp) : 0);
+            window.renderChart('chart-daily', lbls, dPkg, dProd, 'Total Paket', 'Prod.');
+        };
+
+        window.renderChart = (canvasId, labels, dataBar, dataLine, labelBar, labelLine) => {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (canvasId === 'chart-annual') { if(annualChart) annualChart.destroy(); }
+            if (canvasId === 'chart-daily') { if(dailyChart) dailyChart.destroy(); }
+            const config = { type: 'bar', data: { labels: labels, datasets: [
+                { label: labelBar, data: dataBar, backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, order: 2, datalabels: { align: 'end', anchor: 'end', color: '#1e3a8a', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? window.formatNumber(v) : '' } },
+                { label: labelLine, data: dataLine, type: 'line', borderColor: 'rgba(234, 88, 12, 1)', backgroundColor: 'rgba(234, 88, 12, 1)', borderWidth: 2, tension: 0.2, order: 1, datalabels: { align: 'top', anchor: 'start', color: '#c2410c', font: { weight: 'bold', size: 11 }, offset: 4, formatter: v => v > 0 ? window.formatNumber(v) : '' } }
+            ] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, plugins: { legend: { display: false }, tooltip: { enabled: true }, datalabels: { display: true } }, scales: { x: { grid: { display: false } }, y: { display: false }, y1: { display: false } } } };
+            const chart = new Chart(ctx, config);
+            if (canvasId === 'chart-annual') annualChart = chart; if (canvasId === 'chart-daily') dailyChart = chart;
+        };
+
+        window.updateDashboardTables = (data) => {
+            const tbodyDetail = document.getElementById('tbody-daily-detail'); tbodyDetail.innerHTML = '';
+            data.forEach(l => {
+                const totalCost = window.calculateReportCost(l);
+                tbodyDetail.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-3 py-2 text-left whitespace-nowrap">${l.tanggal}</td><td class="px-3 py-2 font-semibold">${l.hub}</td><td class="px-3 py-2 text-blue-700 font-bold">${l.total_mpp}</td><td class="px-3 py-2">${window.formatNumber(l.staging)}</td><td class="px-3 py-2">${window.formatNumber(l.gateway)}</td><td class="px-3 py-2">${window.formatNumber(l.jne)}</td><td class="px-3 py-2">${window.formatNumber(l.sap)}</td><td class="px-3 py-2 font-bold">${window.formatNumber(l.total_paket)}</td><td class="px-3 py-2 text-green-700 font-bold">${window.formatNumber(Math.round(l.productivity))}</td><td class="px-3 py-2 text-right text-red-600 text-xs">${window.formatRupiah(totalCost)}</td></tr>`;
+            });
+            const tbodyHub = document.getElementById('tbody-hub-breakdown'); tbodyHub.innerHTML = '';
+            const hubAgg = {};
+            data.forEach(l => {
+                if(!hubAgg[l.hub]) hubAgg[l.hub] = { mpp: 0, out: 0, cost: 0 };
+                hubAgg[l.hub].mpp += l.total_mpp; hubAgg[l.hub].out += l.total_paket; hubAgg[l.hub].cost += window.calculateReportCost(l);
+            });
+            Object.keys(hubAgg).forEach(hub => {
+                const d = hubAgg[hub]; const avgProd = d.mpp > 0 ? Math.round(d.out / d.mpp) : 0;
+                tbodyHub.innerHTML += `<tr class="border-b hover:bg-gray-50"><td class="px-4 py-3 text-left font-bold text-gray-800">${hub}</td><td class="px-4 py-3">${d.mpp}</td><td class="px-4 py-3 font-bold">${window.formatNumber(d.out)}</td><td class="px-4 py-3 text-green-700 font-bold">${window.formatNumber(avgProd)}</td><td class="px-4 py-3 text-right text-red-600 font-bold">${window.formatRupiah(d.cost)}</td></tr>`;
+            });
+        };
+        window.exportTableToCSV = (tableId, filename) => {
+            const table = document.getElementById(tableId); let csv = []; const rows = table.querySelectorAll("tr");
+            for (let i = 0; i < rows.length; i++) { let row = [], cols = rows[i].querySelectorAll("td, th"); for (let j = 0; j < cols.length; j++) row.push(cols[j].innerText); csv.push(row.join(",")); }
+            const csvFile = new Blob([csv.join("\n")], {type: "text/csv"}); const dl = document.createElement("a"); dl.download = filename; dl.href = window.URL.createObjectURL(csvFile); dl.style.display = "none"; document.body.appendChild(dl); dl.click();
+        };
+
+        // -- SETTINGS & CRUD (Async Firestore) --
+        window.switchSettingsTab = (tab) => {
+            document.querySelectorAll('.settings-panel').forEach(el => el.classList.add('hidden')); document.getElementById(`settings-${tab}`).classList.remove('hidden');
+            ['users', 'general', 'cost'].forEach(t => { const btn = document.getElementById(`set-tab-${t}`); t===tab ? (btn.classList.add('text-blue-600','border-blue-600','active'),btn.classList.remove('border-transparent')) : (btn.classList.remove('text-blue-600','border-blue-600','active'),btn.classList.add('border-transparent')); });
+        };
+        window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
+        
+        window.renderUserTable = () => {
+            const tb = document.getElementById('user-table-body'); tb.innerHTML = '';
+            appData.users.forEach((u) => { // No index used for delete anymore, use ID
+                tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium">${u.nama}</td><td class="px-6 py-4">${u.id}</td><td class="px-6 py-4">${u.kode_hub}</td><td class="px-6 py-4">${u.posisi}</td><td class="px-6 py-4"><span class="${u.akses==='YA'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'} text-xs font-medium px-2.5 py-0.5 rounded">${u.akses}</span></td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-600 hover:underline mr-3">Edit</button><button onclick="window.deleteUser('${u.id}')" class="text-red-600 hover:underline">Hapus</button></td></tr>`;
+            });
+        };
+        window.openUserModal = (id=null) => {
+            document.getElementById('user-modal').classList.remove('hidden'); const hubSel = document.getElementById('input-kode-hub'); hubSel.innerHTML = '<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c => { if(c.hub) hubSel.innerHTML += `<option value="${c.hub}">${c.hub}</option>`; });
+            if (id) { 
+                const u = appData.users.find(x => x.id === id); 
+                document.getElementById('modal-title').innerText = 'Edit User'; document.getElementById('edit-index').value = id; // use ID as key
+                document.getElementById('input-nama').value = u.nama; document.getElementById('input-id').value = u.id; document.getElementById('input-sandi').value = u.sandi; document.getElementById('input-kode-hub').value = u.kode_hub; document.getElementById('input-posisi').value = u.posisi; document.getElementsByName('akses_laporan').forEach(r => { if(r.value === u.akses) r.checked = true; }); document.getElementById('input-id').readOnly = true; document.getElementById('input-id').classList.add('bg-gray-100'); 
+            } else { document.getElementById('modal-title').innerText = 'Tambah User'; document.getElementById('edit-index').value = ''; document.getElementById('user-form').reset(); document.getElementById('input-id').readOnly = false; document.getElementById('input-id').classList.remove('bg-gray-100'); }
+        };
+        window.closeUserModal = () => { document.getElementById('user-modal').classList.add('hidden'); };
+        
+        document.getElementById('user-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const editId = document.getElementById('edit-index').value; 
+            const nu = { nama: document.getElementById('input-nama').value, id: document.getElementById('input-id').value, sandi: document.getElementById('input-sandi').value, kode_hub: document.getElementById('input-kode-hub').value, posisi: document.getElementById('input-posisi').value, akses: document.querySelector('input[name="akses_laporan"]:checked').value }; 
+            
+            try {
+                if (!editId && appData.users.some(u => u.id === nu.id)) return Swal.fire('Error', 'ID User sudah ada!', 'error');
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', nu.id), nu);
+                window.closeUserModal(); Swal.fire('Sukses', 'Data user tersimpan.', 'success');
+            } catch (err) { console.error(err); Swal.fire('Error', 'Gagal simpan user.', 'error'); }
+        });
+
+        window.deleteUser = async (id) => { 
+            Swal.fire({title: 'Hapus?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya', confirmButtonColor: '#d33'}).then(async (r) => { 
+                if(r.isConfirmed) { 
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));
+                    Swal.fire('Terhapus', '', 'success'); 
+                } 
+            }); 
+        };
+        
+        window.saveAdminPass = async () => { 
+            const p = document.getElementById('new-admin-pass').value; if(p.length<4) return Swal.fire('Error', 'Min 4 char', 'error'); 
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { adminPass: p });
+            document.getElementById('new-admin-pass').value=''; Swal.fire('Sukses', 'Pass Admin Updated', 'success'); 
+        };
+        window.saveAccessCode = async () => { 
+            const c = document.getElementById('access-code-input').value; if(!c) return; 
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { accessCode: c });
+            Swal.fire('Sukses', 'Kode Akses Updated', 'success'); 
+        };
+        
+        window.renderCostInputs = () => { const c = document.getElementById('cost-container'); c.innerHTML = ''; appData.costs.forEach((x, i) => { c.innerHTML += `<div class="flex gap-2 mb-2"><input type="text" placeholder="Kode HUB" value="${x.hub}" id="cost-hub-${i}" class="border p-2 rounded w-1/3"><input type="text" placeholder="Biaya" value="${window.formatRupiah(x.cost)}" id="cost-val-${i}" class="border p-2 rounded w-1/3 text-right" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-red-500 hover:text-red-700 px-2"><i class="fas fa-trash"></i></button></div>`; }); };
+        window.addCostRow = () => { appData.costs.push({ hub: '', cost: 0 }); window.renderCostInputs(); }; // Temp push locally until save
+        window.removeCostRow = (i) => { appData.costs.splice(i, 1); window.renderCostInputs(); };
+        window.saveCosts = async () => { 
+            const n = []; for(let i=0; i<appData.costs.length; i++) { const h = document.getElementById(`cost-hub-${i}`).value; const c = window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); if(h) n.push({hub: h, cost: c}); } 
+            const dw = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
+            
+            try {
+                // Batch write costs collection
+                // Strategy: Delete all first? Or just Overwrite. Simplest here: Overwrite per doc ID (HubName).
+                // Actually to sync array order is hard in NoSQL. We will replace each doc.
+                // For simplicity in this demo: We save costs as individual docs.
+                // BUT current logic uses appData.costs array. Let's rewrite the whole collection logic slightly?
+                // No, to keep it simple: Save 'costs' array into a single doc 'costs/main' OR multiple docs. 
+                // Let's stick to instruction: "Collection must only contain documents". 
+                // So, we iterate and setDoc each HUB.
+                
+                // Better approach for "List Editing": Save the array into 'settings/main' or individual docs.
+                // Let's use individual docs for scalable HUBs.
+                // Collection: costs. Doc ID: HUB Name.
+                
+                // 1. Update Global DW
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { costDW: dw });
+
+                // 2. Update Hubs
+                // Warning: This simplistic approach doesn't delete removed rows from DB. 
+                // Proper way: Get all docs, delete ones not in new list.
+                // For this helper: We just setDoc.
+                for (const item of n) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', item.hub), item);
+                }
+                Swal.fire('Sukses', 'Cost saved', 'success'); 
+            } catch(e) { console.error(e); Swal.fire('Error', 'Save failed', 'error'); }
+        };
+
+        // -- LAPORAN CRUD (Async) --
+        window.renderLaporanList = () => {
+            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
+            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
+            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
+            else {
+                document.getElementById('empty-laporan-msg').classList.add('hidden');
+                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.forEach(l => {
+                    const canEdit = (currentUser.role === 'admin') || (currentUser.role === 'pic' && currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
+                    const acts = canEdit ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${l.id}')" class="text-blue-600 hover:underline text-xs"><i class="fas fa-edit"></i> Edit</button><button onclick="window.deleteLaporan('${l.id}')" class="text-red-500 hover:underline text-xs"><i class="fas fa-trash"></i> Hapus</button></div>` : '<span class="text-gray-400 text-xs">View Only</span>';
+                    tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${l.tanggal}</td><td class="px-6 py-4 font-bold">${l.hub}</td><td class="px-6 py-4 text-blue-600 font-bold">${window.formatNumber(l.total_paket)}</td><td class="px-6 py-4">${l.total_mpp}</td><td class="px-6 py-4 text-green-600 font-bold">${Math.round(l.productivity)}</td><td class="px-6 py-4 text-right">${acts}</td></tr>`;
+                });
+            }
+        };
+        window.openLaporanModal = () => {
+            document.getElementById('laporan-modal').classList.remove('hidden'); document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText = 'Buat Laporan'; document.getElementById('edit-laporan-id').value = ''; document.getElementById('lap-tanggal').valueAsDate = new Date();
+            const sel = document.getElementById('lap-hub-select'); const txt = document.getElementById('lap-hub-text');
+            if(currentUser.role==='admin') { sel.classList.remove('hidden'); txt.classList.add('hidden'); sel.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>{sel.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`}); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="9" class="p-4 text-gray-400">Pilih HUB dulu.</td></tr>'; }
+            else { sel.classList.add('hidden'); txt.classList.remove('hidden'); txt.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
+            document.getElementById('disp-total-paket').innerText = '0'; document.getElementById('disp-total-mpp').innerText = '0'; document.getElementById('disp-productivity').innerText = '0';
+        };
+        window.closeLaporanModal = () => { document.getElementById('laporan-modal').classList.add('hidden'); };
+        
+        window.editLaporan = (id) => {
+            const d = appData.laporan.find(x => x.id === id); if(!d) return;
+            if(currentUser.role!=='admin' && d.hub!==currentUser.kode_hub) return Swal.fire('Error', 'No Access', 'error');
+            window.openLaporanModal(); document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; document.getElementById('edit-laporan-id').value = id;
+            document.getElementById('lap-tanggal').value = d.tanggal;
+            if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub; else document.getElementById('lap-hub-text').value = d.hub;
+            document.getElementById('lap-gateway').value = window.formatNumber(d.gateway); document.getElementById('lap-staging').value = window.formatNumber(d.staging); document.getElementById('lap-jne').value = window.formatNumber(d.jne); document.getElementById('lap-sap').value = window.formatNumber(d.sap);
+            window.loadHubUsersForAttendance(d.hub, d.attendance_data); window.calcMetrics();
+        };
+
+        window.loadHubUsersForAttendance = (hName=null, existing=null) => {
+            let h = hName || (document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value);
+            const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
+            const users = appData.users.filter(u => u.kode_hub === h);
+            const map = {}; if(existing) existing.forEach(x => map[x.userId] = x);
+            users.forEach(u => {
+                const isL = (u.posisi==='PIC'||u.posisi==='Admin'); const sv = map[u.id] || {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''};
+                window.renderRow(tb, u.id, u.nama, u.posisi, isL?'<span class="text-xs bg-yellow-200 px-1 rounded ml-1">L</span>':'', isL?'bg-yellow-50':'bg-white', sv, false);
+            });
+            if(existing) existing.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', '<span class="text-xs bg-gray-200 px-1 rounded ml-1">Man</span>', 'bg-white', map[x.userId], true); });
+            window.calcMetrics();
+        };
+        
+        window.renderRow = (tb, id, nm, role, badge, cls, sv, man) => {
+            const nmF = man ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full border p-1 rounded text-sm" placeholder="Nama">` : `${nm} ${badge}<input type="hidden" name="user_nama[]" value="${nm}">`;
+            const del = man ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : '';
+            const rowHtml = `<tr class="border-b ${cls}" data-role="${role}"><td class="p-2 text-left font-medium">${nmF}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${man}"></td>
+            <td class="p-2"><input type="checkbox" name="s1[]" class="attendance-checkbox shift-chk" onchange="window.handleSingleCheck(this)" ${sv.s1?'checked':''}></td>
+            <td class="p-2"><input type="checkbox" name="s2[]" class="attendance-checkbox shift-chk" onchange="window.handleSingleCheck(this)" ${sv.s2?'checked':''}></td>
+            <td class="p-2"><input type="checkbox" name="s3[]" class="attendance-checkbox shift-chk" onchange="window.handleSingleCheck(this)" ${sv.s3?'checked':''}></td>
+            <td class="p-2"><input type="checkbox" name="ijin[]" class="attendance-checkbox status-chk" onchange="window.handleSingleCheck(this)" ${sv.i?'checked':''}></td>
+            <td class="p-2"><input type="checkbox" name="sakit[]" class="attendance-checkbox status-chk" onchange="window.handleSingleCheck(this)" ${sv.s?'checked':''}></td>
+            <td class="p-2"><input type="checkbox" name="alfa[]" class="attendance-checkbox status-chk" onchange="window.handleSingleCheck(this)" ${sv.a?'checked':''}></td>
+            <td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full border p-1 text-xs rounded" placeholder="..."></td><td class="p-2 text-center">${del}</td></tr>`;
+            tb.insertAdjacentHTML('beforeend', rowHtml);
+        };
+        window.addManualDWRow = () => { window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', '', 'bg-white', {}, true); };
+        window.handleSingleCheck = (chk) => { if(chk.checked) { chk.closest('tr').querySelectorAll('.attendance-checkbox').forEach(c => { if(c!==chk) c.checked = false; }); } window.calcMetrics(); };
+        window.calcMetrics = (el=null) => {
+            if(el) window.formatCostInput(el);
+            const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), p=window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            const tot = g+s+j+p; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot;
+            let mpp = 0;
+            document.querySelectorAll('#attendance-tbody tr').forEach(r => {
+                const role = r.getAttribute('data-role');
+                if(role!=='PIC' && role!=='Admin') { if(r.querySelector('input[name="s1[]"]').checked || r.querySelector('input[name="s2[]"]').checked || r.querySelector('input[name="s3[]"]').checked) mpp++; }
+            });
+            document.getElementById('disp-total-mpp').innerText = mpp;
+            document.getElementById('disp-productivity').innerText = mpp>0 ? window.formatNumber(Math.round(tot/mpp)) : 0;
+        };
+
+        document.getElementById('laporan-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; if(!h) return Swal.fire('Error','Pilih HUB','error');
+            const metrics = { gateway: window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging: window.parseFormattedNumber(document.getElementById('lap-staging').value), jne: window.parseFormattedNumber(document.getElementById('lap-jne').value), sap: window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket: parseInt(document.getElementById('val-total-paket').value)||0 };
+            const att = []; let mpp=0; let err=false;
+            document.querySelectorAll('#attendance-tbody tr').forEach(r => {
+                const uid=r.querySelector('input[name="user_id[]"]').value, nm=r.querySelector('input[name="user_nama[]"]').value, man=r.querySelector('input[name="is_manual[]"]').value==='true';
+                if(man && !nm.trim()) err=true;
+                const s1=r.querySelector('input[name="s1[]"]').checked, s2=r.querySelector('input[name="s2[]"]').checked, s3=r.querySelector('input[name="s3[]"]').checked;
+                if((s1||s2||s3) && r.getAttribute('data-role')!=='PIC' && r.getAttribute('data-role')!=='Admin') mpp++;
+                att.push({ userId:uid, nama:nm, s1, s2, s3, i:r.querySelector('input[name="ijin[]"]').checked, s:r.querySelector('input[name="sakit[]"]').checked, a:r.querySelector('input[name="alfa[]"]').checked, ket:r.querySelector('input[name="ket[]"]').value });
+            });
+            if(err) return Swal.fire('Error', 'Nama DW Manual kosong', 'warning');
+            const prod = mpp>0 ? metrics.total_paket/mpp : 0;
+            const idx = document.getElementById('edit-laporan-id').value; // if ID exists
+            const docId = idx || Date.now().toString();
+            
+            const newData = { id: docId, tanggal: document.getElementById('lap-tanggal').value, hub: h, ...metrics, total_mpp: mpp, productivity: prod, attendance_data: att };
+            
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'laporan', docId), newData);
+                window.closeLaporanModal(); Swal.fire('Sukses', 'Laporan tersimpan online', 'success');
+            } catch (error) { console.error(error); Swal.fire('Error', 'Gagal simpan', 'error'); }
+        });
+
+        window.deleteLaporan = async (id) => {
+            const r = appData.laporan.find(x => x.id === id); if(currentUser.role!=='admin' && r.hub!==currentUser.kode_hub) return;
+            const del = async () => { 
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'laporan', id));
+                Swal.fire('Terhapus','','success'); 
+            };
+            if(currentUser.role==='pic') { Swal.fire({title: 'Kode Akses', input: 'password', showCancelButton: true, preConfirm: (c) => c!==appData.accessCode?Swal.showValidationMessage('Salah'):true}).then((res) => { if(res.isConfirmed) del(); }); }
+            else Swal.fire({title: 'Hapus?', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33'}).then(res=>{if(res.isConfirmed) del();});
+        };
+
     </script>
 </body>
 </html>

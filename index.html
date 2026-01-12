@@ -832,8 +832,8 @@
         // --- AUTH ACTIONS ---
         els.loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nik = els.loginNik.value;
-            const pass = els.loginPass.value;
+            const nik = els.loginNik.value.trim();
+            const pass = els.loginPass.value.trim();
             
             els.loginError.classList.add('hidden');
             els.btnLogin.disabled = true;
@@ -949,8 +949,8 @@
             els.hubMsg.classList.add('hidden');
 
             const newHub = {
-                code: els.hubCode.value.toUpperCase(),
-                name: els.hubName.value,
+                code: els.hubCode.value.toUpperCase().trim(),
+                name: els.hubName.value.trim(),
                 created_at: new Date().toISOString()
             };
 
@@ -989,9 +989,9 @@
             els.btnSaveLeader.textContent = 'Menyimpan...';
             
             const newLeader = {
-                nik: els.newNik.value,
-                name: els.newName.value,
-                password: els.newPass.value,
+                nik: els.newNik.value.trim(),
+                name: els.newName.value.trim(),
+                password: els.newPass.value.trim(),
                 hub_code: els.newLeaderHub.value, 
                 role: 'leader',
                 created_at: new Date().toISOString()
@@ -1034,7 +1034,7 @@
             els.btnSaveSorter.textContent = '...';
 
             const newSorter = {
-                name: els.sorterName.value,
+                name: els.sorterName.value.trim(),
                 hub_code: els.sorterHub.value,
                 created_at: new Date().toISOString()
             };

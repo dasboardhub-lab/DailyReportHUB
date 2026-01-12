@@ -238,9 +238,9 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-slate-500 mb-1">HUB Operasional</label>
-                                        <!-- Untuk Admin: Select dari DB, Leader: Readonly Input -->
+                                        <!-- Container untuk Admin Select / Leader Readonly -->
                                         <div id="rpt-hub-container">
-                                            <input type="text" id="rpt-hub" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
+                                            <input type="text" id="rpt-hub-static" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-200 text-slate-600 font-bold" placeholder="Auto" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -270,11 +270,12 @@
                                             <label class="block text-xs font-bold text-blue-700 mb-1">TOTAL PAKET</label>
                                             <input type="text" id="rpt-total-paket" class="w-full bg-transparent font-bold text-xl text-blue-700 text-right outline-none" value="0" readonly>
                                         </div>
-                                        <div class="bg-green-50 p-2 rounded-lg border border-green-100 col-span-2 md:col-span-5 mt-2">
-                                            <div class="flex justify-between items-center">
-                                                <label class="block text-xs font-bold text-green-700">PRODUKTIVITAS <span class="font-normal text-green-600">(Total Paket / MPP Sorter+DW)</span></label>
-                                                <input type="text" id="rpt-productivity" class="bg-transparent font-bold text-lg text-green-700 text-right outline-none w-32" value="0" readonly>
+                                        <div class="bg-green-50 p-2 rounded-lg border border-green-100 col-span-2 md:col-span-5 mt-2 flex justify-between items-center">
+                                            <div>
+                                                <label class="block text-xs font-bold text-green-700">PRODUKTIVITAS</label>
+                                                <span class="text-xs text-green-600">(Total Paket / MPP Sorter+DW)</span>
                                             </div>
+                                            <input type="text" id="rpt-productivity" class="bg-transparent font-bold text-lg text-green-700 text-right outline-none w-32" value="0" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -287,6 +288,7 @@
                                         <div class="text-right">
                                             <span class="text-xs text-slate-500 uppercase">Total MPP (Working)</span>
                                             <div id="display-total-mpp" class="text-2xl font-bold text-green-600 leading-none">0</div>
+                                            <p class="text-[10px] text-slate-400">*Hanya Sorter & DW</p>
                                         </div>
                                     </div>
                                     
@@ -938,30 +940,25 @@
             els.rptTotalPaket.value = totalPaket.toLocaleString('id-ID');
             
             let workingCount = 0;
-            document.querySelectorAll('.attendance-radio:checked').forEach(radio => {
-                if(['s1', 's2', 's3'].includes(radio.value)) workingCount++;
-            });
-            els.displayTotalMpp.textContent = workingCount;
-
-            // Productivity: Total Paket / Total MPP (Sorter+DW)
-            // Note: workingCount includes Sorters (DB) and DWs. 
-            // We need to exclude Leaders if they are in the list. The current attendance generation logic excludes admins. 
-            // Leaders might be in the list if they are regular users. 
-            // The requirement says: "(Total paket/total MPP sorter+DW) leader tidak termaksud"
-            // We need to check role.
-            
             let sorterDwWorkingCount = 0;
-            document.querySelectorAll('tr').forEach(row => {
+
+            // Iterate through rows to calculate MPP and Productivity Divisor
+            document.querySelectorAll('#sorter-attendance-list tr').forEach(row => {
                 const checked = row.querySelector('.attendance-radio:checked');
                 if(checked && ['s1', 's2', 's3'].includes(checked.value)) {
-                    // Check if leader
+                    // Check if Leader (exclude from MPP and Prod)
                     const roleSpan = row.querySelector('.text-slate-400'); // (role)
-                    const roleText = roleSpan ? roleSpan.textContent : '';
-                    if (!roleText.includes('leader')) {
-                        sorterDwWorkingCount++;
+                    const roleText = roleSpan ? roleSpan.textContent.toLowerCase() : '';
+                    const isLeader = roleText.includes('leader');
+
+                    if (!isLeader) {
+                        workingCount++; // Only Sorter & DW count towards Total MPP
+                        sorterDwWorkingCount++; // Only Sorter & DW count towards Prod Divisor
                     }
                 }
             });
+
+            els.displayTotalMpp.textContent = workingCount;
 
             const productivity = sorterDwWorkingCount > 0 ? Math.round(totalPaket / sorterDwWorkingCount) : 0;
             els.rptProductivity.value = productivity.toLocaleString('id-ID');
@@ -1221,9 +1218,10 @@
                 const attendanceDetails = [];
                 let sorterCount = 0;
                 let dwCount = 0;
-                let sorterDwWorkingCount = 0; // For productivity
+                let sorterDwWorkingCount = 0; // For productivity (Sorter + DW)
 
-                els.sorterAttendanceList.querySelectorAll('tr').forEach(row => {
+                const rows = els.sorterAttendanceList.querySelectorAll('tr');
+                rows.forEach(row => {
                     const checked = row.querySelector('.attendance-radio:checked');
                     if(checked) {
                         const isDb = row.querySelector('td[data-is-db="true"]');
@@ -1234,14 +1232,15 @@
                         attendanceDetails.push({ name: name, status: status, remarks: row.querySelector('.att-remarks').value });
                         
                         if(isWorking) {
-                            if(isDb) sorterCount++;
-                            else dwCount++;
-
-                            // Check role for productivity
+                            // Check if leader (from DB list text content)
                             const roleSpan = row.querySelector('.text-slate-400');
-                            const roleText = roleSpan ? roleSpan.textContent : '';
-                            if (!roleText.includes('leader')) {
-                                sorterDwWorkingCount++;
+                            const roleText = roleSpan ? roleSpan.textContent.toLowerCase() : '';
+                            const isLeader = roleText.includes('leader');
+
+                            if (!isLeader) {
+                                sorterDwWorkingCount++; // Only non-leaders count towards Prod & Cost & MPP Display
+                                if(isDb) sorterCount++;
+                                else dwCount++;
                             }
                         }
                     }
@@ -1251,17 +1250,17 @@
                 const sa = Number(els.rptSap.value) || 0; const j = Number(els.rptJne.value) || 0;
                 const totalPaket = g+s+sa+j;
                 
-                // Calculate Cost
+                // Calculate Cost (Leaders excluded above)
                 const estCost = (sorterCount * sorterRate) + (dwCount * dwRate);
                 
-                // Calculate Productivity
+                // Calculate Productivity (Leaders excluded above)
                 const productivity = sorterDwWorkingCount > 0 ? Math.round(totalPaket / sorterDwWorkingCount) : 0;
 
                 const reportData = {
                     date: els.rptDate.value, hub: selectedHub, nik: state.userData?.nik || 'UNKNOWN',
                     reporter_name: state.userData?.name || 'UNKNOWN',
                     gateway: g, staging: s, sap: sa, jne: j, total_paket: totalPaket,
-                    total_mpp: sorterCount + dwCount,
+                    total_mpp: sorterDwWorkingCount, // Save filtered count
                     productivity: productivity,
                     attendance_data: attendanceDetails,
                     est_cost: estCost, 

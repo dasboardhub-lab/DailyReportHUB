@@ -666,85 +666,157 @@
         </div>
     </div>
 
-    <!-- MODULE SCRIPT -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+<!-- MODULE SCRIPT -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { 
+        getAuth, 
+        signInAnonymously, 
+        onAuthStateChanged, 
+        signOut 
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
-            authDomain: "hub-dashboard-92428.firebaseapp.com",
-            projectId: "hub-dashboard-92428",
-            storageBucket: "hub-dashboard-92428.firebasestorage.app",
-            messagingSenderId: "827243064075",
-            appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
-        };
+    import { 
+        initializeFirestore,
+        persistentLocalCache,
+        collection,
+        doc,
+        getDoc,
+        setDoc,
+        onSnapshot,
+        deleteDoc,
+        updateDoc
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        const storageId = 'hub-data-v1';
-        let app, auth, db;
+    /* ===============================
+       FIREBASE CONFIG
+    =============================== */
+    const firebaseConfig = {
+        apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
+        authDomain: "hub-dashboard-92428.firebaseapp.com",
+        projectId: "hub-dashboard-92428",
+        storageBucket: "hub-dashboard-92428.firebasestorage.app",
+        messagingSenderId: "827243064075",
+        appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
+    };
 
-        // Dynamic Island
-        const island = document.getElementById('dynamic-island');
-        const islandContent = document.getElementById('island-content');
-        const islandIcon = document.getElementById('island-icon');
-        const islandMsg = document.getElementById('island-message');
-        const islandSpinner = document.getElementById('island-spinner');
+    const storageId = 'hub-data-v1';
+    let app, auth, db;
 
-        window.notify = (msg, type = 'loading') => {
-            island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
-            island.classList.remove('island-hidden');
-            if (type === 'loading') {
-                island.classList.add('island-loading', 'bg-dark');
-                islandSpinner.classList.remove('opacity-0');
-                islandContent.classList.add('opacity-0', 'scale-90');
-            } else {
-                island.classList.remove('island-loading');
-                island.classList.add('island-expanded');
-                if (type === 'success') { island.classList.add('island-success'); islandIcon.className = 'fas fa-check-circle text-white'; }
-                else if (type === 'error') { island.classList.add('island-error'); islandIcon.className = 'fas fa-exclamation-circle text-white'; }
-                islandSpinner.classList.add('opacity-0');
-                setTimeout(() => { islandMsg.innerText = msg; islandContent.classList.remove('opacity-0', 'scale-90'); }, 200);
-                setTimeout(() => {
-                    islandContent.classList.add('opacity-0', 'scale-90');
-                    setTimeout(() => { island.className = 'island-hidden'; island.classList.remove('island-expanded', 'island-success', 'island-error'); }, 200);
-                }, 3000);
+    /* ===============================
+       DYNAMIC ISLAND NOTIFICATION
+    =============================== */
+    const island = document.getElementById('dynamic-island');
+    const islandContent = document.getElementById('island-content');
+    const islandIcon = document.getElementById('island-icon');
+    const islandMsg = document.getElementById('island-message');
+    const islandSpinner = document.getElementById('island-spinner');
+
+    window.notify = (msg, type = 'loading') => {
+        island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
+        island.classList.remove('island-hidden');
+
+        if (type === 'loading') {
+            island.classList.add('island-loading', 'bg-dark');
+            islandSpinner.classList.remove('opacity-0');
+            islandContent.classList.add('opacity-0', 'scale-90');
+        } else {
+            island.classList.remove('island-loading');
+            island.classList.add('island-expanded');
+
+            if (type === 'success') {
+                island.classList.add('island-success');
+                islandIcon.className = 'fas fa-check-circle text-white';
+            } else if (type === 'error') {
+                island.classList.add('island-error');
+                islandIcon.className = 'fas fa-exclamation-circle text-white';
             }
-        };
 
-        // Init
-        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
-        let currentUser = null, annualChart = null, dailyChart = null;
-        let isLoggingOut = false; // Flag to prevent auto-login triggering errors
+            islandSpinner.classList.add('opacity-0');
 
-        function handleAuthSuccess(user) {
-            if(isLoggingOut) return; // Prevent re-trigger if logging out
-            window.notify('Terhubung', 'success');
-            document.getElementById('loading-overlay').classList.add('hidden-fade');
             setTimeout(() => {
-                document.getElementById('loading-overlay').classList.add('hidden');
-                document.getElementById('loading-overlay').remove();
-            }, 300);
-            document.getElementById('login-section').classList.remove('hidden');
-            initListeners();
-        }
+                islandMsg.innerText = msg;
+                islandContent.classList.remove('opacity-0', 'scale-90');
+            }, 200);
 
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
-            onAuthStateChanged(auth, (u) => { 
-                if(u) handleAuthSuccess(u); 
-            });
-            signInAnonymously(auth).catch(e => {
-                if(!isLoggingOut) {
-                    console.error(e); window.notify('Gagal Koneksi', 'error');
-                    document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
-                    document.getElementById('init-error-container').classList.remove('hidden');
-                }
-            });
-        } catch(e) { window.notify('Config Error', 'error'); }
+            setTimeout(() => {
+                islandContent.classList.add('opacity-0', 'scale-90');
+                setTimeout(() => {
+                    island.className = 'island-hidden';
+                    island.classList.remove('island-expanded', 'island-success', 'island-error');
+                }, 200);
+            }, 3000);
+        }
+    };
+
+    /* ===============================
+       APP STATE
+    =============================== */
+    let appData = {
+        adminPass: '123456',
+        accessCode: 'SUPERHUB',
+        costDW: 120000,
+        users: [],
+        costs: [],
+        laporan: []
+    };
+
+    let currentUser = null;
+    let annualChart = null;
+    let dailyChart = null;
+    let isLoggingOut = false;
+
+    /* ===============================
+       AUTH HANDLER
+    =============================== */
+    function handleAuthSuccess(user) {
+        if (isLoggingOut) return;
+
+        window.notify('Terhubung', 'success');
+        document.getElementById('loading-overlay').classList.add('hidden-fade');
+
+        setTimeout(() => {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.add('hidden');
+            overlay.remove();
+        }, 300);
+
+        document.getElementById('login-section').classList.remove('hidden');
+        initListeners();
+    }
+
+    /* ===============================
+       INITIALIZE FIREBASE
+    =============================== */
+    try {
+        app = initializeApp(firebaseConfig);
+
+        auth = getAuth(app);
+
+        // 🔥 FIRESTORE INIT (NEW API – NO WARNING)
+        db = initializeFirestore(app, {
+            cache: persistentLocalCache()
+        });
+
+        onAuthStateChanged(auth, (u) => {
+            if (u) handleAuthSuccess(u);
+        });
+
+        signInAnonymously(auth).catch(e => {
+            if (!isLoggingOut) {
+                console.error(e);
+                window.notify('Gagal Koneksi', 'error');
+                document.getElementById('init-error-text').innerText = 'Cek koneksi internet.';
+                document.getElementById('init-error-container').classList.remove('hidden');
+            }
+        });
+
+    } catch (e) {
+        console.error(e);
+        window.notify('Config Error', 'error');
+    }
+
+
 
         function initListeners() {
             const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);

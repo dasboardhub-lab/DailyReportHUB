@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.4</title>
+    <title>DailyReport HUB KALSULAMP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -1292,6 +1292,38 @@
                         window.notify('Kode Akses Salah', 'error');
                     }
                 }
+            }
+        };
+
+        // MISSING FUNCTION ADDED BACK
+        window.renderLaporanList = () => {
+            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
+            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
+            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
+            else {
+                document.getElementById('empty-laporan-msg').classList.add('hidden');
+                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.forEach(l => {
+                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
+                    
+                    const prod = Math.round(l.productivity);
+                    const prodClass = window.getProdColorClass(prod);
+
+                    tb.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
+                            <td class="px-6 py-4 font-medium text-slate-700 sticky left-0 bg-white z-10">${l.tanggal}</td>
+                            <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-indigo-100">${l.hub}</span></td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.gateway)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.staging)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.jne)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.sap)}</td>
+                            <td class="px-4 py-4 font-extrabold text-slate-800 bg-slate-50/80 text-right">${window.formatNumber(l.total_paket)}</td>
+                            <td class="px-4 py-4 text-primary font-bold text-right">${l.total_mpp}</td>
+                            <td class="px-4 py-4 text-right"><span class="${prodClass}">${window.formatNumber(prod)}</span></td>
+                            <td class="px-6 py-4 text-right">${acts}</td>
+                        </tr>`;
+                });
             }
         };
 

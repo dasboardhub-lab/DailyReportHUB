@@ -1408,7 +1408,60 @@
             try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
         };
 
-        window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
+        //window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
+        window.deleteLaporan = async (id) => {
+
+    const processDelete = async () => {
+        const r = await Swal.fire({
+            title: 'Hapus Laporan?',
+            text: 'Data yang dihapus tidak dapat dikembalikan',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef476f',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Ya, Hapus'
+        });
+
+        if (r.isConfirmed) {
+            await deleteDoc(
+                doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)
+            );
+            window.notify('Laporan berhasil dihapus', 'success');
+        }
+    };
+
+    // ===============================
+    // ADMIN → LANGSUNG
+    // ===============================
+    if (currentUser.role === 'admin') {
+        await processDelete();
+        return;
+    }
+
+    // ===============================
+    // NON-ADMIN → VERIFIKASI KODE
+    // ===============================
+    const { value: code } = await Swal.fire({
+        title: 'Verifikasi Leader',
+        text: 'Masukkan Kode Akses untuk menghapus laporan',
+        input: 'password',
+        inputPlaceholder: 'Kode Akses...',
+        showCancelButton: true,
+        confirmButtonColor: '#4361ee',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Verifikasi'
+    });
+
+    if (!code) return;
+
+    if (code === appData.accessCode) {
+        window.notify('Akses Diberikan', 'success');
+        await processDelete();
+    } else {
+        window.notify('Kode Akses Salah', 'error');
+    }
+};
+
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
         

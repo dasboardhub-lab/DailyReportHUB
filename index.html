@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.4 (Canvas Native)</title>
+    <title>DailyReport v2.5 (Fixed)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -12,8 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- NOTE: Chart.js Library telah DIHAPUS untuk menggunakan Raw Canvas -->
 
     <script>
         tailwind.config = {
@@ -141,11 +139,10 @@
         </div>
     </div>
 
-    <!-- DESKTOP NAVBAR (Strictly Hidden on Mobile) -->
+    <!-- DESKTOP NAVBAR -->
     <nav id="app-navbar" class="glass sticky top-0 z-50 hidden border-b border-slate-200/50">
         <div class="max-w-7xl mx-auto px-6 w-full">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
                 <div class="flex items-center gap-3 shrink-0">
                     <div class="w-10 h-10 bg-gradient-to-tr from-primary to-primaryDark rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
                         <i class="fas fa-chart-line text-lg"></i>
@@ -155,16 +152,12 @@
                         <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Operasional System</p>
                     </div>
                 </div>
-                
-                <!-- Desktop Nav Links (Wider & Spaced Out) -->
                 <div class="hidden md:flex items-center justify-center flex-1 mx-12 gap-10">
                     <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active">Dashboard</a>
                     <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link">Laporan</a>
                     <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link">Absensi</a>
                     <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden">Pengaturan</a>
                 </div>
-                
-                <!-- Profile Area -->
                 <div class="flex items-center gap-4 shrink-0">
                     <div class="text-right">
                         <div class="text-sm font-bold text-slate-700 truncate max-w-[120px]" id="user-name-display">User</div>
@@ -178,7 +171,7 @@
         </div>
     </nav>
 
-    <!-- MOBILE TOPBAR (Strictly Hidden on Desktop) -->
+    <!-- MOBILE TOPBAR -->
     <div id="mobile-topbar" class="md:hidden glass px-5 py-4 flex justify-between items-center shadow-sm z-40 hidden sticky top-0">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -610,79 +603,94 @@
         </div>
     </div>
 
-    <!-- MODAL LAPORAN (Updated Inputs) -->
-    <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-[2rem] w-full max-w-5xl shadow-2xl my-6 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 border border-white/40" id="laporan-modal-content">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-[2rem] shadow-sm">
-                <div><h3 class="text-xl font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3></div>
+    <!-- MODAL LAPORAN -->
+    <div id="laporan-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-2">
+        <div class="bg-white p-0 rounded-[2rem] w-full max-w-4xl shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                <div><h3 class="text-xl font-extrabold text-slate-800 tracking-tight" id="laporan-modal-title">Laporan Baru</h3><p class="text-xs text-slate-400 font-medium mt-1">Isi data volume paket dan absensi tim</p></div>
                 <button onclick="window.closeLaporanModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto bg-slate-50/50">
-                <form id="laporan-form" class="space-y-8">
-                    <input type="hidden" id="edit-laporan-id">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <div class="relative group mt-1">
-                             <input type="date" id="lap-tanggal" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" required>
-                             <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Tanggal Laporan</label>
+            
+            <form id="laporan-form" class="flex-1 overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="edit-laporan-id">
+                <div class="p-6 space-y-8">
+                    <!-- Section 1: Data Umum -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1 space-y-5">
+                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">Tanggal</label><input type="date" id="lap-tanggal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none font-bold text-slate-700" required></div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">HUB Location</label>
+                                <select id="lap-hub-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none font-bold text-slate-700" onchange="window.loadHubUsersForAttendance()"></select>
+                                <input type="text" id="lap-hub-text" class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-500 hidden" readonly>
+                            </div>
                         </div>
-                        <div>
-                            <select id="lap-hub-select" class="w-full border-0 ring-1 ring-slate-200 bg-slate-50 p-3.5 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none hidden cursor-pointer transition shadow-sm" onchange="window.loadHubUsersForAttendance()"></select>
-                            <input type="text" id="lap-hub-text" class="w-full border-0 ring-1 ring-slate-200 bg-slate-100 p-3.5 rounded-xl text-sm font-bold text-slate-500 cursor-not-allowed hidden shadow-sm" readonly>
+                        <div class="md:col-span-2 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider flex items-center gap-2"><i class="fas fa-box text-primary"></i> Volume Paket (Incoming)</label>
+                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">Gateway</span><input type="text" id="lap-gateway" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
+                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">Staging</span><input type="text" id="lap-staging" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
+                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">JNE</span><input type="text" id="lap-jne" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
+                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">SAP</span><input type="text" id="lap-sap" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
+                             </div>
                         </div>
                     </div>
+
+                    <!-- Section 2: Absensi -->
                     <div>
-                        <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-box"></i></span>Metrix Paket</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-                            <div class="relative group">
-                                <input type="text" id="lap-gateway" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
-                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">Gateway</label>
-                            </div>
-                            <div class="relative group">
-                                <input type="text" id="lap-staging" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
-                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">Staging</label>
-                            </div>
-                            <div class="relative group">
-                                <input type="text" id="lap-jne" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
-                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">JNE</label>
-                            </div>
-                            <div class="relative group">
-                                <input type="text" id="lap-sap" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
-                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">SAP</label>
-                            </div>
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-users text-indigo-500"></i> Absensi Tim</label>
+                            <button type="button" onclick="window.addManualDWRow()" class="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 transition border border-indigo-100 flex items-center gap-1"><i class="fas fa-plus"></i> Tambah DW Manual</button>
                         </div>
-                        <div class="mt-5 grid grid-cols-2 gap-5">
-                            <div class="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 text-center shadow-sm"><p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Paket</p><p class="text-3xl font-extrabold text-indigo-600 mt-2" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div>
-                            <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 text-center shadow-sm"><p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Productivity</p><p class="text-3xl font-extrabold text-emerald-600 mt-2" id="disp-productivity">0</p></div>
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                            <div class="overflow-x-auto max-h-[300px]">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 font-bold sticky top-0 z-10 shadow-sm">
+                                        <tr>
+                                            <th class="p-3 pl-6 w-1/4">Nama Personil</th>
+                                            <th class="p-2 text-center w-12 bg-blue-50/50 text-blue-600">S1</th>
+                                            <th class="p-2 text-center w-12 bg-blue-50/50 text-blue-600">S2</th>
+                                            <th class="p-2 text-center w-12 bg-blue-50/50 text-blue-600 border-r border-slate-200">S3</th>
+                                            <th class="p-2 text-center w-12 text-amber-500">Ijn</th>
+                                            <th class="p-2 text-center w-12 text-purple-500">Skt</th>
+                                            <th class="p-2 text-center w-12 text-red-500">Alf</th>
+                                            <th class="p-3 w-1/4">Keterangan</th>
+                                            <th class="p-2 w-8"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attendance-tbody" class="divide-y divide-slate-50"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="flex justify-between items-end mb-4"><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
-                        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                            <table class="w-full text-xs text-center">
-                                <thead class="bg-slate-50 font-bold text-slate-500 uppercase border-b border-slate-200 tracking-wide">
-                                    <tr><th class="p-4 text-left w-1/3 pl-6">Nama Personil</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">1</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">2</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th><th class="p-3 w-10 text-amber-500">I</th><th class="p-3 w-10 text-purple-500">S</th><th class="p-3 w-10 text-red-600">A</th><th class="p-3 text-left">Ket</th><th class="p-3 w-8"></th></tr>
-                                </thead>
-                                <tbody id="attendance-tbody" class="divide-y divide-slate-100"></tbody>
-                            </table>
-                        </div>
-                        <button type="button" onclick="window.addManualDWRow()" class="mt-5 w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 text-xs font-bold hover:border-primary hover:text-primary hover:bg-indigo-50 transition flex items-center justify-center gap-2 uppercase tracking-wide"><i class="fas fa-plus-circle"></i> Tambah DW Manual</button>
+                </div>
+
+                <!-- Footer Summary -->
+                <div class="p-5 border-t border-slate-100 bg-slate-50 sticky bottom-0 z-10 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex items-center gap-6 w-full md:w-auto justify-center md:justify-start">
+                        <div class="text-center md:text-left"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Paket</p><p class="text-xl font-extrabold text-slate-800" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div>
+                        <div class="w-px h-8 bg-slate-200"></div>
+                        <div class="text-center md:text-left"><p class="text-[10px] font-bold text-slate-400 uppercase">Total MPP</p><p class="text-xl font-extrabold text-primary" id="disp-total-mpp">0</p></div>
+                        <div class="w-px h-8 bg-slate-200"></div>
+                        <div class="text-center md:text-left"><p class="text-[10px] font-bold text-slate-400 uppercase">Productivity</p><p class="text-xl font-extrabold text-success" id="disp-productivity">0</p></div>
                     </div>
-                </form>
-            </div>
-            <div class="p-6 border-t border-slate-100 bg-white sticky bottom-0 z-20 flex justify-end gap-3 rounded-b-[2rem]">
-                <button type="button" onclick="window.closeLaporanModal()" class="px-6 py-3 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition uppercase tracking-wide">Batal</button>
-                <button onclick="document.getElementById('laporan-form').requestSubmit()" class="px-8 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/30 hover:shadow-glow hover:bg-blue-600 transition transform active:scale-95 uppercase tracking-wide">SIMPAN LAPORAN</button>
-            </div>
+                    <div class="flex gap-3 w-full md:w-auto">
+                         <button type="button" onclick="window.closeLaporanModal()" class="flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-bold text-slate-500 hover:bg-white border border-transparent hover:border-slate-200 transition">Batal</button>
+                         <button type="submit" class="flex-1 md:flex-none px-8 py-3 bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl text-xs font-bold shadow-float hover:shadow-glow transition transform active:scale-95 uppercase tracking-wide">SIMPAN LAPORAN</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- MODULE SCRIPT -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        const firebaseConfig = {
+        // --- KONFIGURASI FIREBASE ---
+        // Config ini diambil dari yang Anda berikan
+        const userFirebaseConfig = {
             apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
             authDomain: "hub-dashboard-92428.firebaseapp.com",
             projectId: "hub-dashboard-92428",
@@ -691,8 +699,54 @@
             appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
         };
 
-        const storageId = 'hub-data-v1';
+        // Logika Otomatis: Jika userFirebaseConfig diisi, pakai itu.
+        let firebaseConfig;
+        if (userFirebaseConfig.apiKey) {
+            firebaseConfig = userFirebaseConfig;
+            console.log("%c MENGGUNAKAN DATABASE PRIBADI ", "background: #22c55e; color: #fff; padding: 4px; border-radius: 4px; font-weight: bold;");
+        } else if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+            console.log("%c MENGGUNAKAN DATABASE SYSTEM (PREVIEW) ", "background: #3b82f6; color: #fff; padding: 4px; border-radius: 4px; font-weight: bold;");
+        } else {
+            console.error("Konfigurasi Firebase tidak ditemukan!");
+        }
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-hub-v1';
+
         let app, auth, db;
+        
+        // --- AUTH INIT & KONEKSI ---
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            const initAuth = async () => {
+                // PERBAIKAN: Jika pakai DB sendiri, langsung Anonymous Login.
+                // Token sistem (__initial_auth_token) hanya valid untuk DB bawaan environment ini.
+                if (userFirebaseConfig.apiKey) {
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (err) {
+                        console.error("Gagal Login Anonim. Pastikan 'Anonymous Auth' aktif di Firebase Console > Authentication.", err);
+                        throw err;
+                    }
+                } else if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            };
+            initAuth();
+
+            onAuthStateChanged(auth, (u) => { 
+                if(u) handleAuthSuccess(u); 
+            });
+        } catch(e) { 
+            console.error("Firebase Init Error:", e);
+            document.getElementById('init-error-text').innerText = "Gagal memuat konfigurasi database. Cek Console.";
+            document.getElementById('init-error-container').classList.remove('hidden');
+        }
 
         // Dynamic Island
         const island = document.getElementById('dynamic-island');
@@ -722,14 +776,50 @@
             }
         };
 
-        // Init
+        // Init Data
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
         let currentUser = null;
         let isLoggingOut = false; 
 
         // ==========================================
-        // BUG FIX: FUNGSI RENDERING YANG HILANG
+        // UTILS
         // ==========================================
+
+        window.verifyAction = async (title = 'Verifikasi') => {
+            const { value: code } = await Swal.fire({
+                title: title,
+                text: 'Masukkan Kode Akses Leader untuk melanjutkan',
+                input: 'password',
+                inputPlaceholder: 'Kode Akses...',
+                inputAttributes: { autocapitalize: 'off' },
+                icon: 'warning', 
+                iconColor: '#4361ee',
+                showCancelButton: true,
+                confirmButtonText: 'Verifikasi',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#4361ee',
+                cancelButtonColor: '#64748b',
+                background: '#ffffff',
+                customClass: {
+                    popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100',
+                    title: 'text-slate-800 font-bold text-xl',
+                    input: 'bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-slate-700 font-bold tracking-widest text-center',
+                    confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm shadow-lg shadow-blue-500/30',
+                    cancelButton: 'rounded-xl px-6 py-3 font-bold text-sm text-slate-500 hover:bg-slate-50',
+                    actions: 'gap-3'
+                }
+            });
+
+            if (code) {
+                if (code === appData.accessCode) {
+                    return true;
+                } else {
+                    window.notify('Kode Akses Salah', 'error');
+                    return false;
+                }
+            }
+            return false;
+        };
 
         window.renderLaporanList = () => {
             const tbody = document.getElementById('laporan-list-body');
@@ -785,7 +875,12 @@
             appData.users.forEach(u => {
                 let aksi = '';
                 if(currentUser && currentUser.role === 'admin') {
-                     aksi = `<button onclick="window.deleteUser('${u.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash-alt"></i></button>`;
+                     aksi = `
+                        <div class="flex justify-end gap-2">
+                            <button onclick="window.editUser('${u.id}')" class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100 hover:text-blue-700 transition flex items-center justify-center"><i class="fas fa-pen text-[10px]"></i></button>
+                            <button onclick="window.deleteUser('${u.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition flex items-center justify-center"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                     `;
                 }
                 
                 const html = `
@@ -872,10 +967,52 @@
              }
         }
 
-        window.deleteUser = (id) => {
-             Swal.fire({title:'Hapus User?', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef476f'}).then(async r => {
+        window.editUser = async (id) => {
+            const verified = await window.verifyAction('Edit User');
+            if(!verified) return;
+
+            const u = appData.users.find(x => x.id === id);
+            if(!u) return;
+
+            window.openUserModal();
+            document.getElementById('modal-title').innerText = 'Edit User';
+            document.getElementById('input-id').value = u.id;
+            document.getElementById('input-id').readOnly = true; 
+            document.getElementById('input-nama').value = u.nama;
+            document.getElementById('input-kode-hub').value = u.kode_hub;
+            document.getElementById('input-posisi').value = u.posisi;
+            document.getElementById('input-sandi').value = u.sandi;
+            document.getElementById('input-akses-toggle').checked = (u.akses === 'YA');
+            document.getElementById('akses-label').innerText = u.akses;
+            
+            window.toggleUserModalPassword();
+        };
+
+        window.deleteUser = async (id) => {
+             const verified = await window.verifyAction('Hapus User');
+             if(!verified) return;
+
+             Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: "Data user akan dihapus permanen.",
+                icon: 'warning',
+                iconColor: '#ef476f',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#ef476f',
+                cancelButtonColor: '#64748b',
+                background: '#ffffff',
+                customClass: {
+                    popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100',
+                    title: 'text-slate-800 font-bold text-xl',
+                    confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm shadow-lg shadow-rose-500/30',
+                    cancelButton: 'rounded-xl px-6 py-3 font-bold text-sm text-slate-500 hover:bg-slate-50',
+                    actions: 'gap-3'
+                }
+             }).then(async r => {
                  if(r.isConfirmed) {
-                     await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id));
+                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));
                      window.notify('User Dihapus', 'success');
                  }
              });
@@ -888,7 +1025,7 @@
             
             if(appData.costs.find(x => x.hub === h)) return window.notify('HUB Sudah Ada', 'error');
 
-            await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), { hub: h, cost: c });
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', h), { hub: h, cost: c });
             
             document.getElementById('new-hub-name').value = '';
             document.getElementById('new-hub-cost').value = '';
@@ -900,12 +1037,12 @@
             const batchPromises = [];
             
             const gCost = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
-            batchPromises.push(updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { costDW: gCost }));
+            batchPromises.push(updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { costDW: gCost }));
 
             inputs.forEach(i => {
                 const h = i.getAttribute('data-hub');
                 const c = window.parseFormattedNumber(i.value);
-                batchPromises.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), { hub: h, cost: c }));
+                batchPromises.push(setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', h), { hub: h, cost: c }));
             });
 
             try {
@@ -915,17 +1052,13 @@
         };
 
         window.deleteHub = (h) => {
-             Swal.fire({title:`Hapus HUB ${h}?`, text:'Data laporan tidak akan hilang.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef476f'}).then(async r => {
+             Swal.fire({title:`Hapus HUB ${h}?`, text:'Data laporan tidak akan hilang.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef476f', cancelButtonColor:'#94a3b8'}).then(async r => {
                  if(r.isConfirmed) {
-                     await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h));
+                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', h));
                      window.notify('HUB Dihapus', 'success');
                  }
              });
         };
-
-        // ==================================================================
-        // RAW CANVAS IMPLEMENTATION
-        // ==================================================================
 
         function drawRawCanvas(canvasId, labels, barData, lineData) {
             const canvas = document.getElementById(canvasId);
@@ -940,48 +1073,37 @@
             const height = rect.height;
 
             ctx.clearRect(0, 0, width, height);
+            
+            // Handle Empty Data
+            if (barData.every(x => x === 0 || x === null)) {
+                 ctx.font = '12px "Plus Jakarta Sans"';
+                 ctx.fillStyle = '#94a3b8';
+                 ctx.textAlign = 'center';
+                 ctx.fillText("Tidak ada data", width/2, height/2);
+                 return;
+            }
 
-            const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+            const padding = { top: 30, right: 20, bottom: 30, left: 10 }; 
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
 
-            const maxBar = Math.max(...barData, 1);
-            const maxLineActual = Math.max(...lineData, 1);
-            const normalizedLineData = lineData.map(v => (v / maxLineActual) * maxBar);
-            const overallMax = Math.max(maxBar, ...normalizedLineData);
+            const maxBar = Math.max(...barData.filter(v => v !== null), 1);
+            const maxLineActual = Math.max(...lineData.filter(v => v !== null), 1);
+            
+            const normalizedLineData = lineData.map(v => v === null ? null : (v / maxLineActual) * maxBar);
+            const overallMax = Math.max(maxBar, ...normalizedLineData.filter(v => v !== null));
             const roundedMax = Math.ceil(overallMax / 100) * 100 || 100;
 
-            // Grid & Y Labels
-            ctx.beginPath();
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 0.5;
-            ctx.fillStyle = '#64748b';
-            ctx.font = '10px "Plus Jakarta Sans"';
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'middle';
-
-            const gridSteps = 5;
-            for (let i = 0; i <= gridSteps; i++) {
-                const value = Math.round((roundedMax / gridSteps) * i);
-                const yPos = padding.top + chartHeight - ( (value / roundedMax) * chartHeight );
-                
-                ctx.moveTo(padding.left, yPos);
-                ctx.lineTo(width - padding.right, yPos);
-                
-                ctx.fillText(window.formatNumber(value), padding.left - 10, yPos);
-            }
-            ctx.stroke();
-
-            // Bar Chart
             const barCount = labels.length;
             const slotWidth = chartWidth / barCount;
-            const barWidth = slotWidth * 0.6; 
-            const barGap = slotWidth * 0.2;
+            const barWidth = slotWidth * 0.5; 
+            const barGap = slotWidth * 0.25;
 
             ctx.fillStyle = '#4361ee';
 
             barData.forEach((value, index) => {
-                if(value === 0) return;
+                if(value === null || value === 0) return; 
+                
                 const barHeight = (value / roundedMax) * chartHeight;
                 const xPos = padding.left + barGap + (slotWidth * index);
                 const yPos = padding.top + chartHeight - barHeight;
@@ -996,87 +1118,148 @@
                 ctx.lineTo(xPos, yPos + radius);
                 ctx.quadraticCurveTo(xPos, yPos, xPos + radius, yPos);
                 ctx.closePath();
+                ctx.fillStyle = '#4361ee';
                 ctx.fill();
 
-                ctx.fillStyle = '#64748b';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                ctx.fillText(labels[index], xPos + barWidth / 2, padding.top + chartHeight + 8);
-                ctx.fillStyle = '#4361ee';
+                // Draw Text only if enough space
+                if (barCount < 15) {
+                    const text = window.formatNumber(value);
+                    ctx.font = 'bold 9px "Plus Jakarta Sans"';
+                    const textWidth = ctx.measureText(text).width;
+                    const labelX = xPos + barWidth / 2;
+                    const labelY = yPos - 12; 
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                    ctx.shadowBlur = 4;
+                    ctx.beginPath();
+                    ctx.roundRect(labelX - textWidth/2 - 4, labelY - 6, textWidth + 8, 12, 4);
+                    ctx.fill();
+                    ctx.shadowColor = 'transparent'; 
+
+                    ctx.fillStyle = '#4361ee';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text, labelX, labelY);
+                }
+
+                if (index % Math.ceil(barCount/10) === 0) {
+                     ctx.fillStyle = '#94a3b8';
+                     ctx.textAlign = 'center';
+                     ctx.textBaseline = 'top';
+                     ctx.fillText(labels[index], xPos + barWidth / 2, padding.top + chartHeight + 8);
+                }
             });
 
-            // Line Chart
             ctx.beginPath();
             ctx.strokeStyle = '#94a3b8';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
             
             const linePoints = [];
 
             normalizedLineData.forEach((value, index) => {
-                const xPos = padding.left + barGap + (slotWidth * index) + (barWidth / 2);
-                const yPos = padding.top + chartHeight - ( (value / roundedMax) * chartHeight );
-                linePoints.push({x: xPos, y: yPos, originalValue: lineData[index]});
-
-                if (index === 0) {
-                    ctx.moveTo(xPos, yPos);
+                if (value === null) {
+                    linePoints.push(null); 
                 } else {
-                    ctx.lineTo(xPos, yPos);
+                    const xPos = padding.left + barGap + (slotWidth * index) + (barWidth / 2);
+                    const yPos = padding.top + chartHeight - ( (value / roundedMax) * chartHeight );
+                    linePoints.push({x: xPos, y: yPos, originalValue: lineData[index]});
                 }
             });
-            ctx.stroke();
 
-            // Line Points
-            linePoints.forEach(point => {
-                ctx.beginPath();
-                ctx.fillStyle = point.originalValue > 0 && point.originalValue < 600 ? '#ef476f' : '#06d6a0';
-                ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            });
+            let isDrawing = false;
+            for (let i = 0; i < linePoints.length; i++) {
+                const point = linePoints[i];
+                
+                if (point === null) {
+                    if (isDrawing) ctx.stroke(); 
+                    isDrawing = false;
+                    continue;
+                }
+
+                if (!isDrawing) {
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    isDrawing = true;
+                } else {
+                    const prevPoint = linePoints[i - 1];
+                    const midX = (prevPoint.x + point.x) / 2;
+                    const midY = (prevPoint.y + point.y) / 2;
+                    if (i === 1 || linePoints[i-2] === null) {
+                         ctx.quadraticCurveTo(prevPoint.x, prevPoint.y, midX, midY); 
+                    } else {
+                         ctx.quadraticCurveTo(prevPoint.x, prevPoint.y, midX, midY);
+                    }
+                    ctx.lineTo(point.x, point.y);
+                }
+            }
+            if (isDrawing) ctx.stroke();
+
+            // Draw line points if not too many
+            if (barCount < 20) {
+                linePoints.forEach(point => {
+                    if(point === null) return;
+
+                    ctx.beginPath();
+                    const isGood = point.originalValue >= 600;
+                    const pointColor = isGood ? '#10b981' : '#ef476f'; 
+                    
+                    ctx.fillStyle = pointColor;
+                    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Only draw labels for line if very few points
+                    if (barCount < 10) {
+                        const text = window.formatNumber(point.originalValue);
+                        ctx.font = 'bold 9px "Plus Jakarta Sans"';
+                        const textWidth = ctx.measureText(text).width;
+                        const labelY = point.y - 15; 
+
+                        ctx.fillStyle = pointColor; 
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                        ctx.shadowBlur = 4;
+                        ctx.beginPath();
+                        ctx.roundRect(point.x - textWidth/2 - 4, labelY - 6, textWidth + 8, 12, 4);
+                        ctx.fill();
+                        ctx.shadowColor = 'transparent';
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(text, point.x, labelY);
+                    }
+                });
+            }
         }
-
-        // ==========================================
-        // EXISTING LOGIC
-        // ==========================================
 
         function handleAuthSuccess(user) {
             if(isLoggingOut) return; 
             window.notify('Terhubung', 'success');
-            document.getElementById('loading-overlay').classList.add('hidden-fade');
-            setTimeout(() => {
-                document.getElementById('loading-overlay').classList.add('hidden');
-                document.getElementById('loading-overlay').remove();
-            }, 300);
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden-fade');
+                setTimeout(() => {
+                    if (overlay) {
+                        overlay.classList.add('hidden');
+                        overlay.remove();
+                    }
+                }, 300);
+            }
             document.getElementById('login-section').classList.remove('hidden');
             initListeners();
         }
 
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
-            onAuthStateChanged(auth, (u) => { 
-                if(u) handleAuthSuccess(u); 
-            });
-            signInAnonymously(auth).catch(e => {
-                if(!isLoggingOut) {
-                    console.error(e); window.notify('Gagal Koneksi', 'error');
-                    document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
-                    document.getElementById('init-error-container').classList.remove('hidden');
-                }
-            });
-        } catch(e) { window.notify('Config Error', 'error'); }
-
         function initListeners() {
-            const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
+            const pub = (c) => collection(db, 'artifacts', appId, 'public', 'data', c);
             
-            onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (s) => {
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), (s) => {
                 if(s.exists()) { const d = s.data(); appData.adminPass = d.adminPass; appData.accessCode = d.accessCode; appData.costDW = d.costDW; }
-                else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
+                else setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), appData);
             });
 
             onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
@@ -1175,20 +1358,63 @@
         };
         window.logout = window.doLogout;
 
-        document.getElementById('form-login-admin').onsubmit = (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value===appData.adminPass) doLogin('admin','Administrator','admin','YA','ALL'); else window.notify('Password Salah', 'error'); };
-        document.getElementById('form-login-user').onsubmit = (e) => { 
+        // Safe Event Binding
+        const safeBind = (id, handler) => { const el = document.getElementById(id); if (el) el.onsubmit = handler; };
+
+        safeBind('form-login-admin', (e) => { 
             e.preventDefault(); 
-            const u = appData.users.find(x => x.id === document.getElementById('login-id').value);
+            // FIXED: Tambahkan trim() untuk menghapus spasi di awal/akhir
+            const inputPass = document.getElementById('login-pass-admin').value.trim();
+            const dbPass = appData.adminPass || '123456'; // Fallback ke default jika DB belum siap
+
+            console.log("Login Attempt:", { inputLen: inputPass.length, dbPassLoaded: !!appData.adminPass });
+
+            if(inputPass === dbPass) {
+                doLogin('admin','Administrator','admin','YA','ALL'); 
+            } else {
+                window.notify('Password Salah', 'error'); 
+            }
+        });
+        
+        safeBind('form-login-user', (e) => { 
+            e.preventDefault(); 
+            // FIXED: Trim ID input juga
+            const inputId = document.getElementById('login-id').value.trim();
+            const u = appData.users.find(x => x.id === inputId);
+            
             if(!u) return window.notify('ID Tidak Ditemukan', 'error');
             const isLeader = document.getElementById('is-pic-checkbox').checked;
+            
             if(isLeader) {
-                if(u.sandi === document.getElementById('login-pass-user').value) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
+                // FIXED: Trim password user
+                const inputPass = document.getElementById('login-pass-user').value.trim();
+                if(u.sandi === inputPass) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
                 else window.notify('Password Salah', 'error');
             } else {
                 if(u.posisi === 'LEADER' || u.posisi === 'Admin') return window.notify('Gunakan Login Leader', 'error');
                 doLogin('sorter', u.nama, u.id, u.akses, u.kode_hub);
             }
-        };
+        });
+
+        safeBind('user-form', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('input-id').value;
+            const nama = document.getElementById('input-nama').value;
+            const hub = document.getElementById('input-kode-hub').value;
+            const posisi = document.getElementById('input-posisi').value;
+            const sandi = document.getElementById('input-sandi').value;
+            const akses = document.getElementById('input-akses-toggle').checked ? 'YA' : 'TIDAK';
+
+            if(!id || !nama) return window.notify('Data tidak lengkap', 'error');
+
+            const userData = { id, nama, kode_hub: hub, posisi, akses, sandi: sandi || '' };
+            
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id), userData);
+                window.closeUserModal();
+                window.notify('User Disimpan', 'success');
+            } catch(e) { window.notify('Gagal Simpan', 'error'); }
+        });
 
         window.navigate = (id) => {
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
@@ -1309,7 +1535,7 @@
             render('kpi-avg-prod', curr.prod, 'diff-avg-prod', prev.prod);
             render('kpi-total-cost', curr.cost, 'diff-total-cost', prev.cost, true);
 
-            window.updateCharts(data, hubs); window.updateDashboardTables(data);
+            window.updateCharts(data, hubs, s, e); window.updateDashboardTables(data);
         };
 
         const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;
@@ -1324,9 +1550,10 @@
         // ==========================================
         // UPDATE CHARTS (RAW CANVAS)
         // ==========================================
-        window.updateCharts = (data, hubs) => {
+        window.updateCharts = (data, hubs, startDate, endDate) => {
             const cy = new Date().getFullYear();
             
+            // --- ANNUAL CHART ---
             const mD = Array(12).fill(0).map(()=>({p:0,m:0}));
             let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
             if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
@@ -1334,17 +1561,52 @@
             
             const annualLabels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
             const annualBarData = mD.map(d=>d.p);
-            const annualLineData = mD.map(d=>d.m?Math.round(d.p/d.m):0);
+            // Replace 0 with null if no volume (total_paket) to create line gap if desired, 
+            // but for Annual chart usually we show 0. Request specifically mentioned "jeda" for date gaps.
+            // For simplicity, let's keep 0 for Annual unless specified.
+            const annualLineData = mD.map(d=>d.m?Math.round(d.p/d.m):0); 
             drawRawCanvas('chart-annual', annualLabels, annualBarData, annualLineData);
 
-            const agg={}; 
-            data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
-            const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b));
+            // --- DAILY CHART ---
+            // Create full date range array
+            const dateRangeLabels = [];
+            const dailyBarData = [];
+            const dailyLineData = [];
             
-            const dailyLabels = sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
-            const dailyBarData = sD.map(d=>agg[d].p);
-            const dailyLineData = sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0);
-            drawRawCanvas('chart-daily', dailyLabels, dailyBarData, dailyLineData);
+            let curr = new Date(startDate);
+            while(curr <= endDate) {
+                const dateStr = curr.toISOString().split('T')[0];
+                const day = String(curr.getDate()).padStart(2,'0');
+                const mon = String(curr.getMonth()+1).padStart(2,'0');
+                
+                // Aggregation for this specific date
+                let vol = 0;
+                let mpp = 0;
+                let hasData = false;
+
+                data.forEach(l => {
+                    if (l.tanggal === dateStr) {
+                        vol += l.total_paket;
+                        mpp += l.total_mpp;
+                        hasData = true;
+                    }
+                });
+
+                dateRangeLabels.push(`${day}/${mon}`);
+                
+                if (hasData) {
+                    dailyBarData.push(vol);
+                    dailyLineData.push(mpp > 0 ? Math.round(vol / mpp) : 0);
+                } else {
+                    // Push null to create gap
+                    dailyBarData.push(null);
+                    dailyLineData.push(null);
+                }
+
+                curr.setDate(curr.getDate() + 1);
+            }
+
+            drawRawCanvas('chart-daily', dateRangeLabels, dailyBarData, dailyLineData);
         };
 
         window.updateDashboardTables = (data) => {
@@ -1713,19 +1975,62 @@
             ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id=>document.getElementById(id).innerText='0');
         };
         window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
+        
         window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
-            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
-            const users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => { const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id); });
-            const map = {}; existingData.forEach(x => map[x.userId] = x);
-            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); });
-            existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
+            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; 
+            const tb = document.getElementById('attendance-tbody'); 
+            tb.innerHTML = ''; 
+            if(!h) return;
+
+            // 1. Ambil data user aktif
+            const activeUsers = appData.users.filter(u => u.kode_hub === h).sort((a,b) => { 
+                const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
+                const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; 
+                if(rA!==rB)return rA-rB; 
+                return a.id.localeCompare(b.id); 
+            });
+
+            // 2. Mapping data kehadiran yang ada (saat edit)
+            const historyMap = {}; 
+            existingData.forEach(x => historyMap[x.userId] = x);
+            
+            const renderedIds = new Set();
+
+            // 3. Render user aktif
+            activeUsers.forEach(u => { 
+                const isL = u.posisi==='LEADER'||u.posisi==='Admin'; 
+                window.renderRow(tb, u.id, u.nama, u.posisi, isL, historyMap[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); 
+                renderedIds.add(u.id);
+            });
+
+            // 4. Render user "History" (yang sudah dihapus tapi ada di data lama)
+            existingData.forEach(x => { 
+                if(!renderedIds.has(x.userId)) {
+                    // Cek apakah ini manual DW atau user lama
+                    const isManual = x.userId.startsWith('manual_');
+                    const role = isManual ? 'DW' : 'History';
+                    window.renderRow(tb, x.userId, x.nama, role, false, historyMap[x.userId], isManual); 
+                }
+            });
+
             window.calcMetrics();
         };
+
         window.renderRow = (tb, id, nm, role, isL, sv, isM) => {
-            const nmH = isM ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` : `<div class="font-bold text-slate-700">${nm}</div><div class="text-[10px] text-slate-400 font-medium">${isL?'★ LEADER':role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
+            // Jika role adalah 'History', beri style khusus
+            const isHistory = role === 'History';
+            const roleBadge = isHistory 
+                ? `<span class="bg-slate-100 text-slate-400 text-[9px] px-1.5 py-0.5 rounded ml-1">Ex-User</span>` 
+                : `<div class="text-[10px] text-slate-400 font-medium">${isL?'★ LEADER':role}</div>`;
+
+            const nmH = isM 
+                ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` 
+                : `<div class="font-bold text-slate-700 flex items-center">${nm} ${isHistory ? '<i class="fas fa-history text-slate-300 ml-2 text-[10px]" title="User Terhapus"></i>' : ''}</div>${roleBadge}<input type="hidden" name="user_nama[]" value="${nm}">`;
+            
             const del = isM ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
             const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c} w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer transition" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/50':'bg-white'} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left pl-6">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-100">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 outline-none bg-slate-50"></td><td class="p-2 text-center">${del}</td></tr>`);
+            
+            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/50':(isHistory?'bg-slate-50 opacity-80':'bg-white')} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left pl-6">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-100">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 outline-none bg-slate-50"></td><td class="p-2 text-center">${del}</td></tr>`);
         };
         window.handleSingleCheck = (c) => { if(c.checked) c.closest('tr').querySelectorAll('.attendance-checkbox').forEach(x=>{if(x!==c)x.checked=false}); window.calcMetrics(); };
         window.calcMetrics = (el) => { if(el) window.formatCostInput(el); const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), sa=window.parseFormattedNumber(document.getElementById('lap-sap').value), tot=g+s+j+sa; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot; let mpp=0; document.querySelectorAll('#attendance-tbody tr').forEach(r=>{ if(r.getAttribute('data-role')!=='LEADER'&&r.getAttribute('data-role')!=='Admin'&&r.querySelector('.shift-chk:checked')) mpp++; }); document.getElementById('disp-total-mpp').innerText=mpp; document.getElementById('disp-productivity').innerText=mpp>0?window.formatNumber(Math.round(tot/mpp)):0; };
@@ -1754,12 +2059,12 @@
             }
             const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
             const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
-            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
+            try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
         };
 
-        window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
-        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
-        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
+        window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
+        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
+        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
     </script>
 </body>
 </html>

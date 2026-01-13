@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.5 (Fixed)</title>
+    <title>DailyReport v2.4 (Canvas Testing)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -603,119 +603,23 @@
         </div>
     </div>
 
-    <!-- MODAL LAPORAN -->
-    <div id="laporan-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-2">
-        <div class="bg-white p-0 rounded-[2rem] w-full max-w-4xl shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                <div><h3 class="text-xl font-extrabold text-slate-800 tracking-tight" id="laporan-modal-title">Laporan Baru</h3><p class="text-xs text-slate-400 font-medium mt-1">Isi data volume paket dan absensi tim</p></div>
-                <button onclick="window.closeLaporanModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button>
-            </div>
-            
-            <form id="laporan-form" class="flex-1 overflow-y-auto custom-scrollbar">
-                <input type="hidden" id="edit-laporan-id">
-                <div class="p-6 space-y-8">
-                    <!-- Section 1: Data Umum -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="md:col-span-1 space-y-5">
-                            <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">Tanggal</label><input type="date" id="lap-tanggal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none font-bold text-slate-700" required></div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">HUB Location</label>
-                                <select id="lap-hub-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none font-bold text-slate-700" onchange="window.loadHubUsersForAttendance()"></select>
-                                <input type="text" id="lap-hub-text" class="w-full bg-slate-100 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-500 hidden" readonly>
-                            </div>
-                        </div>
-                        <div class="md:col-span-2 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-wider flex items-center gap-2"><i class="fas fa-box text-primary"></i> Volume Paket (Incoming)</label>
-                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">Gateway</span><input type="text" id="lap-gateway" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
-                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">Staging</span><input type="text" id="lap-staging" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
-                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">JNE</span><input type="text" id="lap-jne" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
-                                <div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 ml-1">SAP</span><input type="text" id="lap-sap" placeholder="0" class="w-full text-center font-bold text-slate-700 border border-slate-200 rounded-xl py-2.5 focus:ring-2 focus:ring-primary outline-none" onkeyup="window.calcMetrics(this)"></div>
-                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Section 2: Absensi -->
-                    <div>
-                        <div class="flex justify-between items-end mb-3">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-users text-indigo-500"></i> Absensi Tim</label>
-                            <button type="button" onclick="window.addManualDWRow()" class="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 transition border border-indigo-100 flex items-center gap-1"><i class="fas fa-plus"></i> Tambah DW Manual</button>
-                        </div>
-                        <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                            <div class="overflow-x-auto max-h-[300px]">
-                                <table class="w-full text-xs text-left">
-                                    <thead class="bg-slate-50 text-slate-500 font-bold sticky top-0 z-10 shadow-sm">
-                                        <tr>
-                                            <th class="p-3 pl-6 w-1/4">Nama Personil</th>
-                                            <th class="p-2 text-center w-12 bg-blue-50/50 text-blue-600">S1</th>
-                                            <th class="p-2 text-center w-12 bg-blue-50/50 text-blue-600">S2</th>
-                                            <th class="p-2 text-center w-12 bg-blue-50/50 text-blue-600 border-r border-slate-200">S3</th>
-                                            <th class="p-2 text-center w-12 text-amber-500">Ijn</th>
-                                            <th class="p-2 text-center w-12 text-purple-500">Skt</th>
-                                            <th class="p-2 text-center w-12 text-red-500">Alf</th>
-                                            <th class="p-3 w-1/4">Keterangan</th>
-                                            <th class="p-2 w-8"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="attendance-tbody" class="divide-y divide-slate-50"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer Summary -->
-                <div class="p-5 border-t border-slate-100 bg-slate-50 sticky bottom-0 z-10 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div class="flex items-center gap-6 w-full md:w-auto justify-center md:justify-start">
-                        <div class="text-center md:text-left"><p class="text-[10px] font-bold text-slate-400 uppercase">Total Paket</p><p class="text-xl font-extrabold text-slate-800" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div>
-                        <div class="w-px h-8 bg-slate-200"></div>
-                        <div class="text-center md:text-left"><p class="text-[10px] font-bold text-slate-400 uppercase">Total MPP</p><p class="text-xl font-extrabold text-primary" id="disp-total-mpp">0</p></div>
-                        <div class="w-px h-8 bg-slate-200"></div>
-                        <div class="text-center md:text-left"><p class="text-[10px] font-bold text-slate-400 uppercase">Productivity</p><p class="text-xl font-extrabold text-success" id="disp-productivity">0</p></div>
-                    </div>
-                    <div class="flex gap-3 w-full md:w-auto">
-                         <button type="button" onclick="window.closeLaporanModal()" class="flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-bold text-slate-500 hover:bg-white border border-transparent hover:border-slate-200 transition">Batal</button>
-                         <button type="submit" class="flex-1 md:flex-none px-8 py-3 bg-gradient-to-r from-primary to-primaryDark text-white rounded-xl text-xs font-bold shadow-float hover:shadow-glow transition transform active:scale-95 uppercase tracking-wide">SIMPAN LAPORAN</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- MODULE SCRIPT -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-hub-v1';
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
+            authDomain: "hub-dashboard-92428.firebaseapp.com",
+            projectId: "hub-dashboard-92428",
+            storageBucket: "hub-dashboard-92428.firebasestorage.app",
+            messagingSenderId: "827243064075",
+            appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
+        };
 
+        const storageId = 'hub-data-v1';
         let app, auth, db;
-        
-        // --- AUTH INIT & KONEKSI ---
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-            initAuth();
-
-            onAuthStateChanged(auth, (u) => { 
-                if(u) handleAuthSuccess(u); 
-            });
-        } catch(e) { 
-            console.error("Firebase Init Error:", e);
-            document.getElementById('init-error-text').innerText = "Gagal memuat konfigurasi database.";
-            document.getElementById('init-error-container').classList.remove('hidden');
-        }
 
         // Dynamic Island
         const island = document.getElementById('dynamic-island');
@@ -745,7 +649,7 @@
             }
         };
 
-        // Init Data
+        // Init
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
         let currentUser = null;
         let isLoggingOut = false; 
@@ -761,6 +665,7 @@
                 input: 'password',
                 inputPlaceholder: 'Kode Akses...',
                 inputAttributes: { autocapitalize: 'off' },
+                // FIX: Gunakan 'warning' atau 'question' karena 'lock' bukan icon bawaan SweetAlert2
                 icon: 'warning', 
                 iconColor: '#4361ee',
                 showCancelButton: true,
@@ -981,7 +886,7 @@
                 }
              }).then(async r => {
                  if(r.isConfirmed) {
-                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));
+                     await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id));
                      window.notify('User Dihapus', 'success');
                  }
              });
@@ -994,7 +899,7 @@
             
             if(appData.costs.find(x => x.hub === h)) return window.notify('HUB Sudah Ada', 'error');
 
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', h), { hub: h, cost: c });
+            await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), { hub: h, cost: c });
             
             document.getElementById('new-hub-name').value = '';
             document.getElementById('new-hub-cost').value = '';
@@ -1006,12 +911,12 @@
             const batchPromises = [];
             
             const gCost = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
-            batchPromises.push(updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { costDW: gCost }));
+            batchPromises.push(updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { costDW: gCost }));
 
             inputs.forEach(i => {
                 const h = i.getAttribute('data-hub');
                 const c = window.parseFormattedNumber(i.value);
-                batchPromises.push(setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', h), { hub: h, cost: c }));
+                batchPromises.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), { hub: h, cost: c }));
             });
 
             try {
@@ -1023,7 +928,7 @@
         window.deleteHub = (h) => {
              Swal.fire({title:`Hapus HUB ${h}?`, text:'Data laporan tidak akan hilang.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef476f', cancelButtonColor:'#94a3b8'}).then(async r => {
                  if(r.isConfirmed) {
-                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'costs', h));
+                     await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h));
                      window.notify('HUB Dihapus', 'success');
                  }
              });
@@ -1042,15 +947,6 @@
             const height = rect.height;
 
             ctx.clearRect(0, 0, width, height);
-            
-            // Handle Empty Data
-            if (barData.every(x => x === 0 || x === null)) {
-                 ctx.font = '12px "Plus Jakarta Sans"';
-                 ctx.fillStyle = '#94a3b8';
-                 ctx.textAlign = 'center';
-                 ctx.fillText("Tidak ada data", width/2, height/2);
-                 return;
-            }
 
             const padding = { top: 30, right: 20, bottom: 30, left: 10 }; 
             const chartWidth = width - padding.left - padding.right;
@@ -1090,34 +986,29 @@
                 ctx.fillStyle = '#4361ee';
                 ctx.fill();
 
-                // Draw Text only if enough space
-                if (barCount < 15) {
-                    const text = window.formatNumber(value);
-                    ctx.font = 'bold 9px "Plus Jakarta Sans"';
-                    const textWidth = ctx.measureText(text).width;
-                    const labelX = xPos + barWidth / 2;
-                    const labelY = yPos - 12; 
+                const text = window.formatNumber(value);
+                ctx.font = 'bold 9px "Plus Jakarta Sans"';
+                const textWidth = ctx.measureText(text).width;
+                const labelX = xPos + barWidth / 2;
+                const labelY = yPos - 12; 
 
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-                    ctx.shadowBlur = 4;
-                    ctx.beginPath();
-                    ctx.roundRect(labelX - textWidth/2 - 4, labelY - 6, textWidth + 8, 12, 4);
-                    ctx.fill();
-                    ctx.shadowColor = 'transparent'; 
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = 4;
+                ctx.beginPath();
+                ctx.roundRect(labelX - textWidth/2 - 4, labelY - 6, textWidth + 8, 12, 4);
+                ctx.fill();
+                ctx.shadowColor = 'transparent'; 
 
-                    ctx.fillStyle = '#4361ee';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(text, labelX, labelY);
-                }
+                ctx.fillStyle = '#4361ee';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, labelX, labelY);
 
-                if (index % Math.ceil(barCount/10) === 0) {
-                     ctx.fillStyle = '#94a3b8';
-                     ctx.textAlign = 'center';
-                     ctx.textBaseline = 'top';
-                     ctx.fillText(labels[index], xPos + barWidth / 2, padding.top + chartHeight + 8);
-                }
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(labels[index], xPos + barWidth / 2, padding.top + chartHeight + 8);
             });
 
             ctx.beginPath();
@@ -1166,44 +1057,38 @@
             }
             if (isDrawing) ctx.stroke();
 
-            // Draw line points if not too many
-            if (barCount < 20) {
-                linePoints.forEach(point => {
-                    if(point === null) return;
+            linePoints.forEach(point => {
+                if(point === null) return;
 
-                    ctx.beginPath();
-                    const isGood = point.originalValue >= 600;
-                    const pointColor = isGood ? '#10b981' : '#ef476f'; 
-                    
-                    ctx.fillStyle = pointColor;
-                    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+                ctx.beginPath();
+                const isGood = point.originalValue >= 600;
+                const pointColor = isGood ? '#10b981' : '#ef476f'; 
+                
+                ctx.fillStyle = pointColor;
+                ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
-                    // Only draw labels for line if very few points
-                    if (barCount < 10) {
-                        const text = window.formatNumber(point.originalValue);
-                        ctx.font = 'bold 9px "Plus Jakarta Sans"';
-                        const textWidth = ctx.measureText(text).width;
-                        const labelY = point.y - 15; 
+                const text = window.formatNumber(point.originalValue);
+                ctx.font = 'bold 9px "Plus Jakarta Sans"';
+                const textWidth = ctx.measureText(text).width;
+                const labelY = point.y - 15; 
 
-                        ctx.fillStyle = pointColor; 
-                        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-                        ctx.shadowBlur = 4;
-                        ctx.beginPath();
-                        ctx.roundRect(point.x - textWidth/2 - 4, labelY - 6, textWidth + 8, 12, 4);
-                        ctx.fill();
-                        ctx.shadowColor = 'transparent';
+                ctx.fillStyle = pointColor; 
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = 4;
+                ctx.beginPath();
+                ctx.roundRect(point.x - textWidth/2 - 4, labelY - 6, textWidth + 8, 12, 4);
+                ctx.fill();
+                ctx.shadowColor = 'transparent';
 
-                        ctx.fillStyle = '#ffffff';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(text, point.x, labelY);
-                    }
-                });
-            }
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, point.x, labelY);
+            });
         }
 
         function handleAuthSuccess(user) {
@@ -1223,12 +1108,29 @@
             initListeners();
         }
 
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
+            onAuthStateChanged(auth, (u) => { 
+                if(u) handleAuthSuccess(u); 
+            });
+            signInAnonymously(auth).catch(e => {
+                if(!isLoggingOut) {
+                    console.error(e); window.notify('Gagal Koneksi', 'error');
+                    document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
+                    document.getElementById('init-error-container').classList.remove('hidden');
+                }
+            });
+        } catch(e) { window.notify('Config Error', 'error'); }
+
         function initListeners() {
-            const pub = (c) => collection(db, 'artifacts', appId, 'public', 'data', c);
+            const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
             
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), (s) => {
+            onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (s) => {
                 if(s.exists()) { const d = s.data(); appData.adminPass = d.adminPass; appData.accessCode = d.accessCode; appData.costDW = d.costDW; }
-                else setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), appData);
+                else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
             });
 
             onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
@@ -1360,7 +1262,7 @@
             const userData = { id, nama, kode_hub: hub, posisi, akses, sandi: sandi || '' };
             
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id), userData);
+                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), userData);
                 window.closeUserModal();
                 window.notify('User Disimpan', 'success');
             } catch(e) { window.notify('Gagal Simpan', 'error'); }
@@ -1925,62 +1827,19 @@
             ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id=>document.getElementById(id).innerText='0');
         };
         window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
-        
         window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
-            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; 
-            const tb = document.getElementById('attendance-tbody'); 
-            tb.innerHTML = ''; 
-            if(!h) return;
-
-            // 1. Ambil data user aktif
-            const activeUsers = appData.users.filter(u => u.kode_hub === h).sort((a,b) => { 
-                const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
-                const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; 
-                if(rA!==rB)return rA-rB; 
-                return a.id.localeCompare(b.id); 
-            });
-
-            // 2. Mapping data kehadiran yang ada (saat edit)
-            const historyMap = {}; 
-            existingData.forEach(x => historyMap[x.userId] = x);
-            
-            const renderedIds = new Set();
-
-            // 3. Render user aktif
-            activeUsers.forEach(u => { 
-                const isL = u.posisi==='LEADER'||u.posisi==='Admin'; 
-                window.renderRow(tb, u.id, u.nama, u.posisi, isL, historyMap[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); 
-                renderedIds.add(u.id);
-            });
-
-            // 4. Render user "History" (yang sudah dihapus tapi ada di data lama)
-            existingData.forEach(x => { 
-                if(!renderedIds.has(x.userId)) {
-                    // Cek apakah ini manual DW atau user lama
-                    const isManual = x.userId.startsWith('manual_');
-                    const role = isManual ? 'DW' : 'History';
-                    window.renderRow(tb, x.userId, x.nama, role, false, historyMap[x.userId], isManual); 
-                }
-            });
-
+            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
+            const users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => { const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id); });
+            const map = {}; existingData.forEach(x => map[x.userId] = x);
+            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); });
+            existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
             window.calcMetrics();
         };
-
         window.renderRow = (tb, id, nm, role, isL, sv, isM) => {
-            // Jika role adalah 'History', beri style khusus
-            const isHistory = role === 'History';
-            const roleBadge = isHistory 
-                ? `<span class="bg-slate-100 text-slate-400 text-[9px] px-1.5 py-0.5 rounded ml-1">Ex-User</span>` 
-                : `<div class="text-[10px] text-slate-400 font-medium">${isL?'★ LEADER':role}</div>`;
-
-            const nmH = isM 
-                ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` 
-                : `<div class="font-bold text-slate-700 flex items-center">${nm} ${isHistory ? '<i class="fas fa-history text-slate-300 ml-2 text-[10px]" title="User Terhapus"></i>' : ''}</div>${roleBadge}<input type="hidden" name="user_nama[]" value="${nm}">`;
-            
+            const nmH = isM ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` : `<div class="font-bold text-slate-700">${nm}</div><div class="text-[10px] text-slate-400 font-medium">${isL?'★ LEADER':role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
             const del = isM ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
             const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c} w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer transition" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-            
-            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/50':(isHistory?'bg-slate-50 opacity-80':'bg-white')} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left pl-6">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-100">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 outline-none bg-slate-50"></td><td class="p-2 text-center">${del}</td></tr>`);
+            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/50':'bg-white'} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left pl-6">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-100">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 outline-none bg-slate-50"></td><td class="p-2 text-center">${del}</td></tr>`);
         };
         window.handleSingleCheck = (c) => { if(c.checked) c.closest('tr').querySelectorAll('.attendance-checkbox').forEach(x=>{if(x!==c)x.checked=false}); window.calcMetrics(); };
         window.calcMetrics = (el) => { if(el) window.formatCostInput(el); const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), sa=window.parseFormattedNumber(document.getElementById('lap-sap').value), tot=g+s+j+sa; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot; let mpp=0; document.querySelectorAll('#attendance-tbody tr').forEach(r=>{ if(r.getAttribute('data-role')!=='LEADER'&&r.getAttribute('data-role')!=='Admin'&&r.querySelector('.shift-chk:checked')) mpp++; }); document.getElementById('disp-total-mpp').innerText=mpp; document.getElementById('disp-productivity').innerText=mpp>0?window.formatNumber(Math.round(tot/mpp)):0; };
@@ -2009,12 +1868,12 @@
             }
             const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
             const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
-            try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
+            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
         };
 
-        window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
-        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
-        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
+        window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
+        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
+        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
     </script>
 </body>
 </html>

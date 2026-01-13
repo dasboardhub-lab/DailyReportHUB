@@ -688,29 +688,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        // --- KONFIGURASI FIREBASE ---
-        // Config ini diambil dari yang Anda berikan
-        const userFirebaseConfig = {
-            apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
-            authDomain: "hub-dashboard-92428.firebaseapp.com",
-            projectId: "hub-dashboard-92428",
-            storageBucket: "hub-dashboard-92428.firebasestorage.app",
-            messagingSenderId: "827243064075",
-            appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
-        };
-
-        // Logika Otomatis: Jika userFirebaseConfig diisi, pakai itu.
-        let firebaseConfig;
-        if (userFirebaseConfig.apiKey) {
-            firebaseConfig = userFirebaseConfig;
-            console.log("%c MENGGUNAKAN DATABASE PRIBADI ", "background: #22c55e; color: #fff; padding: 4px; border-radius: 4px; font-weight: bold;");
-        } else if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-            console.log("%c MENGGUNAKAN DATABASE SYSTEM (PREVIEW) ", "background: #3b82f6; color: #fff; padding: 4px; border-radius: 4px; font-weight: bold;");
-        } else {
-            console.error("Konfigurasi Firebase tidak ditemukan!");
-        }
-
+        const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-hub-v1';
 
         let app, auth, db;
@@ -722,16 +700,7 @@
             db = getFirestore(app);
             
             const initAuth = async () => {
-                // PERBAIKAN: Jika pakai DB sendiri, langsung Anonymous Login.
-                // Token sistem (__initial_auth_token) hanya valid untuk DB bawaan environment ini.
-                if (userFirebaseConfig.apiKey) {
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (err) {
-                        console.error("Gagal Login Anonim. Pastikan 'Anonymous Auth' aktif di Firebase Console > Authentication.", err);
-                        throw err;
-                    }
-                } else if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
@@ -744,7 +713,7 @@
             });
         } catch(e) { 
             console.error("Firebase Init Error:", e);
-            document.getElementById('init-error-text').innerText = "Gagal memuat konfigurasi database. Cek Console.";
+            document.getElementById('init-error-text').innerText = "Gagal memuat konfigurasi database.";
             document.getElementById('init-error-container').classList.remove('hidden');
         }
 
@@ -1361,34 +1330,15 @@
         // Safe Event Binding
         const safeBind = (id, handler) => { const el = document.getElementById(id); if (el) el.onsubmit = handler; };
 
-        safeBind('form-login-admin', (e) => { 
-            e.preventDefault(); 
-            // FIXED: Tambahkan trim() untuk menghapus spasi di awal/akhir
-            const inputPass = document.getElementById('login-pass-admin').value.trim();
-            const dbPass = appData.adminPass || '123456'; // Fallback ke default jika DB belum siap
-
-            console.log("Login Attempt:", { inputLen: inputPass.length, dbPassLoaded: !!appData.adminPass });
-
-            if(inputPass === dbPass) {
-                doLogin('admin','Administrator','admin','YA','ALL'); 
-            } else {
-                window.notify('Password Salah', 'error'); 
-            }
-        });
+        safeBind('form-login-admin', (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value===appData.adminPass) doLogin('admin','Administrator','admin','YA','ALL'); else window.notify('Password Salah', 'error'); });
         
         safeBind('form-login-user', (e) => { 
             e.preventDefault(); 
-            // FIXED: Trim ID input juga
-            const inputId = document.getElementById('login-id').value.trim();
-            const u = appData.users.find(x => x.id === inputId);
-            
+            const u = appData.users.find(x => x.id === document.getElementById('login-id').value);
             if(!u) return window.notify('ID Tidak Ditemukan', 'error');
             const isLeader = document.getElementById('is-pic-checkbox').checked;
-            
             if(isLeader) {
-                // FIXED: Trim password user
-                const inputPass = document.getElementById('login-pass-user').value.trim();
-                if(u.sandi === inputPass) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
+                if(u.sandi === document.getElementById('login-pass-user').value) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
                 else window.notify('Password Salah', 'error');
             } else {
                 if(u.posisi === 'LEADER' || u.posisi === 'Admin') return window.notify('Gunakan Login Leader', 'error');

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport</title>
+    <title>DailyReport v2.3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -22,19 +22,23 @@
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
-                        primary: '#2563eb', // Professional Blue
-                        primaryLight: '#eff6ff', // Blue 50
-                        secondary: '#64748b', // Slate 500
-                        success: '#10b981', // Emerald 500
-                        danger: '#ef4444', // Red 500
-                        dark: '#1e293b', // Slate 800
+                        primary: '#4361ee', 
+                        primaryDark: '#3a0ca3',
+                        primaryLight: '#f2f5ff',
+                        secondary: '#64748b',
+                        success: '#06d6a0', 
+                        danger: '#ef476f', 
+                        warning: '#ffd166',
+                        dark: '#1e293b',
                         surface: '#ffffff',
-                        background: '#f8fafc', // Slate 50
+                        background: '#f8fafc',
                     },
                     boxShadow: {
-                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
-                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
-                        'float': '0 10px 30px -10px rgba(37, 99, 235, 0.2)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'card': '0 2px 10px rgba(0, 0, 0, 0.03)',
+                        'float': '0 10px 40px -10px rgba(67, 97, 238, 0.3)',
+                        'glow': '0 0 15px rgba(67, 97, 238, 0.3)',
+                        'input': '0 2px 6px rgba(0,0,0,0.04)', 
                     }
                 }
             }
@@ -42,66 +46,80 @@
     </script>
 
     <style>
-        body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        
-        /* Dynamic Island 2.0 (IOS Style) */
-        #dynamic-island-container { pointer-events: none; z-index: 10000; }
-        #dynamic-island {
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
-            pointer-events: auto;
-            transform-origin: top center;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
+        body { 
+            background-color: #f1f5f9; 
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, hsla(253,16%,7%,0) 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.1) 0, hsla(225,39%,30%,0) 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, hsla(339,49%,30%,0) 50%);
+            -webkit-tap-highlight-color: transparent; 
         }
-        .island-hidden { opacity: 0; transform: translateY(-30px) scale(0.8); pointer-events: none !important; }
-        .island-loading { width: 110px; height: 36px; border-radius: 99px; justify-content: center; }
-        .island-expanded { width: auto; min-width: 220px; height: 48px; border-radius: 99px; padding: 0 20px; justify-content: start; }
         
-        .island-error .island-icon-bg { background: #ef4444; }
-        .island-success .island-icon-bg { background: #10b981; }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
 
-        /* Scrollbar refined */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Navbar & Nav Items */
-        .nav-link { 
-            position: relative; color: #64748b; transition: all 0.2s ease; cursor: pointer; 
-            padding: 0.6rem 1rem; border-radius: 0.5rem; font-weight: 500; font-size: 0.9rem;
+        
+        /* Custom Scroll for table container */
+        .table-scroll-container {
+            max-height: 500px;
+            overflow-y: auto;
         }
-        .nav-link:hover { color: #2563eb; background: #eff6ff; }
-        .nav-link.active { color: #2563eb; background: #eff6ff; font-weight: 700; }
+
+        /* Dynamic Island */
+        #dynamic-island-container { pointer-events: none; z-index: 10000; }
+        #dynamic-island {
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            pointer-events: auto;
+            transform-origin: top center;
+        }
+        .island-hidden { opacity: 0; transform: translateY(-40px) scale(0.5); pointer-events: none !important; }
+        .island-loading { width: 120px; height: 40px; border-radius: 99px; justify-content: center; background: #0f172a; }
+        .island-expanded { width: auto; min-width: 240px; height: 52px; border-radius: 99px; padding: 0 24px; justify-content: start; background: #0f172a; }
+        .island-error .island-icon-bg { background: #ef476f; }
+        .island-success .island-icon-bg { background: #06d6a0; }
+
+        /* Navbar */
+        .nav-link { 
+            position: relative; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: pointer; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.9rem;
+        }
+        .nav-link:hover { color: #4361ee; background: rgba(67, 97, 238, 0.08); }
+        .nav-link.active { color: #4361ee; background: rgba(67, 97, 238, 0.1); font-weight: 700; }
         
         .mobile-nav-item { color: #94a3b8; transition: all 0.3s; position: relative; }
-        .mobile-nav-item.active { color: #2563eb; font-weight: 700; transform: translateY(-2px); }
+        .mobile-nav-item.active { color: #4361ee; transform: translateY(-4px); }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Modern Tables */
-        .abs-cell { min-width: 38px; text-align: center; border-right: 1px solid #f1f5f9; font-size: 11px; vertical-align: middle; }
+        /* Tables */
+        .abs-cell { min-width: 40px; text-align: center; border-right: 1px solid #f1f5f9; font-size: 11px; vertical-align: middle; }
         .abs-header { position: sticky; top: 0; background: #f8fafc; z-index: 20; font-size: 10px; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
-        .abs-name-col { position: sticky; left: 0; background: white; z-index: 30; border-right: 2px solid #f1f5f9; min-width: 140px; box-shadow: 4px 0 10px -5px rgba(0,0,0,0.02); }
+        .abs-name-col { position: sticky; left: 0; background: white; z-index: 30; border-right: 1px solid #e2e8f0; min-width: 140px; box-shadow: 4px 0 10px -5px rgba(0,0,0,0.02); }
 
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; bg-white; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); transition: opacity 0.3s ease-out; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,0.8); backdrop-filter: blur(15px); transition: opacity 0.4s ease-out; }
         .hidden-fade { opacity: 0; pointer-events: none; }
         
-        button:active { transform: scale(0.97); }
-        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); }
-        
-        /* KPI Card Hover */
-        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        button:active { transform: scale(0.96); }
+        .kpi-card { transition: all 0.3s ease; border: 1px solid transparent; }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08); border-color: rgba(67, 97, 238, 0.2); }
     </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-blue-100 selection:text-blue-700 bg-slate-50">
+<body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
 
-    <!-- DYNAMIC ISLAND 2.0 -->
+    <!-- DYNAMIC ISLAND -->
     <div id="dynamic-island-container" class="fixed top-6 left-0 right-0 flex justify-center">
         <div id="dynamic-island" class="island-hidden flex items-center text-white group relative overflow-hidden ring-1 ring-white/10">
-            <!-- Spinner -->
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                 <div class="flex space-x-1.5">
                     <div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style="animation-delay: 0s"></div>
@@ -109,8 +127,6 @@
                     <div class="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
                 </div>
             </div>
-            
-            <!-- Content -->
             <div id="island-content" class="flex items-center gap-3 w-full opacity-0 transition-opacity duration-300">
                 <div id="island-icon-bg" class="w-7 h-7 rounded-full flex items-center justify-center bg-white/20 island-icon-bg backdrop-blur-md">
                     <i id="island-icon" class="fas fa-check text-[10px]"></i>
@@ -123,133 +139,130 @@
         </div>
     </div>
 
-    <!-- DESKTOP NAVBAR -->
-    <nav id="app-navbar" class="bg-white/80 backdrop-blur-md text-slate-800 shadow-sm z-50 hidden border-b border-slate-200/60">
+    <!-- NAVBARS -->
+    <nav id="app-navbar" class="glass sticky top-0 z-50 hidden border-b border-slate-200/50">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between h-18 py-3">
+            <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 text-white">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-primary to-primaryDark rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white transform rotate-3 hover:rotate-0 transition-transform duration-300">
                         <i class="fas fa-chart-line text-lg"></i>
                     </div>
                     <div>
                         <h1 class="font-extrabold text-lg tracking-tight leading-none text-slate-800">DAILY<span class="text-primary">REPORT</span></h1>
-                        <p class="text-[10px] text-slate-400 font-semibold tracking-widest mt-0.5">ONLINE SYSTEM</p>
+                        <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Operasional System</p>
                     </div>
                 </div>
-                <div class="flex items-center bg-slate-100/50 p-1.5 rounded-xl border border-slate-200/50">
+                <div class="hidden md:flex items-center bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
                     <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
                     <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-file-contract text-xs"></i> Laporan</a>
                     <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link flex items-center gap-2"><i class="fas fa-user-check text-xs"></i> Absensi</a>
                     <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link flex items-center gap-2 hidden"><i class="fas fa-cog text-xs"></i> Pengaturan</a>
                 </div>
-                <div class="flex items-center gap-4 pl-6 border-l border-slate-100">
-                    <div class="text-right">
+                <div class="flex items-center gap-4 pl-6">
+                    <div class="text-right hidden sm:block">
                         <div class="text-sm font-bold text-slate-700 truncate max-w-[120px]" id="user-name-display">User</div>
                         <div class="text-[10px] text-primary font-bold tracking-wider bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-0.5" id="user-badge">ROLE</div>
                     </div>
-                    <button onclick="window.doLogout()" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-red-50 hover:text-red-500 text-slate-400 transition-all duration-300 flex items-center justify-center group border border-slate-200" title="Keluar">
-                        <i class="fas fa-power-off text-xs group-hover:scale-110 transition-transform"></i>
+                    <button onclick="window.doLogout()" class="w-10 h-10 rounded-full bg-white hover:bg-red-50 hover:text-danger text-slate-400 transition-all duration-300 flex items-center justify-center group border border-slate-100 shadow-sm" title="Keluar">
+                        <i class="fas fa-power-off text-sm group-hover:scale-110 transition-transform"></i>
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- MOBILE TOP BAR -->
-    <div id="mobile-topbar" class="md:hidden bg-white/90 backdrop-blur-md text-slate-800 px-5 py-3 flex justify-between items-center shadow-sm z-40 hidden sticky top-0 border-b border-slate-200">
+    <div id="mobile-topbar" class="md:hidden glass px-5 py-4 flex justify-between items-center shadow-sm z-40 hidden sticky top-0">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+            <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                 <i class="fas fa-cube text-sm"></i>
             </div>
-            <span class="font-bold text-base tracking-tight">DailyReport</span>
+            <span class="font-extrabold text-lg tracking-tight text-slate-800">DailyReport</span>
         </div>
         <div class="flex items-center gap-3">
              <div class="text-right">
-                <div class="text-[10px] font-bold text-slate-600 truncate max-w-[80px]" id="mob-user-name">User</div>
+                <div class="text-[11px] font-bold text-slate-700 truncate max-w-[100px]" id="mob-user-name">User</div>
             </div>
-            <button onclick="window.doLogout()" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full">
+            <button onclick="window.doLogout()" class="text-slate-400 hover:text-danger bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <i class="fas fa-power-off"></i>
             </button>
         </div>
     </div>
 
-    <!-- MOBILE BOTTOM NAV -->
-    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden px-2 pt-2 pb-4">
-        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-2 flex flex-col items-center gap-1 rounded-xl">
-            <i class="fas fa-chart-pie text-xl mb-0.5"></i>
-            <span class="text-[10px] font-bold">Dash</span>
-        </button>
-        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-1 rounded-xl">
-            <i class="fas fa-file-contract text-xl mb-0.5"></i>
-            <span class="text-[10px] font-bold">Laporan</span>
-        </button>
-        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-1 rounded-xl">
-            <i class="fas fa-user-check text-xl mb-0.5"></i>
-            <span class="text-[10px] font-bold">Absensi</span>
-        </button>
-        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-1 hidden rounded-xl">
-            <i class="fas fa-cog text-xl mb-0.5"></i>
-            <span class="text-[10px] font-bold">Atur</span>
-        </button>
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-200/50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden px-4 pt-3 pb-5 rounded-t-3xl">
+        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-chart-pie text-xl"></i><span class="text-[10px] font-bold">Dash</span></button>
+        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-file-contract text-xl"></i><span class="text-[10px] font-bold">Laporan</span></button>
+        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-user-check text-xl"></i><span class="text-[10px] font-bold">Absensi</span></button>
+        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5 hidden"><i class="fas fa-cog text-xl"></i><span class="text-[10px] font-bold">Atur</span></button>
     </div>
 
-    <!-- LOGIN SECTION -->
-    <div id="login-section" class="fixed inset-0 z-40 bg-slate-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] rounded-full bg-blue-100/50 blur-3xl opacity-60"></div>
-            <div class="absolute bottom-[-10%] left-[-10%] w-[30rem] h-[30rem] rounded-full bg-indigo-100/50 blur-3xl opacity-60"></div>
+    <!-- LOGIN SECTION (FIXED LABEL OVERLAP) -->
+    <div id="login-section" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-[-20%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-blue-400/20 blur-[100px] opacity-60 animate-pulse" style="animation-duration: 4s;"></div>
+            <div class="absolute bottom-[-20%] right-[-10%] w-[40rem] h-[40rem] rounded-full bg-purple-400/20 blur-[100px] opacity-60 animate-pulse" style="animation-duration: 6s;"></div>
         </div>
         
-        <div class="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] w-full max-w-sm border border-white/50 relative fade-in z-10 m-6">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/30 mb-5">
-                    <i class="fas fa-chart-simple text-white text-3xl"></i>
+        <div class="glass p-8 md:p-12 rounded-[2.5rem] shadow-glass w-full max-w-sm border border-white/60 relative fade-in z-10 m-6">
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 bg-gradient-to-tr from-primary to-primaryDark rounded-[2rem] mx-auto flex items-center justify-center shadow-glow mb-6 rotate-6 transition-transform hover:rotate-0">
+                    <i class="fas fa-chart-simple text-white text-5xl drop-shadow-md"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-1">Selamat Datang</h2>
-                <p class="text-slate-500 text-sm font-medium">Masuk untuk mengelola laporan</p>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-1 tracking-tight">DailyReport</h2>
+                <p class="text-slate-400 text-xs font-semibold tracking-wide uppercase">Operational Management System</p>
             </div>
             
-            <div class="flex p-1.5 bg-slate-100 rounded-xl mb-6 border border-slate-200">
-                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm bg-white text-primary ring-1 ring-black/5">User</button>
-                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-2.5 rounded-lg text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Admin</button>
+            <div class="flex p-1.5 bg-slate-100/80 rounded-2xl mb-8 border border-slate-200/60">
+                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-3 rounded-xl text-xs font-bold transition-all shadow-sm bg-white text-primary ring-1 ring-black/5 uppercase tracking-wide">User Team</button>
+                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-3 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-600 transition-all uppercase tracking-wide">Admin</button>
             </div>
 
-            <form id="form-login-user" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5 ml-1">ID User</label>
-                    <div class="relative group">
-                        <i class="fas fa-user absolute left-4 top-3.5 text-slate-400 group-focus-within:text-primary transition-colors"></i>
-                        <input type="text" id="login-id" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition shadow-sm" placeholder="Masukkan ID" required>
-                    </div>
+            <form id="form-login-user" class="space-y-6">
+                <!-- User ID Input -->
+                <div class="relative group">
+                    <input type="text" id="login-id" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Masukkan ID">
+                    <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
+                    <!-- Fix: Added bg-slate-50 and px-2 to cover border -->
+                    <label for="login-id" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">ID User</label>
                 </div>
+
+                <!-- Leader Checkbox -->
                 <div>
-                    <label class="flex items-center cursor-pointer mb-2 ml-1 group">
-                        <input type="checkbox" id="is-pic-checkbox" class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary transition cursor-pointer" onchange="window.togglePasswordField()">
-                        <span class="ml-2 text-xs text-slate-500 font-bold group-hover:text-primary transition">Saya adalah LEADER</span>
+                    <label class="flex items-center cursor-pointer group select-none">
+                        <div class="relative">
+                            <input type="checkbox" id="is-pic-checkbox" class="peer sr-only" onchange="window.togglePasswordField()">
+                            <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                        </div>
+                        <span class="ml-3 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login sebagai Leader / PIC?</span>
                     </label>
-                    <div class="relative hidden group" id="login-pass-container">
-                        <i class="fas fa-lock absolute left-4 top-3.5 text-slate-400 group-focus-within:text-primary transition-colors"></i>
-                        <input type="password" id="login-pass-user" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition shadow-sm" placeholder="Kata Sandi">
+
+                    <!-- Password Input -->
+                    <div class="relative group mt-4 hidden overflow-hidden transition-all duration-300 origin-top" id="login-pass-container">
+                        <input type="password" id="login-pass-user" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Password">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
+                        <!-- Fix: Added bg-slate-50 and px-2 -->
+                        <label for="login-pass-user" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Kata Sandi</label>
                     </div>
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-primary hover:bg-indigo-600 text-white rounded-xl font-bold shadow-float transition-all transform hover:-translate-y-0.5 active:scale-95">MASUK APLIKASI</button>
+
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-primaryDark hover:shadow-glow text-white rounded-2xl font-bold shadow-float transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+                    <span>Masuk Aplikasi</span> <i class="fas fa-arrow-right"></i>
+                </button>
             </form>
 
-            <form id="form-login-admin" class="space-y-5 hidden">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5 ml-1">Password Admin</label>
-                    <div class="relative group">
-                        <i class="fas fa-shield-alt absolute left-4 top-3.5 text-slate-400 group-focus-within:text-primary transition-colors"></i>
-                        <input type="password" id="login-pass-admin" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition shadow-sm" required placeholder="Kunci Admin">
-                    </div>
+            <form id="form-login-admin" class="space-y-6 hidden">
+                <div class="relative group">
+                    <input type="password" id="login-pass-admin" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-slate-800 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Kunci Admin" required>
+                    <i class="fas fa-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-slate-800 transition-colors text-lg"></i>
+                    <!-- Fix: Added bg-slate-50 and px-2 -->
+                    <label for="login-pass-admin" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-slate-800 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Password Admin</label>
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95">MASUK SEBAGAI ADMIN</button>
+                <button type="submit" class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-bold shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider">MASUK SYSTEM</button>
             </form>
 
             <div id="init-error-container" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl hidden animate-pulse">
-                <div class="flex items-center gap-2 text-red-600 mb-1"><i class="fas fa-wifi"></i><span class="text-xs font-bold">Gagal Terhubung</span></div>
+                <div class="flex items-center gap-2 text-danger mb-1"><i class="fas fa-wifi"></i><span class="text-xs font-bold">Gagal Terhubung</span></div>
                 <p id="init-error-text" class="text-[10px] text-red-400 leading-relaxed"></p>
-                <button onclick="location.reload()" class="w-full mt-3 text-xs bg-white border border-red-200 text-red-500 py-2 rounded-lg font-bold hover:bg-red-50 transition">Coba Lagi</button>
+                <button onclick="location.reload()" class="w-full mt-3 text-xs bg-white border border-red-200 text-danger py-2 rounded-lg font-bold hover:bg-red-50 transition">Coba Lagi</button>
             </div>
         </div>
     </div>
@@ -257,122 +270,139 @@
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
         <div class="relative">
-            <div class="w-16 h-16 border-4 border-slate-100 border-t-primary rounded-full animate-spin"></div>
+            <div class="w-20 h-20 border-4 border-slate-100 border-t-primary rounded-full animate-spin"></div>
             <div class="absolute inset-0 flex items-center justify-center">
-                <i class="fas fa-cube text-primary text-xl animate-pulse"></i>
+                <i class="fas fa-cube text-primary text-2xl animate-pulse"></i>
             </div>
         </div>
         <div id="loading-logs" class="hidden"></div>
     </div>
 
     <!-- MAIN CONTENT -->
-    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-28 md:pb-12 hidden">
+    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-32 md:pb-12 hidden scroll-smooth">
         <div class="max-w-7xl mx-auto space-y-8">
             
-            <!-- VIEW: DASHBOARD -->
+            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
-                <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800 tracking-tight">Dashboard</h2>
-                        <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis</p>
+                        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 flex-1 md:flex-none hover:bg-white hover:shadow-sm transition cursor-pointer group">
+                        <div class="flex items-center gap-3 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 flex-1 md:flex-none hover:shadow-sm transition cursor-pointer group">
                             <i class="far fa-calendar text-slate-400 text-xs group-hover:text-primary transition-colors"></i>
                             <input type="date" id="dash-start-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
-                            <span class="text-slate-300 font-light">-</span>
+                            <span class="text-slate-300 font-light">to</span>
                             <input type="date" id="dash-end-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
                         </div>
                         <div class="relative flex-1 md:flex-none md:w-48">
-                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200 text-slate-600 text-xs rounded-xl px-4 py-2.5 flex justify-between items-center hover:border-primary/50 hover:shadow-sm transition" onclick="window.toggleHubDropdown(event)">
+                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200/60 text-slate-600 text-xs rounded-xl px-4 py-3 flex justify-between items-center hover:border-primary/50 hover:shadow-sm transition" onclick="window.toggleHubDropdown(event)">
                                 <span id="hub-filter-label" class="truncate font-bold">Semua HUB</span>
                                 <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
                             </button>
                             <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto"></div>
                         </div>
-                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 border border-slate-200 hover:bg-white hover:text-primary hover:border-primary/30 shadow-sm transition" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
+                        <button onclick="window.resetDashboardFilters()" class="p-3 rounded-xl text-slate-400 border border-slate-200/60 bg-white hover:text-primary hover:border-primary/30 shadow-sm transition" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
                     </div>
                 </div>
 
                 <!-- KPI CARDS -->
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-primary/20">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide group-hover:text-primary transition-colors">Total MPP</p>
-                        <h3 class="text-xl font-extrabold text-slate-800 mt-1" id="kpi-total-mpp">0</h3>
-                        <div id="diff-total-mpp"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                     <!-- Standard KPI -->
+                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 rounded-bl-3xl -mr-2 -mt-2"></div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Total MPP</p>
+                        <h3 class="text-2xl font-extrabold text-slate-800 mt-1 relative z-10" id="kpi-total-mpp">0</h3>
+                        <div id="diff-total-mpp" class="relative z-10"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-primary/20">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Staging</p>
-                        <h3 class="text-xl font-extrabold text-slate-700 mt-1" id="kpi-staging">0</h3>
-                        <div id="diff-staging"></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Staging</p>
+                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-staging">0</h3>
+                        <div id="diff-staging" class="relative z-10"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-primary/20">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Gateway</p>
-                        <h3 class="text-xl font-extrabold text-slate-700 mt-1" id="kpi-gateway">0</h3>
-                        <div id="diff-gateway"></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Gateway</p>
+                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-gateway">0</h3>
+                        <div id="diff-gateway" class="relative z-10"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-primary/20">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">JNE</p>
-                        <h3 class="text-xl font-extrabold text-slate-700 mt-1" id="kpi-jne">0</h3>
-                        <div id="diff-jne"></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
+                         <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">JNE</p>
+                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-jne">0</h3>
+                        <div id="diff-jne" class="relative z-10"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-primary/20">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">SAP</p>
-                        <h3 class="text-xl font-extrabold text-slate-700 mt-1" id="kpi-sap">0</h3>
-                        <div id="diff-sap"></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
+                         <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">SAP</p>
+                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-sap">0</h3>
+                        <div id="diff-sap" class="relative z-10"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-indigo-100 kpi-card group hover:border-indigo-300">
-                        <p class="text-[9px] font-bold text-indigo-400 uppercase tracking-wide">Total Paket</p>
-                        <h3 class="text-xl font-extrabold text-indigo-600 mt-1" id="kpi-total-paket">0</h3>
-                        <div id="diff-total-paket"></div>
+                    
+                    <!-- Highlighted KPI (Fixed Text Visibility) -->
+                    <div class="bg-gradient-to-br from-primary to-blue-600 p-4 rounded-2xl shadow-float kpi-card group text-white">
+                        <!-- Changed text color to white with better opacity -->
+                        <p class="text-[9px] font-bold text-white uppercase tracking-widest opacity-90">Total Paket</p>
+                        <h3 class="text-2xl font-extrabold text-white mt-1" id="kpi-total-paket">0</h3>
+                        <div id="diff-total-paket" class="brightness-200 contrast-200 grayscale"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-emerald-200">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide group-hover:text-emerald-500 transition-colors">Prod.</p>
-                        <h3 class="text-xl font-extrabold text-emerald-600 mt-1" id="kpi-avg-prod">0</h3>
+                    
+                    <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-success kpi-card group">
+                        <p class="text-[9px] font-bold text-success uppercase tracking-widest">Prod.</p>
+                        <h3 class="text-2xl font-extrabold text-slate-800 mt-1" id="kpi-avg-prod">0</h3>
                         <div id="diff-avg-prod"></div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border border-slate-100 kpi-card group hover:border-rose-200">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide group-hover:text-rose-500 transition-colors">Cost</p>
-                        <h3 class="text-sm font-extrabold text-rose-600 mt-2 truncate" id="kpi-total-cost">Rp 0</h3>
+                    <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-danger kpi-card group">
+                        <p class="text-[9px] font-bold text-danger uppercase tracking-widest">Cost</p>
+                        <h3 class="text-lg font-extrabold text-slate-800 mt-2 truncate" id="kpi-total-cost">Rp 0</h3>
                         <div id="diff-total-cost"></div>
                     </div>
                 </div>
 
                 <!-- Charts -->
                 <div class="space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-card border border-slate-100">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary"><i class="fas fa-chart-area"></i></div>
-                            <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Tahunan</h3>
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-primary shadow-sm"><i class="fas fa-chart-area"></i></div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Trend Tahunan</h3>
+                                <p class="text-[10px] text-slate-400">Analisis pergerakan volume paket</p>
+                            </div>
                         </div>
                         <div class="h-64"><canvas id="chart-annual"></canvas></div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-card border border-slate-100">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
                          <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><i class="fas fa-chart-line"></i></div>
-                            <h3 class="font-bold text-slate-700 text-sm uppercase tracking-wider">Trend Harian</h3>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm"><i class="fas fa-chart-line"></i></div>
+                             <div>
+                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Trend Harian</h3>
+                                <p class="text-[10px] text-slate-400">Monitoring harian productivity</p>
+                            </div>
                         </div>
                         <div class="h-64"><canvas id="chart-daily"></canvas></div>
                     </div>
                 </div>
 
-                <!-- Tables Grid -->
+                 <!-- Tables Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Daily Details -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden flex flex-col">
-                        <div class="p-5 border-b border-slate-50 flex justify-between items-center">
-                            <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400"></i> Rincian Data</h3>
-                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-[10px] font-bold text-primary bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-100"><i class="fas fa-download mr-1"></i> CSV</button>
+                    <!-- Daily Details (FIXED SCROLL HEIGHT) -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
+                            <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400 bg-slate-100 p-1.5 rounded-lg"></i> Rincian Data</h3>
+                            <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-[10px] font-bold text-primary bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition border border-blue-100"><i class="fas fa-download mr-1"></i> EXPORT CSV</button>
                         </div>
-                        <div class="overflow-x-auto flex-1">
+                        <!-- Added class table-scroll-container with max-height -->
+                        <div class="overflow-x-auto flex-1 table-scroll-container">
                             <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
-                                <thead class="text-slate-400 bg-slate-50 uppercase font-bold sticky top-0 z-10">
+                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
-                                        <th class="px-3 py-3 text-left pl-5">Tanggal</th><th class="px-3 py-3">HUB</th><th class="px-3 py-3 text-blue-600">MPP</th>
-                                        <th class="px-3 py-3 text-slate-400">Stg</th><th class="px-3 py-3 text-slate-400">Gtw</th>
-                                        <th class="px-3 py-3 text-slate-400">JNE</th><th class="px-3 py-3 text-slate-400">SAP</th>
-                                        <th class="px-3 py-3 font-bold text-slate-700 bg-slate-50">Total</th><th class="px-3 py-3">Prod.</th><th class="px-3 py-3 text-right pr-5 text-slate-500">Cost</th>
+                                        <th class="px-3 py-4 text-left pl-6 tracking-wider">Tanggal</th><th class="px-3 py-4 tracking-wider">HUB</th><th class="px-3 py-4 text-primary tracking-wider">MPP</th>
+                                        <th class="px-3 py-4 text-slate-400">Stg</th><th class="px-3 py-4 text-slate-400">Gtw</th>
+                                        <th class="px-3 py-4 text-slate-400">JNE</th><th class="px-3 py-4 text-slate-400">SAP</th>
+                                        <th class="px-3 py-4 font-extrabold text-slate-700 bg-slate-50/80">Total</th><th class="px-3 py-4">Prod.</th><th class="px-3 py-4 text-right pr-6 text-slate-500">Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-daily-detail" class="text-slate-600 divide-y divide-slate-50"></tbody>
@@ -380,17 +410,17 @@
                         </div>
                     </div>
                     <!-- HUB Performance -->
-                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden flex flex-col h-fit">
-                        <div class="p-5 border-b border-slate-50 flex items-center gap-2">
-                             <i class="fas fa-trophy text-amber-400"></i>
+                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-fit">
+                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
+                             <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-trophy"></i></div>
                             <h3 class="font-bold text-slate-700 text-sm">Top Performa</h3>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto table-scroll-container" style="max-height: 500px;">
                             <table class="w-full text-xs text-center">
-                                <thead class="text-slate-400 bg-slate-50 uppercase font-bold sticky top-0 z-10">
+                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
-                                        <th class="px-3 py-3 text-left pl-5">HUB</th><th class="px-2 py-3 text-blue-600">MPP</th>
-                                        <th class="px-3 py-3 text-primary">Out.</th><th class="px-2 py-3 text-emerald-600">Prod</th><th class="px-3 py-3 text-right pr-5 text-slate-400">Cost</th>
+                                        <th class="px-3 py-4 text-left pl-6">HUB</th><th class="px-2 py-4 text-primary">MPP</th>
+                                        <th class="px-3 py-4 text-slate-700">Out.</th><th class="px-2 py-4 text-success">Prod</th><th class="px-3 py-4 text-right pr-6 text-slate-400">Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-hub-breakdown" class="text-slate-600 divide-y divide-slate-50"></tbody>
@@ -400,128 +430,163 @@
                 </div>
             </div>
 
-            <!-- VIEW: LAPORAN -->
-            <div id="view-laporan" class="view-content hidden fade-in space-y-4">
-                <div class="flex justify-between items-center bg-white p-5 rounded-2xl border border-slate-100 shadow-card">
+            <!-- VIEW: LAPORAN (Main Content same) -->
+             <div id="view-laporan" class="view-content hidden fade-in space-y-5">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl border border-slate-100 shadow-sm gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
-                        <p class="text-xs text-slate-500 font-medium mt-0.5">Rekapitulasi data operasional</p>
+                        <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                     </div>
-                    <button onclick="window.openLaporanModal()" class="bg-primary hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 font-bold text-xs transition hidden flex items-center gap-2 active:scale-95" id="btn-tambah-laporan">
-                        <i class="fas fa-plus"></i> <span class="hidden sm:inline">Buat Laporan</span>
+                    <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-6 py-3 rounded-2xl font-bold text-xs transition hidden flex items-center gap-2 active:scale-95 group" id="btn-tambah-laporan">
+                        <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT LAPORAN</span>
                     </button>
                 </div>
-                <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden flex flex-col h-[70vh]">
+                <div class="bg-white rounded-3xl shadow-card border border-slate-100/50 overflow-hidden flex flex-col h-[70vh]">
                     <div class="overflow-auto flex-1">
                         <table class="w-full text-xs text-left text-slate-600 whitespace-nowrap">
-                            <thead class="text-slate-400 uppercase bg-slate-50 border-b border-slate-100 font-bold sticky top-0 z-10">
+                            <thead class="text-slate-400 uppercase bg-slate-50/50 border-b border-slate-100 font-bold sticky top-0 z-10 backdrop-blur-sm">
                                 <tr>
-                                    <th class="px-5 py-4 bg-slate-50">Tanggal</th><th class="px-4 py-4 bg-slate-50">HUB</th>
-                                    <th class="px-2 py-4 bg-slate-50">Gtw</th><th class="px-2 py-4 bg-slate-50">Stg</th><th class="px-2 py-4 bg-slate-50">JNE</th><th class="px-2 py-4 bg-slate-50">SAP</th>
-                                    <th class="px-4 py-4 bg-slate-50 font-bold text-slate-800">Total</th>
-                                    <th class="px-4 py-4 text-blue-600 bg-slate-50">MPP</th><th class="px-4 py-4 text-emerald-600 bg-slate-50">Prod</th>
-                                    <th class="px-5 py-4 text-right bg-slate-50">Aksi</th>
+                                    <th class="px-6 py-4 bg-slate-50/50">Tanggal</th><th class="px-4 py-4 bg-slate-50/50">HUB</th>
+                                    <th class="px-2 py-4 bg-slate-50/50 text-right">Gtw</th><th class="px-2 py-4 bg-slate-50/50 text-right">Stg</th><th class="px-2 py-4 bg-slate-50/50 text-right">JNE</th><th class="px-2 py-4 bg-slate-50/50 text-right">SAP</th>
+                                    <th class="px-4 py-4 bg-slate-100/50 font-bold text-slate-800 text-right">Total</th>
+                                    <th class="px-4 py-4 text-primary bg-slate-50/50 text-right">MPP</th><th class="px-4 py-4 text-success bg-slate-50/50 text-right">Prod</th>
+                                    <th class="px-6 py-4 text-right bg-slate-50/50">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="laporan-list-body" class="divide-y divide-slate-50"></tbody>
                         </table>
                     </div>
                     <div id="empty-laporan-msg" class="hidden text-center py-24 flex flex-col items-center justify-center">
-                        <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-3 text-slate-300"><i class="fas fa-folder-open text-2xl"></i></div>
-                        <p class="text-slate-400 text-xs font-medium">Belum ada laporan.</p>
+                        <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 text-slate-300 animate-pulse"><i class="fas fa-folder-open text-3xl"></i></div>
+                        <p class="text-slate-400 text-sm font-medium">Belum ada laporan yang tersedia.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW: ABSENSI -->
-            <div id="view-absensi" class="view-content hidden fade-in space-y-6">
-                <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-100">
-                    <div class="flex flex-wrap gap-3 items-center justify-between">
+            <!-- VIEW: ABSENSI (AUTO FILTER) -->
+             <div id="view-absensi" class="view-content hidden fade-in space-y-6">
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex flex-wrap gap-4 items-center justify-between">
                          <div class="flex items-center gap-3 flex-1 min-w-[280px]">
-                            <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 gap-2">
+                            <div class="flex items-center bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 gap-2 hover:bg-white hover:shadow-sm transition">
                                 <i class="far fa-calendar text-slate-400 text-xs"></i>
-                                <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24">
-                                <span class="text-slate-300 font-light">-</span>
-                                <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24">
+                                <!-- Added onchange -->
+                                <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
+                                <span class="text-slate-300 font-light">to</span>
+                                <!-- Added onchange -->
+                                <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
                             </div>
-                            <select id="abs-hub-select" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none"><option value="ALL">Semua HUB</option></select>
+                            <!-- Added onchange -->
+                            <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
                          </div>
                          <div class="flex gap-2">
-                             <button onclick="window.loadAbsensiData()" class="bg-primary text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 shadow-md shadow-blue-500/20 transition active:scale-95">Tampilkan</button>
-                             <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-3 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl"><i class="fas fa-sync-alt"></i></button>
+                             <!-- Removed "TAMPILKAN" button -->
+                             <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl"><i class="fas fa-sync-alt"></i></button>
                          </div>
                     </div>
                 </div>
                 
-                <!-- KPI Absensi -->
                 <div class="grid grid-cols-2 gap-4">
-                     <div class="bg-white p-5 rounded-2xl shadow-card border border-slate-100 flex flex-col justify-between group hover:border-blue-200 transition">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide group-hover:text-blue-500">Total MPP</p><div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-users"></i></div></div>
-                        <h3 class="text-2xl font-extrabold text-blue-600 mt-2" id="abs-kpi-mpp">0</h3>
+                     <div class="bg-gradient-to-br from-blue-50 to-white p-6 rounded-3xl shadow-card border border-blue-100/50 flex flex-col justify-between group">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Total MPP</p><div class="w-10 h-10 rounded-xl bg-blue-100/50 flex items-center justify-center text-primary"><i class="fas fa-users"></i></div></div>
+                        <h3 class="text-3xl font-extrabold text-primary mt-2" id="abs-kpi-mpp">0</h3>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-card border border-slate-100 flex flex-col justify-between group hover:border-rose-200 transition">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide group-hover:text-rose-500">Total Cost</p><div class="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500"><i class="fas fa-coins"></i></div></div>
-                        <h3 class="text-2xl font-extrabold text-rose-600 mt-2" id="abs-kpi-cost">Rp 0</h3>
+                    <div class="bg-gradient-to-br from-rose-50 to-white p-6 rounded-3xl shadow-card border border-rose-100/50 flex flex-col justify-between group">
+                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Total Cost</p><div class="w-10 h-10 rounded-xl bg-rose-100/50 flex items-center justify-center text-danger"><i class="fas fa-coins"></i></div></div>
+                        <h3 class="text-3xl font-extrabold text-danger mt-2" id="abs-kpi-cost">Rp 0</h3>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden flex flex-col h-[60vh]">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[60vh]">
                     <div class="overflow-auto flex-1">
-                        <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium"><p>Silakan pilih filter dan klik Tampilkan</p></div></div>
+                        <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium flex-col gap-2"><i class="fas fa-search text-3xl opacity-20"></i><p>Silakan pilih filter...</p></div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW: PENGATURAN -->
+            <!-- VIEW: SETTINGS -->
             <div id="view-pengaturan" class="view-content hidden fade-in space-y-8">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Pengaturan</h2>
-                    <div class="flex space-x-1 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200">
-                        <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="px-5 py-2 rounded-lg text-xs font-bold transition bg-primary/10 text-primary shadow-sm">User</button>
-                        <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition">Akses</button>
-                        <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 transition">Cost</button>
+                 <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Pengaturan</h2>
+                        <p class="text-xs text-slate-500 mt-1">Konfigurasi sistem dan pengguna</p>
+                    </div>
+                    <div class="flex space-x-1 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200">
+                        <button onclick="window.switchSettingsTab('users')" id="set-tab-users" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-primary/10 text-primary shadow-sm">User</button>
+                        <button onclick="window.switchSettingsTab('general')" id="set-tab-general" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700 transition">Akses</button>
+                        <button onclick="window.switchSettingsTab('cost')" id="set-tab-cost" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700 transition">Cost</button>
                     </div>
                 </div>
 
                 <div id="settings-users" class="settings-panel">
-                    <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden">
-                        <div class="p-5 border-b border-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-800 text-sm">Daftar Pengguna</h3><button onclick="window.openUserModal()" class="text-[10px] bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-100 font-bold transition border border-emerald-100 flex items-center gap-2"><i class="fas fa-user-plus"></i> Tambah</button></div>
-                        <div class="overflow-x-auto"><table class="w-full text-xs text-left text-slate-600"><thead class="text-slate-400 uppercase bg-slate-50/50"><tr><th class="px-5 py-3">Nama</th><th class="px-4 py-3">ID</th><th class="px-4 py-3">HUB</th><th class="px-4 py-3">Posisi</th><th class="px-5 py-3 text-right">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-50"></tbody></table></div>
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-50 flex justify-between items-center"><h3 class="font-bold text-slate-800 text-sm">Daftar Pengguna</h3><button onclick="window.openUserModal()" class="text-[10px] bg-success/10 text-success px-5 py-2.5 rounded-xl hover:bg-success/20 font-bold transition border border-success/20 flex items-center gap-2"><i class="fas fa-user-plus"></i> Tambah</button></div>
+                        <div class="overflow-x-auto"><table class="w-full text-xs text-left text-slate-600"><thead class="text-slate-400 uppercase bg-slate-50/50"><tr><th class="px-6 py-4 tracking-wide">Nama</th><th class="px-6 py-4 tracking-wide">ID</th><th class="px-6 py-4 tracking-wide">HUB</th><th class="px-6 py-4 tracking-wide">Posisi</th><th class="px-6 py-4 text-right tracking-wide">Aksi</th></tr></thead><tbody id="user-table-body" class="divide-y divide-slate-50"></tbody></table></div>
                     </div>
                 </div>
 
+                <!-- Redesigned General Settings Inputs -->
                 <div id="settings-general" class="settings-panel hidden">
                     <div class="grid md:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-card border border-slate-100"><h3 class="font-bold text-slate-800 mb-4 text-sm flex items-center gap-2"><i class="fas fa-key text-primary"></i> Password Admin</h3><div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Password Baru</label><input type="password" id="new-admin-pass" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition bg-slate-50 focus:bg-white"></div><button onclick="window.saveAdminPass()" class="w-full bg-primary text-white px-4 py-3 rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20">Update Password</button></div>
-                        <div class="bg-white p-6 rounded-2xl shadow-card border border-slate-100"><h3 class="font-bold text-slate-800 mb-4 text-sm flex items-center gap-2"><i class="fas fa-lock text-purple-500"></i> Kode Akses Leader</h3><div class="mb-4"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Baru</label><input type="text" id="access-code-input" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none transition bg-slate-50 focus:bg-white"></div><button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-3 rounded-xl text-xs font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-500/20">Simpan Kode</button></div>
+                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                            <h3 class="font-bold text-slate-800 mb-6 text-sm flex items-center gap-2"><i class="fas fa-key text-primary"></i> Password Admin</h3>
+                            <div class="mb-5 relative group">
+                                <input type="password" id="new-admin-pass" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Password Baru">
+                                <label for="new-admin-pass" class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Password Baru</label>
+                            </div>
+                            <button onclick="window.saveAdminPass()" class="w-full bg-primary text-white px-4 py-3.5 rounded-xl text-xs font-bold hover:shadow-glow transition shadow-float tracking-wide uppercase">Update Password</button>
+                        </div>
+                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                            <h3 class="font-bold text-slate-800 mb-6 text-sm flex items-center gap-2"><i class="fas fa-lock text-purple-500"></i> Kode Akses Leader</h3>
+                            <div class="mb-5 relative group">
+                                <input type="text" id="access-code-input" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-purple-500 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Kode Baru">
+                                <label for="access-code-input" class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Kode Baru</label>
+                            </div>
+                            <button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-3.5 rounded-xl text-xs font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-500/20 tracking-wide uppercase">Simpan Kode</button>
+                        </div>
                     </div>
                 </div>
 
                 <div id="settings-cost" class="settings-panel hidden space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-card border border-slate-100 flex items-center justify-between"><div><h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fas fa-coins text-amber-500"></i> Biaya DW (Global)</h3><p class="text-[10px] text-slate-400 mt-1 ml-6">Berlaku untuk semua DW</p></div><input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-36 text-right font-mono font-bold text-slate-700 border-none bg-slate-50 rounded-xl focus:ring-2 focus:ring-amber-400 text-sm py-2" onkeyup="window.formatCostInput(this)"></div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between"><div><h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fas fa-coins text-amber-500"></i> Biaya DW (Global)</h3><p class="text-[10px] text-slate-400 mt-1 ml-6">Tarif harian default untuk DW Manual</p></div><input type="text" id="global-cost-dw" placeholder="Rp 0" class="w-40 text-right font-mono font-bold text-slate-700 border-none bg-slate-100 rounded-xl focus:ring-2 focus:ring-amber-400 text-sm py-2.5 px-4" onkeyup="window.formatCostInput(this)"></div>
                     <div class="grid md:grid-cols-3 gap-6">
-                        <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-card border border-slate-100 h-fit"><h4 class="font-bold text-slate-800 mb-4 text-sm flex items-center gap-2"><i class="fas fa-plus-circle text-primary"></i> Tambah HUB</h4><div class="space-y-3"><input type="text" id="new-hub-name" placeholder="Kode HUB" class="w-full border border-slate-200 p-3 rounded-xl text-xs focus:ring-2 focus:ring-primary outline-none font-bold"><input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-3 rounded-xl text-xs font-mono text-right focus:ring-2 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.addHubToTable()" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-xs hover:bg-blue-700 transition shadow-lg shadow-blue-500/20">Tambah</button></div></div>
-                        <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-card border border-slate-100"><h4 class="font-bold text-slate-800 mb-4 text-sm">Daftar Biaya HUB (Sorter)</h4><div id="cost-container" class="space-y-3 max-h-[350px] overflow-y-auto pr-2"></div><div class="mt-5 pt-4 border-t border-slate-100"><button onclick="window.saveCosts()" class="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition active:scale-95">SIMPAN PERUBAHAN</button></div></div>
+                        <div class="md:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-fit"><h4 class="font-bold text-slate-800 mb-5 text-sm flex items-center gap-2"><i class="fas fa-plus-circle text-primary"></i> Tambah HUB</h4><div class="space-y-4"><input type="text" id="new-hub-name" placeholder="Kode HUB" class="w-full border border-slate-200 p-3.5 rounded-xl text-xs focus:ring-2 focus:ring-primary outline-none font-bold uppercase"><input type="text" id="new-hub-cost" placeholder="Biaya Sorter (Rp)" class="w-full border border-slate-200 p-3.5 rounded-xl text-xs font-mono text-right focus:ring-2 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.addHubToTable()" class="w-full bg-slate-800 text-white py-3.5 rounded-xl font-bold text-xs hover:bg-slate-900 transition shadow-lg uppercase tracking-wide">Tambah</button></div></div>
+                        <div class="md:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100"><h4 class="font-bold text-slate-800 mb-5 text-sm">Daftar Biaya HUB (Sorter)</h4><div id="cost-container" class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar"></div><div class="mt-6 pt-5 border-t border-slate-100"><button onclick="window.saveCosts()" class="w-full bg-success text-white py-3.5 rounded-xl font-bold text-xs shadow-lg shadow-green-500/30 hover:bg-emerald-600 transition active:scale-95 uppercase tracking-wide">SIMPAN PERUBAHAN</button></div></div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL USER -->
-    <div id="user-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
-        <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0" id="user-modal-content">
-            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3><button onclick="window.closeUserModal()" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button></div>
+    <!-- MODAL USER (Updated Inputs) -->
+    <div id="user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50" id="user-modal-content">
+            <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3><button onclick="window.closeUserModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button></div>
             <form id="user-form" class="space-y-5">
                 <input type="hidden" id="edit-user-id">
-                <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Nama Lengkap</label><input type="text" id="input-nama" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium" required></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Kode HUB</label><select id="input-kode-hub" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium" required></select></div>
-                    <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Posisi</label><select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium" onchange="window.toggleUserModalPassword()"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="LEADER">LEADER</option><option value="Admin">Admin</option></select></div>
+                <div class="relative group mt-2">
+                    <input type="text" id="input-nama" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Nama Lengkap" required>
+                    <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Nama Lengkap</label>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2" id="id-container"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">ID User</label><input type="text" id="input-id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium" required></div>
-                    <div class="hidden col-span-1" id="password-container"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Kata Sandi</label><input type="text" id="input-sandi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium"></div>
+                     <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">Kode HUB</label>
+                        <select id="input-kode-hub" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium cursor-pointer" required></select>
+                    </div>
+                    <div>
+                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">Posisi</label>
+                         <select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium cursor-pointer" onchange="window.toggleUserModalPassword()"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="LEADER">LEADER</option><option value="Admin">Admin</option></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 relative group" id="id-container">
+                         <input type="text" id="input-id" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="ID User" required>
+                         <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">ID User</label>
+                    </div>
+                    <div class="hidden col-span-1 relative group" id="password-container">
+                        <input type="text" id="input-sandi" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Kata Sandi">
+                        <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Kata Sandi</label>
+                    </div>
                 </div>
                 <div class="flex items-center justify-between bg-indigo-50 p-4 rounded-xl border border-indigo-100/50">
                     <div><span class="block text-xs font-bold text-indigo-900">Akses Edit</span><span class="text-[10px] text-indigo-600">Izinkan ubah data?</span></div>
@@ -529,56 +594,74 @@
                 </div>
                 <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
                     <button type="button" onclick="window.closeUserModal()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 transition">Batal</button>
-                    <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform active:scale-95">Simpan Data</button>
+                    <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform active:scale-95 tracking-wide uppercase">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL LAPORAN -->
-    <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden flex items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-2xl w-full max-w-5xl shadow-2xl my-4 mx-2 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0" id="laporan-modal-content">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-2xl shadow-sm">
+    <!-- MODAL LAPORAN (Updated Inputs) -->
+    <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
+        <div class="bg-white rounded-[2rem] w-full max-w-5xl shadow-2xl my-6 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 border border-white/40" id="laporan-modal-content">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-[2rem] shadow-sm">
                 <div><h3 class="text-xl font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3></div>
-                <button onclick="window.closeLaporanModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
+                <button onclick="window.closeLaporanModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-6 overflow-y-auto bg-slate-50/50">
-                <form id="laporan-form" class="space-y-6">
+                <form id="laporan-form" class="space-y-8">
                     <input type="hidden" id="edit-laporan-id">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Tanggal</label><input type="date" id="lap-tanggal" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none" required></div>
-                        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">HUB</label><select id="lap-hub-select" class="w-full border border-slate-200 bg-slate-50 p-3 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none hidden" onchange="window.loadHubUsersForAttendance()"></select><input type="text" id="lap-hub-text" class="w-full border border-slate-200 bg-slate-100 p-3 rounded-xl text-sm font-bold text-slate-500 cursor-not-allowed hidden" readonly></div>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-700 mb-3 text-sm flex items-center"><i class="fas fa-box mr-2 text-primary"></i>Metrix Paket</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Gateway</label><input type="text" id="lap-gateway" class="w-full border border-slate-200 p-3 rounded-xl text-sm font-mono text-right focus:border-primary outline-none font-bold" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Staging</label><input type="text" id="lap-staging" class="w-full border border-slate-200 p-3 rounded-xl text-sm font-mono text-right focus:border-primary outline-none font-bold" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">JNE</label><input type="text" id="lap-jne" class="w-full border border-slate-200 p-3 rounded-xl text-sm font-mono text-right focus:border-primary outline-none font-bold" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
-                            <div><label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">SAP</label><input type="text" id="lap-sap" class="w-full border border-slate-200 p-3 rounded-xl text-sm font-mono text-right focus:border-primary outline-none font-bold" placeholder="0" onkeyup="window.calcMetrics(this)"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <div class="relative group mt-1">
+                             <input type="date" id="lap-tanggal" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" required>
+                             <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Tanggal Laporan</label>
                         </div>
-                        <div class="mt-4 grid grid-cols-2 gap-4">
-                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100/50 text-center"><p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide">Total Paket</p><p class="text-3xl font-extrabold text-indigo-600 mt-1" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div>
-                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100/50 text-center"><p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wide">Productivity</p><p class="text-3xl font-extrabold text-emerald-600 mt-1" id="disp-productivity">0</p></div>
+                        <div>
+                            <select id="lap-hub-select" class="w-full border-0 ring-1 ring-slate-200 bg-slate-50 p-3.5 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none hidden cursor-pointer transition shadow-sm" onchange="window.loadHubUsersForAttendance()"></select>
+                            <input type="text" id="lap-hub-text" class="w-full border-0 ring-1 ring-slate-200 bg-slate-100 p-3.5 rounded-xl text-sm font-bold text-slate-500 cursor-not-allowed hidden shadow-sm" readonly>
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between items-end mb-3"><h4 class="font-bold text-slate-700 text-sm flex items-center"><i class="fas fa-users mr-2 text-primary"></i>Absensi Tim</h4><div class="text-right bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm"><span class="text-[10px] text-slate-400 font-bold uppercase">Total MPP:</span><span class="font-bold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-box"></i></span>Metrix Paket</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+                            <div class="relative group">
+                                <input type="text" id="lap-gateway" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
+                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">Gateway</label>
+                            </div>
+                            <div class="relative group">
+                                <input type="text" id="lap-staging" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
+                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">Staging</label>
+                            </div>
+                            <div class="relative group">
+                                <input type="text" id="lap-jne" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
+                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">JNE</label>
+                            </div>
+                            <div class="relative group">
+                                <input type="text" id="lap-sap" class="peer block px-4 py-3.5 w-full text-sm font-mono text-right text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm" placeholder="0" onkeyup="window.calcMetrics(this)">
+                                <label class="absolute text-[10px] font-bold text-slate-400 uppercase tracking-widest top-2 left-4 pointer-events-none">SAP</label>
+                            </div>
+                        </div>
+                        <div class="mt-5 grid grid-cols-2 gap-5">
+                            <div class="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 text-center shadow-sm"><p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Paket</p><p class="text-3xl font-extrabold text-indigo-600 mt-2" id="disp-total-paket">0</p><input type="hidden" id="val-total-paket"></div>
+                            <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 text-center shadow-sm"><p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Productivity</p><p class="text-3xl font-extrabold text-emerald-600 mt-2" id="disp-productivity">0</p></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-4"><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                             <table class="w-full text-xs text-center">
                                 <thead class="bg-slate-50 font-bold text-slate-500 uppercase border-b border-slate-200 tracking-wide">
-                                    <tr><th class="p-3 text-left w-1/3">Nama Personil</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">1</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">2</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th><th class="p-3 w-10 text-amber-500">I</th><th class="p-3 w-10 text-blue-500">S</th><th class="p-3 w-10 text-red-600">A</th><th class="p-3 text-left">Ket</th><th class="p-3 w-8"></th></tr>
+                                    <tr><th class="p-4 text-left w-1/3 pl-6">Nama Personil</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">1</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">2</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th><th class="p-3 w-10 text-amber-500">I</th><th class="p-3 w-10 text-purple-500">S</th><th class="p-3 w-10 text-red-600">A</th><th class="p-3 text-left">Ket</th><th class="p-3 w-8"></th></tr>
                                 </thead>
                                 <tbody id="attendance-tbody" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
-                        <button type="button" onclick="window.addManualDWRow()" class="mt-4 w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 text-xs font-bold hover:border-primary hover:text-primary hover:bg-indigo-50 transition flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> Tambah DW Manual</button>
+                        <button type="button" onclick="window.addManualDWRow()" class="mt-5 w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 text-xs font-bold hover:border-primary hover:text-primary hover:bg-indigo-50 transition flex items-center justify-center gap-2 uppercase tracking-wide"><i class="fas fa-plus-circle"></i> Tambah DW Manual</button>
                     </div>
                 </form>
             </div>
-            <div class="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-20 flex justify-end gap-3 rounded-b-2xl">
-                <button type="button" onclick="window.closeLaporanModal()" class="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition">Batal</button>
-                <button onclick="document.getElementById('laporan-form').requestSubmit()" class="px-8 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform active:scale-95">SIMPAN LAPORAN</button>
+            <div class="p-6 border-t border-slate-100 bg-white sticky bottom-0 z-20 flex justify-end gap-3 rounded-b-[2rem]">
+                <button type="button" onclick="window.closeLaporanModal()" class="px-6 py-3 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition uppercase tracking-wide">Batal</button>
+                <button onclick="document.getElementById('laporan-form').requestSubmit()" class="px-8 py-3 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/30 hover:shadow-glow hover:bg-blue-600 transition transform active:scale-95 uppercase tracking-wide">SIMPAN LAPORAN</button>
             </div>
         </div>
     </div>
@@ -599,7 +682,7 @@
         };
 
         const storageId = 'hub-data-v1';
-        let app, auth, db, unsubscribeUsers, unsubscribeCosts, unsubscribeLaporan, unsubscribeSettings;
+        let app, auth, db;
 
         // Dynamic Island
         const island = document.getElementById('dynamic-island');
@@ -632,8 +715,10 @@
         // Init
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
         let currentUser = null, annualChart = null, dailyChart = null;
+        let isLoggingOut = false; // Flag to prevent auto-login triggering errors
 
         function handleAuthSuccess(user) {
+            if(isLoggingOut) return; // Prevent re-trigger if logging out
             window.notify('Terhubung', 'success');
             document.getElementById('loading-overlay').classList.add('hidden-fade');
             setTimeout(() => {
@@ -649,11 +734,15 @@
             auth = getAuth(app);
             db = getFirestore(app);
             enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
-            onAuthStateChanged(auth, (u) => { if(u) handleAuthSuccess(u); });
+            onAuthStateChanged(auth, (u) => { 
+                if(u) handleAuthSuccess(u); 
+            });
             signInAnonymously(auth).catch(e => {
-                console.error(e); window.notify('Gagal Koneksi', 'error');
-                document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
-                document.getElementById('init-error-container').classList.remove('hidden');
+                if(!isLoggingOut) {
+                    console.error(e); window.notify('Gagal Koneksi', 'error');
+                    document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
+                    document.getElementById('init-error-container').classList.remove('hidden');
+                }
             });
         } catch(e) { window.notify('Config Error', 'error'); }
 
@@ -689,17 +778,30 @@
         window.formatCostInput = (e) => { let v=e.value.replace(/[^0-9]/g,''); e.value=window.formatNumber(v); };
         window.formatRupiah = (n) => n==null?'': 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
-        window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded text-[10px]' : 'bg-emerald-100 text-emerald-600 font-bold px-2 py-0.5 rounded text-[10px]';
+        window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
         // Auth
         window.switchLoginTab = (t) => {
             const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
-            if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-primary','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
+            if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-slate-700','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
             else { u.classList.add('hidden'); a.classList.remove('hidden'); ta.classList.add('bg-slate-700','text-white','shadow-md'); ta.classList.remove('text-slate-400','hover:text-white'); tu.classList.remove('bg-primary','text-white','shadow-md'); tu.classList.add('text-slate-400','hover:text-white'); }
         };
-        window.togglePasswordField = () => { const c=document.getElementById('is-pic-checkbox'), p=document.getElementById('login-pass-user'); c.checked ? (p.classList.remove('hidden'), p.setAttribute('required','true')) : (p.classList.add('hidden'), p.removeAttribute('required'), p.value=''); };
+        window.togglePasswordField = () => { 
+            const c=document.getElementById('is-pic-checkbox'), p=document.getElementById('login-pass-container'), i=document.getElementById('login-pass-user'); 
+            if(c.checked) {
+                p.classList.remove('hidden');
+                p.classList.add('block');
+                i.setAttribute('required','true');
+            } else {
+                p.classList.add('hidden');
+                p.classList.remove('block');
+                i.removeAttribute('required');
+                i.value='';
+            }
+        };
 
         const doLogin = (role, name, id, access, hub) => {
+            isLoggingOut = false;
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('app-navbar').classList.remove('hidden');
@@ -717,22 +819,41 @@
             document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
-            // Add md:block to desktop navbar so it shows up on large screens
-            document.getElementById('app-navbar').classList.add('md:block');
+            document.getElementById('app-navbar').classList.add('md:flex');
 
             window.initDashboardFilters(); window.navigate('dashboard');
             window.notify(`Halo, ${name}`, 'success');
         };
         
-        window.doLogout = () => {
+        // BUG FIX: Soft Logout (No Reload)
+        window.doLogout = async () => {
+            isLoggingOut = true;
             try {
-                signOut(auth).then(() => {
-                    location.reload();
-                }).catch((error) => {
-                    console.error("Logout Error:", error);
-                    location.reload();
-                });
+                // UI Reset
+                document.getElementById('app-navbar').classList.add('hidden');
+                document.getElementById('app-navbar').classList.remove('md:flex');
+                document.getElementById('mobile-topbar').classList.add('hidden');
+                document.getElementById('mobile-bottom-nav').classList.add('hidden');
+                document.getElementById('mobile-bottom-nav').classList.remove('flex');
+                document.getElementById('app-content').classList.add('hidden');
+                
+                // Show Login
+                document.getElementById('login-section').classList.remove('hidden');
+                
+                // Clear State
+                currentUser = null;
+                document.getElementById('login-id').value = '';
+                document.getElementById('login-pass-user').value = '';
+                document.getElementById('login-pass-admin').value = '';
+                
+                await signOut(auth);
+                // Re-sign in anonymously immediately for background data sync
+                setTimeout(() => { signInAnonymously(auth); isLoggingOut=false; }, 500);
+                
+                window.notify('Berhasil Keluar', 'success');
             } catch (e) {
+                console.error("Logout Error:", e);
+                // Fallback if needed, but UI switch is priority
                 location.reload();
             }
         };
@@ -758,12 +879,10 @@
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
             document.getElementById(`view-${id}`).classList.remove('hidden');
             
-            // Desktop Nav
             document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active', 'text-white'));
             const dNav = document.getElementById(`nav-${id}`);
-            if(dNav) dNav.classList.add('active', 'text-white');
+            if(dNav) dNav.classList.add('active');
             
-            // Mobile Nav
             document.querySelectorAll('.mobile-nav-item').forEach(e => e.classList.remove('active', 'text-primary'));
             const mNav = document.getElementById(`mob-nav-${id}`);
             if(mNav) mNav.classList.add('active', 'text-primary');
@@ -807,13 +926,11 @@
             const e = new Date(eEl.value);
             const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
             
-            // Current Data
             const data = appData.laporan.filter(l => { 
                 const d = new Date(l.tanggal); 
                 return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); 
             }).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
 
-            // Previous Data (Comparison)
             const diffTime = Math.abs(e - s);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
             const prevEnd = new Date(s); prevEnd.setDate(prevEnd.getDate() - 1);
@@ -824,11 +941,9 @@
                 return d>=prevStart && d<=prevEnd && (hubs.length===0 || hubs.includes(l.hub)); 
             });
 
-            // Helper to sum
             const sum = (arr, key) => arr.reduce((acc, curr) => acc + (curr[key]||0), 0);
             const sumCost = (arr) => arr.reduce((acc, curr) => acc + window.calculateReportCost(curr), 0);
 
-            // Stats Object
             const getStats = (arr) => ({
                 pkg: sum(arr, 'total_paket'),
                 mpp: sum(arr, 'total_mpp'),
@@ -843,7 +958,6 @@
             const curr = getStats(data);
             const prev = getStats(prevData);
 
-            // Render Function
             const render = (id, val, diffId, prevVal, isCost=false) => {
                 const el = document.getElementById(id);
                 if(el) el.innerText = isCost ? window.formatRupiah(val) : window.formatNumber(val);
@@ -930,8 +1044,8 @@
                 data:{ 
                     labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
                     datasets:[
-                        {label:'Paket', data:mD.map(d=>d.p), backgroundColor:'#2563eb', borderRadius:4, barPercentage:0.6, yAxisID: 'y'},
-                        {label:'Prod', data:mD.map(d=>d.m?Math.round(d.p/d.m):0), type:'line', borderColor:'#64748b', borderWidth:2, tension:0.3, pointRadius:5, pointBackgroundColor: mD.map(d=>(d.m && Math.round(d.p/d.m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
+                        {label:'Paket', data:mD.map(d=>d.p), backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
+                        {label:'Prod', data:mD.map(d=>d.m?Math.round(d.p/d.m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: mD.map(d=>(d.m && Math.round(d.p/d.m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
                     ] 
                 }, 
                 options: chartOptions 
@@ -947,8 +1061,8 @@
                 data:{ 
                     labels:lbs, 
                     datasets:[
-                        {label:'Paket', data:sD.map(d=>agg[d].p), backgroundColor:'#2563eb', borderRadius:4, barPercentage:0.6, yAxisID: 'y'},
-                        {label:'Prod', data:sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0), type:'line', borderColor:'#64748b', borderWidth:2, tension:0.3, pointRadius:5, pointBackgroundColor: sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
+                        {label:'Paket', data:sD.map(d=>agg[d].p), backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
+                        {label:'Prod', data:sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
                     ] 
                 }, 
                 options: chartOptions 
@@ -960,7 +1074,7 @@
             data.forEach(l => { 
                 const prod = Math.round(l.productivity);
                 const prodClass = window.getProdColorClass(prod);
-                tb1.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-medium text-slate-800">${l.tanggal}</td><td class="px-4 py-3">${l.hub}</td><td class="px-4 py-3 text-blue-600 font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-bold bg-slate-100">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; 
+                tb1.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="px-4 py-3 text-left font-medium text-slate-800 sticky left-0 bg-white">${l.tanggal}</td><td class="px-4 py-3"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">${l.hub}</span></td><td class="px-4 py-3 text-primary font-bold">${l.total_mpp}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.staging)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.gateway)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.jne)}</td><td class="px-4 py-3 text-slate-400">${window.formatNumber(l.sap)}</td><td class="px-4 py-3 font-extrabold bg-slate-50 text-slate-800">${window.formatNumber(l.total_paket)}</td><td class="px-4 py-3"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-rose-500 font-medium">${window.formatRupiah(window.calculateReportCost(l))}</td></tr>`; 
             });
             
             const hAg={}; data.forEach(l=>{ if(!hAg[l.hub])hAg[l.hub]={m:0,o:0,c:0}; hAg[l.hub].m+=l.total_mpp; hAg[l.hub].o+=l.total_paket; hAg[l.hub].c+=window.calculateReportCost(l); });
@@ -969,7 +1083,7 @@
                 const d=hAg[h]; 
                 const prod = d.m?Math.round(d.o/d.m):0;
                 const prodClass = window.getProdColorClass(prod);
-                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-blue-600 font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-indigo-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 font-medium"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-500 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
+                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-primary font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-slate-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 font-medium"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-400 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
             });
         };
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
@@ -1020,7 +1134,6 @@
                 return d >= sDate && d <= eDate && (hubFilter === 'ALL' || l.hub === hubFilter);
             });
             
-            // KPI calculation for Absensi view
             let totAbsMpp = 0;
             let totAbsCost = 0;
             reports.forEach(r => {
@@ -1035,7 +1148,6 @@
 
             reports.forEach(r => {
                 if(!attMap[r.hub]) attMap[r.hub] = {};
-                // Ensure colTotals initialized for this date (might be multiple reports same date if ALL hubs)
                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
 
                 if(r.attendance_data) {
@@ -1047,9 +1159,7 @@
                          if(status) {
                              if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
                              attMap[r.hub][a.userId][r.tanggal] = status;
-                             
                              if(['1','2','3'].includes(status)) {
-                                 // Check for existing total init
                                  if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
                                  colTotals[r.tanggal]++;
                              }
@@ -1062,45 +1172,31 @@
             let html = `<table class="w-full text-xs border-collapse">`;
             
             html += `<thead class="abs-header sticky top-0 bg-slate-50 z-20 shadow-sm"><tr>
-                        <th class="p-2 border bg-slate-50 text-left min-w-[150px] abs-name-col sticky left-0 z-30">Nama / HUB</th>`;
+                        <th class="p-3 border-b bg-white text-left min-w-[180px] abs-name-col sticky left-0 z-30 font-bold text-slate-600">Nama / HUB</th>`;
             dateRange.forEach(d => {
-                // Use local timezone formatting YYYY-MM-DD for consistency with report data
-                const y = d.getFullYear();
-                const m = String(d.getMonth() + 1).padStart(2, '0');
-                const da = String(d.getDate()).padStart(2, '0');
                 const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
-                html += `<th class="p-1 border bg-slate-50 abs-cell font-medium text-slate-500">${dStr}</th>`;
+                html += `<th class="p-2 border-b bg-white abs-cell font-bold text-slate-500">${dStr}</th>`;
             });
-            html += `<th class="p-1 border bg-slate-100 font-bold w-12 text-slate-700">Total</th></tr></thead><tbody>`;
+            html += `<th class="p-2 border-b bg-slate-50 font-bold w-12 text-slate-700">Total</th></tr></thead><tbody>`;
 
             hubsToShow.forEach(h => {
-                // Merge Registered Users + Manual/Deleted Users found in reports for this hub
                 const visibleUsers = [...appData.users.filter(u => u.kode_hub === h)];
                 const registeredIds = new Set(visibleUsers.map(u => u.id));
 
-                // Find extra users in reports
                 reports.forEach(r => {
                     if(r.hub !== h) return;
                     if(r.attendance_data) {
                         r.attendance_data.forEach(a => {
                              if (!registeredIds.has(a.userId)) {
-                                 // Determine role based on ID format or data
-                                 let role = 'DW'; // default for manual
-                                 if (!a.userId.startsWith('manual_')) role = 'History'; // deleted user likely
-                                 // Add dummy user object for rendering
-                                 visibleUsers.push({
-                                     id: a.userId,
-                                     nama: a.name || a.nama,
-                                     posisi: role,
-                                     kode_hub: h
-                                 });
+                                 let role = 'DW'; 
+                                 if (!a.userId.startsWith('manual_')) role = 'History';
+                                 visibleUsers.push({ id: a.userId, nama: a.name || a.nama, posisi: role, kode_hub: h });
                                  registeredIds.add(a.userId);
                              }
                         });
                     }
                 });
 
-                // Sort merged list
                 visibleUsers.sort((a,b) => {
                      const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
                      const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
@@ -1108,7 +1204,7 @@
                 });
 
                 if (visibleUsers.length > 0) {
-                    html += `<tr class="bg-indigo-50"><td class="p-2 border font-bold text-indigo-700 abs-name-col sticky left-0 z-20" colspan="1">${h}</td><td colspan="${dateRange.length + 1}" class="bg-indigo-50 border"></td></tr>`;
+                    html += `<tr class="bg-indigo-50"><td class="p-3 border-b font-extrabold text-indigo-700 abs-name-col sticky left-0 z-20 shadow-sm" colspan="1">${h}</td><td colspan="${dateRange.length + 1}" class="bg-indigo-50 border-b"></td></tr>`;
 
                     let currentRole = '';
 
@@ -1116,11 +1212,11 @@
                          let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
                          if(roleType !== currentRole) {
                              currentRole = roleType;
-                             html += `<tr class="bg-slate-50/50"><td class="p-1 border text-[10px] font-bold text-slate-400 pl-4 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length + 1}" class="border bg-slate-50/50"></td></tr>`;
+                             html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length + 1}" class="border-b bg-slate-50/50"></td></tr>`;
                          }
 
                          let rowTotal = 0;
-                         html += `<tr><td class="p-2 border font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[150px]">${u.nama}</td>`;
+                         html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
                          
                          dateRange.forEach(d => {
                              const y = d.getFullYear();
@@ -1139,16 +1235,15 @@
                              else if(status==='S') cellClass='bg-purple-50 text-purple-500 font-bold';
                              else if(status==='A') cellClass='bg-red-50 text-red-500 font-bold';
 
-                             html += `<td class="p-1 border abs-cell ${cellClass}">${status}</td>`;
+                             html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
                          });
                          
-                         html += `<td class="p-1 border text-center font-bold bg-slate-50 text-slate-700">${rowTotal}</td></tr>`;
+                         html += `<td class="p-2 border-b text-center font-bold bg-slate-50 text-slate-700">${rowTotal}</td></tr>`;
                     });
                 }
             });
             
-            // Grand Total Row
-            html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-2 border text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
+            html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-3 border-t text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
             let rangeTotal = 0;
             dateRange.forEach(d => {
                  const y = d.getFullYear();
@@ -1157,9 +1252,9 @@
                  const dateKey = `${y}-${m}-${da}`;
                  const tot = colTotals[dateKey] || 0;
                  rangeTotal += tot;
-                 html += `<td class="p-1 border text-center text-indigo-600">${tot}</td>`;
+                 html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold">${tot}</td>`;
             });
-            html += `<td class="p-1 border text-center text-indigo-800 text-sm">${rangeTotal}</td></tr>`;
+            html += `<td class="p-2 border-t text-center text-indigo-800 text-sm bg-white font-extrabold">${rangeTotal}</td></tr>`;
 
             html += `</tbody></table>`;
             container.innerHTML = html;
@@ -1168,7 +1263,7 @@
         // Settings
         window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
         window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
-        window.renderUserTable = () => { const tb=document.getElementById('user-table-body'); tb.innerHTML=''; appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-medium text-slate-700">${u.nama}</td><td class="px-6 py-4">${u.id}</td><td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-3"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-500 hover:text-rose-700"><i class="fas fa-trash"></i></button></td></tr>`); };
+        window.renderUserTable = () => { const tb=document.getElementById('user-table-body'); tb.innerHTML=''; appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700">${u.nama}</td><td class="px-6 py-4 font-mono text-slate-500">${u.id}</td><td class="px-6 py-4"><span class="bg-blue-50 text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-blue-100">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm font-medium text-slate-600">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-4 transition transform hover:scale-110"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-400 hover:text-rose-600 transition transform hover:scale-110"><i class="fas fa-trash"></i></button></td></tr>`); };
         window.toggleUserModalPassword = () => { const p=document.getElementById('input-posisi').value, isL=p==='LEADER'||p==='Admin', pc=document.getElementById('password-container'), ic=document.getElementById('id-container'); pc.classList.toggle('hidden', !isL); if(isL){ic.classList.remove('col-span-2');ic.classList.add('col-span-1')}else{ic.classList.remove('col-span-1');ic.classList.add('col-span-2')} };
         window.openUserModal = (id=null) => {
             const m=document.getElementById('user-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
@@ -1179,13 +1274,86 @@
         };
         window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
         document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
-        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
-        window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-2 items-center mb-2"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border p-2 rounded-lg text-sm bg-slate-50" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border p-2 rounded-lg text-sm text-right font-mono" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-500 hover:text-rose-700 px-2"><i class="fas fa-trash"></i></button></div>`); };
+        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
+        window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
         window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
         window.saveCosts = async () => { window.notify('Menyimpan...', 'loading'); const dw=window.parseFormattedNumber(document.getElementById('global-cost-dw').value), batch=[]; const rows=document.getElementById('cost-container').children; const newCosts=[]; for(let i=0;i<rows.length;i++){ const h=document.getElementById(`cost-hub-${i}`).value, c=window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); newCosts.push({hub:h, cost:c}); batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), {hub:h, cost:c})); } try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw}); await Promise.all(batch); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); } };
 
         // Laporan
+        window.renderLaporanList = () => {
+            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
+            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
+            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
+            else {
+                document.getElementById('empty-laporan-msg').classList.add('hidden');
+                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.forEach(l => {
+                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
+                    
+                    const prod = Math.round(l.productivity);
+                    const prodClass = window.getProdColorClass(prod);
+
+                    tb.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
+                            <td class="px-6 py-4 font-medium text-slate-700 sticky left-0 bg-white z-10">${l.tanggal}</td>
+                            <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-indigo-100">${l.hub}</span></td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.gateway)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.staging)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.jne)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.sap)}</td>
+                            <td class="px-4 py-4 font-extrabold text-slate-800 bg-slate-50/80 text-right">${window.formatNumber(l.total_paket)}</td>
+                            <td class="px-4 py-4 text-primary font-bold text-right">${l.total_mpp}</td>
+                            <td class="px-4 py-4 text-right"><span class="${prodClass}">${window.formatNumber(prod)}</span></td>
+                            <td class="px-6 py-4 text-right">${acts}</td>
+                        </tr>`;
+                });
+            }
+        };
+
+        // MODIFIED: Edit with Access Code Check
+        window.editLaporan = async (id) => {
+            const processEdit = () => {
+                const d = appData.laporan.find(x => x.id === id); 
+                window.openLaporanModal(); 
+                document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; 
+                document.getElementById('edit-laporan-id').value = id;
+                document.getElementById('lap-tanggal').value = d.tanggal; 
+                if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
+                document.getElementById('lap-gateway').value=window.formatNumber(d.gateway); 
+                document.getElementById('lap-staging').value=window.formatNumber(d.staging); 
+                document.getElementById('lap-jne').value=window.formatNumber(d.jne); 
+                document.getElementById('lap-sap').value=window.formatNumber(d.sap);
+                window.loadHubUsersForAttendance(d.hub, d.attendance_data); 
+                window.calcMetrics();
+            };
+
+            if (currentUser.role === 'admin') {
+                processEdit();
+            } else {
+                const { value: code } = await Swal.fire({
+                    title: 'Verifikasi Leader',
+                    text: 'Masukkan Kode Akses untuk mengedit',
+                    input: 'password',
+                    inputPlaceholder: 'Kode Akses...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4361ee',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Buka Akses'
+                });
+
+                if (code) {
+                    if (code === appData.accessCode) {
+                        window.notify('Akses Diberikan', 'success');
+                        processEdit();
+                    } else {
+                        window.notify('Kode Akses Salah', 'error');
+                    }
+                }
+            }
+        };
+
         window.openLaporanModal = () => {
             const m=document.getElementById('laporan-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
             document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText='Buat Laporan Baru'; document.getElementById('edit-laporan-id').value=''; document.getElementById('lap-tanggal').valueAsDate=new Date();
@@ -1204,10 +1372,10 @@
             window.calcMetrics();
         };
         window.renderRow = (tb, id, nm, role, isL, sv, isM) => {
-            const nmH = isM ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` : `<div class="font-medium text-slate-700">${nm}</div><div class="text-[10px] text-slate-400">${isL?'★ LEADER':role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
+            const nmH = isM ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` : `<div class="font-bold text-slate-700">${nm}</div><div class="text-[10px] text-slate-400 font-medium">${isL?'★ LEADER':role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
             const del = isM ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
-            const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c}" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/30':'bg-white'} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-200">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500 outline-none"></td><td class="p-2 text-center">${del}</td></tr>`);
+            const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c} w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer transition" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
+            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/50':'bg-white'} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left pl-6">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-100">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 outline-none bg-slate-50"></td><td class="p-2 text-center">${del}</td></tr>`);
         };
         window.handleSingleCheck = (c) => { if(c.checked) c.closest('tr').querySelectorAll('.attendance-checkbox').forEach(x=>{if(x!==c)x.checked=false}); window.calcMetrics(); };
         window.calcMetrics = (el) => { if(el) window.formatCostInput(el); const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), sa=window.parseFormattedNumber(document.getElementById('lap-sap').value), tot=g+s+j+sa; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot; let mpp=0; document.querySelectorAll('#attendance-tbody tr').forEach(r=>{ if(r.getAttribute('data-role')!=='LEADER'&&r.getAttribute('data-role')!=='Admin'&&r.querySelector('.shift-chk:checked')) mpp++; }); document.getElementById('disp-total-mpp').innerText=mpp; document.getElementById('disp-productivity').innerText=mpp>0?window.formatNumber(Math.round(tot/mpp)):0; };
@@ -1240,44 +1408,7 @@
             try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
         };
 
-        window.renderLaporanList = () => {
-            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
-            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
-            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
-            else {
-                document.getElementById('empty-laporan-msg').classList.add('hidden');
-                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
-                d.forEach(l => {
-                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
-                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 hover:bg-blue-50 p-1 rounded transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 hover:bg-rose-50 p-1 rounded transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
-                    
-                    const prod = Math.round(l.productivity);
-                    const prodClass = window.getProdColorClass(prod);
-
-                    // UPDATE: Removed COST, Added Details, Apply Prod Color
-                    tb.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                            <td class="px-6 py-4 font-medium text-slate-700 sticky left-0 bg-white z-10">${l.tanggal}</td>
-                            <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${l.hub}</span></td>
-                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.gateway)}</td>
-                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.staging)}</td>
-                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.jne)}</td>
-                            <td class="px-2 py-4 text-slate-400 text-right text-[10px]">${window.formatNumber(l.sap)}</td>
-                            <td class="px-4 py-4 font-bold text-slate-800 bg-slate-50/50 text-right">${window.formatNumber(l.total_paket)}</td>
-                            <td class="px-4 py-4 text-blue-600 font-bold text-right">${l.total_mpp}</td>
-                            <td class="px-4 py-4 text-right"><span class="${prodClass}">${window.formatNumber(prod)}</span></td>
-                            <td class="px-4 py-4 text-right">${acts}</td>
-                        </tr>`;
-                });
-            }
-        };
-        window.editLaporan = (id) => {
-            const d = appData.laporan.find(x => x.id === id); window.openLaporanModal(); document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; document.getElementById('edit-laporan-id').value = id;
-            document.getElementById('lap-tanggal').value = d.tanggal; if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
-            document.getElementById('lap-gateway').value=window.formatNumber(d.gateway); document.getElementById('lap-staging').value=window.formatNumber(d.staging); document.getElementById('lap-jne').value=window.formatNumber(d.jne); document.getElementById('lap-sap').value=window.formatNumber(d.sap);
-            window.loadHubUsersForAttendance(d.hub, d.attendance_data); window.calcMetrics();
-        };
-        window.deleteLaporan = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
+        window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
         

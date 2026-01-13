@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v1</title>
+    <title>DailyReport v2.3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -56,10 +56,10 @@
         }
         
         .glass {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
         /* Scrollbar */
@@ -68,7 +68,11 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        .table-scroll-container { max-height: 500px; overflow-y: auto; }
+        /* Custom Scroll for table container */
+        .table-scroll-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
 
         /* Dynamic Island */
         #dynamic-island-container { pointer-events: none; z-index: 10000; }
@@ -84,20 +88,13 @@
         .island-error .island-icon-bg { background: #ef476f; }
         .island-success .island-icon-bg { background: #06d6a0; }
 
-        /* Navbar & Desktop Links */
+        /* Navbar */
         .nav-link { 
-            position: relative; color: #64748b; transition: all 0.3s ease; 
-            cursor: pointer; padding: 0.5rem 0; font-weight: 600; font-size: 0.95rem;
+            position: relative; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: pointer; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.9rem;
         }
-        .nav-link::after {
-            content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0;
-            background-color: #4361ee; transition: width 0.3s;
-        }
-        .nav-link:hover { color: #4361ee; }
-        .nav-link:hover::after { width: 100%; }
-        
-        .nav-link.active { color: #4361ee; font-weight: 800; }
-        .nav-link.active::after { width: 100%; }
+        .nav-link:hover { color: #4361ee; background: rgba(67, 97, 238, 0.08); }
+        .nav-link.active { color: #4361ee; background: rgba(67, 97, 238, 0.1); font-weight: 700; }
         
         .mobile-nav-item { color: #94a3b8; transition: all 0.3s; position: relative; }
         .mobile-nav-item.active { color: #4361ee; transform: translateY(-4px); }
@@ -142,13 +139,12 @@
         </div>
     </div>
 
-    <!-- DESKTOP NAVBAR (Strictly Hidden on Mobile) -->
+    <!-- NAVBARS -->
     <nav id="app-navbar" class="glass sticky top-0 z-50 hidden border-b border-slate-200/50">
-        <div class="max-w-7xl mx-auto px-6 w-full">
+        <div class="max-w-7xl mx-auto px-6">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
-                <div class="flex items-center gap-3 shrink-0">
-                    <div class="w-10 h-10 bg-gradient-to-tr from-primary to-primaryDark rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-primary to-primaryDark rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white transform rotate-3 hover:rotate-0 transition-transform duration-300">
                         <i class="fas fa-chart-line text-lg"></i>
                     </div>
                     <div>
@@ -156,18 +152,14 @@
                         <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Operasional System</p>
                     </div>
                 </div>
-                
-                <!-- Desktop Nav Links (Wider & Spaced Out) -->
-                <div class="hidden md:flex items-center justify-center flex-1 mx-12 gap-10">
-                    <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active">Dashboard</a>
-                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link">Laporan</a>
-                    <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link">Absensi</a>
-                    <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden">Pengaturan</a>
+                <div class="hidden md:flex items-center bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
+                    <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
+                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-file-contract text-xs"></i> Laporan</a>
+                    <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link flex items-center gap-2"><i class="fas fa-user-check text-xs"></i> Absensi</a>
+                    <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link flex items-center gap-2 hidden"><i class="fas fa-cog text-xs"></i> Pengaturan</a>
                 </div>
-                
-                <!-- Profile Area -->
-                <div class="flex items-center gap-4 shrink-0">
-                    <div class="text-right">
+                <div class="flex items-center gap-4 pl-6">
+                    <div class="text-right hidden sm:block">
                         <div class="text-sm font-bold text-slate-700 truncate max-w-[120px]" id="user-name-display">User</div>
                         <div class="text-[10px] text-primary font-bold tracking-wider bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-0.5" id="user-badge">ROLE</div>
                     </div>
@@ -179,7 +171,6 @@
         </div>
     </nav>
 
-    <!-- MOBILE TOPBAR (Strictly Hidden on Desktop) -->
     <div id="mobile-topbar" class="md:hidden glass px-5 py-4 flex justify-between items-center shadow-sm z-40 hidden sticky top-0">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -197,7 +188,6 @@
         </div>
     </div>
 
-    <!-- MOBILE BOTTOM NAV -->
     <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-200/50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden px-4 pt-3 pb-5 rounded-t-3xl">
         <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-chart-pie text-xl"></i><span class="text-[10px] font-bold">Dash</span></button>
         <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-file-contract text-xl"></i><span class="text-[10px] font-bold">Laporan</span></button>
@@ -205,7 +195,7 @@
         <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5 hidden"><i class="fas fa-cog text-xl"></i><span class="text-[10px] font-bold">Atur</span></button>
     </div>
 
-    <!-- LOGIN SECTION -->
+    <!-- LOGIN SECTION (FIXED LABEL OVERLAP) -->
     <div id="login-section" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center hidden">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-[-20%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-blue-400/20 blur-[100px] opacity-60 animate-pulse" style="animation-duration: 4s;"></div>
@@ -227,11 +217,15 @@
             </div>
 
             <form id="form-login-user" class="space-y-6">
+                <!-- User ID Input -->
                 <div class="relative group">
                     <input type="text" id="login-id" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Masukkan ID">
                     <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
+                    <!-- Fix: Added bg-slate-50 and px-2 to cover border -->
                     <label for="login-id" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">ID User</label>
                 </div>
+
+                <!-- Leader Checkbox -->
                 <div>
                     <label class="flex items-center cursor-pointer group select-none">
                         <div class="relative">
@@ -240,12 +234,16 @@
                         </div>
                         <span class="ml-3 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login sebagai Leader / PIC?</span>
                     </label>
+
+                    <!-- Password Input -->
                     <div class="relative group mt-4 hidden overflow-hidden transition-all duration-300 origin-top" id="login-pass-container">
                         <input type="password" id="login-pass-user" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Password">
                         <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
+                        <!-- Fix: Added bg-slate-50 and px-2 -->
                         <label for="login-pass-user" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Kata Sandi</label>
                     </div>
                 </div>
+
                 <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-primaryDark hover:shadow-glow text-white rounded-2xl font-bold shadow-float transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
                     <span>Masuk Aplikasi</span> <i class="fas fa-arrow-right"></i>
                 </button>
@@ -255,6 +253,7 @@
                 <div class="relative group">
                     <input type="password" id="login-pass-admin" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-slate-800 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Kunci Admin" required>
                     <i class="fas fa-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-slate-800 transition-colors text-lg"></i>
+                    <!-- Fix: Added bg-slate-50 and px-2 -->
                     <label for="login-pass-admin" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-slate-800 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Password Admin</label>
                 </div>
                 <button type="submit" class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-bold shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider">MASUK SYSTEM</button>
@@ -343,7 +342,9 @@
                         <div id="diff-sap" class="relative z-10"></div>
                     </div>
                     
+                    <!-- Highlighted KPI (Fixed Text Visibility) -->
                     <div class="bg-gradient-to-br from-primary to-blue-600 p-4 rounded-2xl shadow-float kpi-card group text-white">
+                        <!-- Changed text color to white with better opacity -->
                         <p class="text-[9px] font-bold text-white uppercase tracking-widest opacity-90">Total Paket</p>
                         <h3 class="text-2xl font-extrabold text-white mt-1" id="kpi-total-paket">0</h3>
                         <div id="diff-total-paket" class="brightness-200 contrast-200 grayscale"></div>
@@ -387,11 +388,13 @@
 
                  <!-- Tables Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Daily Details (FIXED SCROLL HEIGHT) -->
                     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col">
                         <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
                             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400 bg-slate-100 p-1.5 rounded-lg"></i> Rincian Data</h3>
                             <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-[10px] font-bold text-primary bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition border border-blue-100"><i class="fas fa-download mr-1"></i> EXPORT CSV</button>
                         </div>
+                        <!-- Added class table-scroll-container with max-height -->
                         <div class="overflow-x-auto flex-1 table-scroll-container">
                             <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
                                 <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
@@ -406,6 +409,7 @@
                             </table>
                         </div>
                     </div>
+                    <!-- HUB Performance -->
                     <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-fit">
                         <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
                              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-trophy"></i></div>
@@ -466,13 +470,17 @@
                          <div class="flex items-center gap-3 flex-1 min-w-[280px]">
                             <div class="flex items-center bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 gap-2 hover:bg-white hover:shadow-sm transition">
                                 <i class="far fa-calendar text-slate-400 text-xs"></i>
+                                <!-- Added onchange -->
                                 <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
                                 <span class="text-slate-300 font-light">to</span>
+                                <!-- Added onchange -->
                                 <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
                             </div>
+                            <!-- Added onchange -->
                             <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
                          </div>
                          <div class="flex gap-2">
+                             <!-- Removed "TAMPILKAN" button -->
                              <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl"><i class="fas fa-sync-alt"></i></button>
                          </div>
                     </div>
@@ -517,6 +525,7 @@
                     </div>
                 </div>
 
+                <!-- Redesigned General Settings Inputs -->
                 <div id="settings-general" class="settings-panel hidden">
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
@@ -795,15 +804,10 @@
             isLoggingOut = false;
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
-            
-            // Show Navbars appropriate for device
-            // FIX: Explicitly set class string to handle responsive visibility
-            document.getElementById('app-navbar').className = "glass sticky top-0 z-50 hidden md:flex border-b border-slate-200/50";
-            
+            document.getElementById('app-navbar').classList.remove('hidden');
             document.getElementById('mobile-topbar').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.add('flex');
-            
             document.getElementById('app-content').classList.remove('hidden');
             
             document.getElementById('user-name-display').innerText = name;
@@ -815,6 +819,8 @@
             document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
+            document.getElementById('app-navbar').classList.add('md:flex');
+
             window.initDashboardFilters(); window.navigate('dashboard');
             window.notify(`Halo, ${name}`, 'success');
         };
@@ -824,7 +830,8 @@
             isLoggingOut = true;
             try {
                 // UI Reset
-                document.getElementById('app-navbar').className = "glass sticky top-0 z-50 hidden border-b border-slate-200/50"; // Reset to default hidden state
+                document.getElementById('app-navbar').classList.add('hidden');
+                document.getElementById('app-navbar').classList.remove('md:flex');
                 document.getElementById('mobile-topbar').classList.add('hidden');
                 document.getElementById('mobile-bottom-nav').classList.add('hidden');
                 document.getElementById('mobile-bottom-nav').classList.remove('flex');
@@ -1251,6 +1258,58 @@
 
             html += `</tbody></table>`;
             container.innerHTML = html;
+        };
+
+        // Settings
+        window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
+        window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
+        window.renderUserTable = () => { const tb=document.getElementById('user-table-body'); tb.innerHTML=''; appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700">${u.nama}</td><td class="px-6 py-4 font-mono text-slate-500">${u.id}</td><td class="px-6 py-4"><span class="bg-blue-50 text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-blue-100">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm font-medium text-slate-600">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-4 transition transform hover:scale-110"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-400 hover:text-rose-600 transition transform hover:scale-110"><i class="fas fa-trash"></i></button></td></tr>`); };
+        window.toggleUserModalPassword = () => { const p=document.getElementById('input-posisi').value, isL=p==='LEADER'||p==='Admin', pc=document.getElementById('password-container'), ic=document.getElementById('id-container'); pc.classList.toggle('hidden', !isL); if(isL){ic.classList.remove('col-span-2');ic.classList.add('col-span-1')}else{ic.classList.remove('col-span-1');ic.classList.add('col-span-2')} };
+        window.openUserModal = (id=null) => {
+            const m=document.getElementById('user-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
+            const hS=document.getElementById('input-kode-hub'); hS.innerHTML='<option value="">-- Pilih --</option>'; appData.costs.forEach(c=>hS.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`);
+            if(id) { const u=appData.users.find(x=>x.id===id); document.getElementById('modal-title').innerText='Edit User'; document.getElementById('edit-user-id').value=id; document.getElementById('input-nama').value=u.nama; document.getElementById('input-id').value=u.id; document.getElementById('input-sandi').value=u.sandi||''; document.getElementById('input-kode-hub').value=u.kode_hub; document.getElementById('input-posisi').value=u.posisi; document.getElementById('input-akses-toggle').checked=(u.akses==='YA'); document.getElementById('akses-label').innerText=u.akses; document.getElementById('input-id').readOnly=true; document.getElementById('input-id').classList.add('bg-slate-100'); }
+            else { document.getElementById('modal-title').innerText='Tambah User'; document.getElementById('edit-user-id').value=''; document.getElementById('user-form').reset(); document.getElementById('input-id').readOnly=false; document.getElementById('input-id').classList.remove('bg-slate-100'); document.getElementById('akses-label').innerText='TIDAK'; }
+            window.toggleUserModalPassword();
+        };
+        window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
+        document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
+        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
+        window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
+        window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
+        window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
+        window.saveCosts = async () => { window.notify('Menyimpan...', 'loading'); const dw=window.parseFormattedNumber(document.getElementById('global-cost-dw').value), batch=[]; const rows=document.getElementById('cost-container').children; const newCosts=[]; for(let i=0;i<rows.length;i++){ const h=document.getElementById(`cost-hub-${i}`).value, c=window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); newCosts.push({hub:h, cost:c}); batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), {hub:h, cost:c})); } try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw}); await Promise.all(batch); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); } };
+
+        // Laporan
+        window.renderLaporanList = () => {
+            const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
+            if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
+            if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
+            else {
+                document.getElementById('empty-laporan-msg').classList.add('hidden');
+                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.forEach(l => {
+                    const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
+                    
+                    const prod = Math.round(l.productivity);
+                    const prodClass = window.getProdColorClass(prod);
+
+                    tb.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
+                            <td class="px-6 py-4 font-medium text-slate-700 sticky left-0 bg-white z-10">${l.tanggal}</td>
+                            <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-indigo-100">${l.hub}</span></td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.gateway)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.staging)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.jne)}</td>
+                            <td class="px-2 py-4 text-slate-400 text-right text-[10px] font-mono">${window.formatNumber(l.sap)}</td>
+                            <td class="px-4 py-4 font-extrabold text-slate-800 bg-slate-50/80 text-right">${window.formatNumber(l.total_paket)}</td>
+                            <td class="px-4 py-4 text-primary font-bold text-right">${l.total_mpp}</td>
+                            <td class="px-4 py-4 text-right"><span class="${prodClass}">${window.formatNumber(prod)}</span></td>
+                            <td class="px-6 py-4 text-right">${acts}</td>
+                        </tr>`;
+                });
+            }
         };
 
         // MODIFIED: Edit with Access Code Check

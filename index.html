@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.4</title>
+    <title>DailyReport v2.4 (Canvas Native)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- NOTE: Chart.js Library telah DIHAPUS untuk menggunakan Raw Canvas -->
 
     <script>
         tailwind.config = {
@@ -361,7 +360,7 @@
                     </div>
                 </div>
 
-                <!-- Charts -->
+                <!-- Charts (CANVAS RAW) -->
                 <div class="space-y-6">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
                         <div class="flex items-center gap-3 mb-6">
@@ -371,7 +370,10 @@
                                 <p class="text-[10px] text-slate-400">Analisis pergerakan volume paket</p>
                             </div>
                         </div>
-                        <div class="h-64"><canvas id="chart-annual"></canvas></div>
+                        <div class="h-64 w-full relative">
+                            <!-- Canvas untuk grafik -->
+                            <canvas id="chart-annual" class="w-full h-full"></canvas>
+                        </div>
                     </div>
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
                          <div class="flex items-center gap-3 mb-6">
@@ -381,7 +383,10 @@
                                 <p class="text-[10px] text-slate-400">Monitoring harian productivity</p>
                             </div>
                         </div>
-                        <div class="h-64"><canvas id="chart-daily"></canvas></div>
+                        <div class="h-64 w-full relative">
+                             <!-- Canvas untuk grafik -->
+                            <canvas id="chart-daily" class="w-full h-full"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -492,6 +497,20 @@
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[60vh]">
                     <div class="overflow-auto flex-1">
                         <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium flex-col gap-2"><i class="fas fa-search text-3xl opacity-20"></i><p>Silakan pilih filter...</p></div></div>
+                    </div>
+                </div>
+
+                <!-- Summary Containers (NEW) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Summary HUB -->
+                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-fit">
+                        <div class="p-6 border-b border-slate-50"><h3 class="font-bold text-slate-700 text-sm">Summary per HUB</h3></div>
+                        <div class="overflow-x-auto p-0" id="summary-hub-container"></div>
+                    </div>
+                    <!-- Summary Manpower -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-50"><h3 class="font-bold text-slate-700 text-sm">Summary Manpower</h3></div>
+                        <div class="overflow-x-auto table-scroll-container" id="summary-manpower-container" style="max-height: 500px;"></div>
                     </div>
                 </div>
             </div>
@@ -659,9 +678,9 @@
 
     <!-- MODULE SCRIPT -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
@@ -705,11 +724,326 @@
 
         // Init
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
-        let currentUser = null, annualChart = null, dailyChart = null;
-        let isLoggingOut = false; // Flag to prevent auto-login triggering errors
+        let currentUser = null;
+        let isLoggingOut = false; 
+
+        // ==========================================
+        // BUG FIX: FUNGSI RENDERING YANG HILANG
+        // ==========================================
+
+        window.renderLaporanList = () => {
+            const tbody = document.getElementById('laporan-list-body');
+            const emptyMsg = document.getElementById('empty-laporan-msg');
+            tbody.innerHTML = '';
+
+            if (appData.laporan.length === 0) {
+                tbody.parentElement.classList.add('hidden');
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+
+            tbody.parentElement.classList.remove('hidden');
+            emptyMsg.classList.add('hidden');
+
+            const sortedData = [...appData.laporan].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            sortedData.forEach(d => {
+                const totalCost = window.calculateReportCost(d);
+                const prodClass = window.getProdColorClass(Math.round(d.productivity));
+                
+                let btnAksi = '';
+                if(currentUser && (currentUser.role === 'admin' || currentUser.kode_hub === d.hub)) {
+                    btnAksi = `
+                        <button onclick="window.editLaporan('${d.id}')" class="text-blue-500 hover:text-blue-700 mx-1"><i class="fas fa-edit"></i></button>
+                        <button onclick="window.deleteLaporan('${d.id}')" class="text-red-500 hover:text-red-700 mx-1"><i class="fas fa-trash"></i></button>
+                    `;
+                }
+
+                const html = `
+                    <tr class="hover:bg-slate-50 transition group">
+                        <td class="px-6 py-4 font-medium text-slate-700">${d.tanggal}</td>
+                        <td class="px-4 py-4"><span class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded text-[10px] font-bold border border-indigo-100">${d.hub}</span></td>
+                        <td class="px-2 py-4 text-right text-slate-400 text-[11px]">${window.formatNumber(d.gateway)}</td>
+                        <td class="px-2 py-4 text-right text-slate-400 text-[11px]">${window.formatNumber(d.staging)}</td>
+                        <td class="px-2 py-4 text-right text-slate-400 text-[11px]">${window.formatNumber(d.jne)}</td>
+                        <td class="px-2 py-4 text-right text-slate-400 text-[11px]">${window.formatNumber(d.sap)}</td>
+                        <td class="px-4 py-4 text-right font-extrabold text-slate-700 bg-slate-50/50">${window.formatNumber(d.total_paket)}</td>
+                        <td class="px-4 py-4 text-right font-bold text-primary">${d.total_mpp}</td>
+                        <td class="px-4 py-4 text-right"><span class="${prodClass}">${window.formatNumber(Math.round(d.productivity))}</span></td>
+                        <td class="px-6 py-4 text-right">
+                            ${btnAksi}
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', html);
+            });
+        };
+
+        window.renderUserTable = () => {
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+            appData.users.forEach(u => {
+                let aksi = '';
+                if(currentUser && currentUser.role === 'admin') {
+                     aksi = `<button onclick="window.deleteUser('${u.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash-alt"></i></button>`;
+                }
+                
+                const html = `
+                    <tr class="hover:bg-slate-50 border-b border-slate-50 last:border-0">
+                        <td class="px-6 py-3 font-bold text-slate-700">${u.nama}</td>
+                        <td class="px-6 py-3 text-slate-500 font-mono text-[10px]">${u.id}</td>
+                        <td class="px-6 py-3"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">${u.kode_hub}</span></td>
+                        <td class="px-6 py-3 text-xs font-bold text-indigo-600">${u.posisi}</td>
+                        <td class="px-6 py-3 text-right">${aksi}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', html);
+            });
+        };
+
+        window.renderCostInputs = () => {
+            const container = document.getElementById('cost-container');
+            container.innerHTML = '';
+            
+            document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW);
+
+            appData.costs.forEach(c => {
+                const html = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200 group hover:border-primary/50 transition">
+                        <span class="font-bold text-slate-700 text-xs">${c.hub}</span>
+                        <div class="flex items-center gap-3">
+                            <input type="text" data-hub="${c.hub}" value="${window.formatNumber(c.cost)}" 
+                                class="hub-cost-input w-28 text-right font-mono text-xs font-bold bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-primary outline-none" 
+                                onkeyup="window.formatCostInput(this)">
+                            <button onclick="window.deleteHub('${c.hub}')" class="w-6 h-6 rounded-full bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition border border-slate-200"><i class="fas fa-times text-[10px]"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        };
+
+        window.loadSettingsUI = () => {
+            if(!currentUser || currentUser.role !== 'admin') return;
+            window.switchSettingsTab('users');
+            window.renderUserTable();
+            window.renderCostInputs();
+        };
+
+        window.switchSettingsTab = (tab) => {
+            ['users', 'general', 'cost'].forEach(t => {
+                document.getElementById(`settings-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`set-tab-${t}`);
+                btn.classList.remove('bg-primary/10', 'text-primary', 'shadow-sm');
+                btn.classList.add('text-slate-500');
+            });
+            document.getElementById(`settings-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`set-tab-${tab}`);
+            activeBtn.classList.add('bg-primary/10', 'text-primary', 'shadow-sm');
+            activeBtn.classList.remove('text-slate-500');
+        };
+
+        window.openUserModal = () => {
+            const m = document.getElementById('user-modal');
+            m.classList.remove('hidden');
+            setTimeout(() => m.children[0].classList.remove('scale-95', 'opacity-0'), 10);
+            document.getElementById('user-form').reset();
+            document.getElementById('modal-title').innerText = 'Tambah User';
+            document.getElementById('input-id').readOnly = false;
+            
+            const s = document.getElementById('input-kode-hub');
+            s.innerHTML = '';
+            appData.costs.forEach(c => s.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
+        };
+
+        window.closeUserModal = () => {
+             const m = document.getElementById('user-modal');
+             m.children[0].classList.add('scale-95', 'opacity-0');
+             setTimeout(() => m.classList.add('hidden'), 300);
+        };
+        
+        window.toggleUserModalPassword = () => {
+             const pos = document.getElementById('input-posisi').value;
+             const passCont = document.getElementById('password-container');
+             if(pos === 'LEADER' || pos === 'Admin') {
+                 passCont.classList.remove('hidden');
+             } else {
+                 passCont.classList.add('hidden');
+             }
+        }
+
+        window.deleteUser = (id) => {
+             Swal.fire({title:'Hapus User?', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef476f'}).then(async r => {
+                 if(r.isConfirmed) {
+                     await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id));
+                     window.notify('User Dihapus', 'success');
+                 }
+             });
+        };
+
+        window.addHubToTable = async () => {
+            const h = document.getElementById('new-hub-name').value.toUpperCase();
+            const c = window.parseFormattedNumber(document.getElementById('new-hub-cost').value);
+            if(!h || !c) return window.notify('Isi Data HUB', 'error');
+            
+            if(appData.costs.find(x => x.hub === h)) return window.notify('HUB Sudah Ada', 'error');
+
+            await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), { hub: h, cost: c });
+            
+            document.getElementById('new-hub-name').value = '';
+            document.getElementById('new-hub-cost').value = '';
+            window.notify('HUB Ditambah', 'success');
+        };
+
+        window.saveCosts = async () => {
+            const inputs = document.querySelectorAll('.hub-cost-input');
+            const batchPromises = [];
+            
+            const gCost = window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
+            batchPromises.push(updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { costDW: gCost }));
+
+            inputs.forEach(i => {
+                const h = i.getAttribute('data-hub');
+                const c = window.parseFormattedNumber(i.value);
+                batchPromises.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), { hub: h, cost: c }));
+            });
+
+            try {
+                await Promise.all(batchPromises);
+                window.notify('Biaya Disimpan', 'success');
+            } catch(e) { window.notify('Gagal Simpan', 'error'); }
+        };
+
+        window.deleteHub = (h) => {
+             Swal.fire({title:`Hapus HUB ${h}?`, text:'Data laporan tidak akan hilang.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef476f'}).then(async r => {
+                 if(r.isConfirmed) {
+                     await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h));
+                     window.notify('HUB Dihapus', 'success');
+                 }
+             });
+        };
+
+        // ==================================================================
+        // RAW CANVAS IMPLEMENTATION
+        // ==================================================================
+
+        function drawRawCanvas(canvasId, labels, barData, lineData) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const width = rect.width;
+            const height = rect.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            const maxBar = Math.max(...barData, 1);
+            const maxLineActual = Math.max(...lineData, 1);
+            const normalizedLineData = lineData.map(v => (v / maxLineActual) * maxBar);
+            const overallMax = Math.max(maxBar, ...normalizedLineData);
+            const roundedMax = Math.ceil(overallMax / 100) * 100 || 100;
+
+            // Grid & Y Labels
+            ctx.beginPath();
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 0.5;
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px "Plus Jakarta Sans"';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+
+            const gridSteps = 5;
+            for (let i = 0; i <= gridSteps; i++) {
+                const value = Math.round((roundedMax / gridSteps) * i);
+                const yPos = padding.top + chartHeight - ( (value / roundedMax) * chartHeight );
+                
+                ctx.moveTo(padding.left, yPos);
+                ctx.lineTo(width - padding.right, yPos);
+                
+                ctx.fillText(window.formatNumber(value), padding.left - 10, yPos);
+            }
+            ctx.stroke();
+
+            // Bar Chart
+            const barCount = labels.length;
+            const slotWidth = chartWidth / barCount;
+            const barWidth = slotWidth * 0.6; 
+            const barGap = slotWidth * 0.2;
+
+            ctx.fillStyle = '#4361ee';
+
+            barData.forEach((value, index) => {
+                if(value === 0) return;
+                const barHeight = (value / roundedMax) * chartHeight;
+                const xPos = padding.left + barGap + (slotWidth * index);
+                const yPos = padding.top + chartHeight - barHeight;
+                const radius = 6;
+
+                ctx.beginPath();
+                ctx.moveTo(xPos + radius, yPos);
+                ctx.lineTo(xPos + barWidth - radius, yPos);
+                ctx.quadraticCurveTo(xPos + barWidth, yPos, xPos + barWidth, yPos + radius);
+                ctx.lineTo(xPos + barWidth, yPos + barHeight);
+                ctx.lineTo(xPos, yPos + barHeight);
+                ctx.lineTo(xPos, yPos + radius);
+                ctx.quadraticCurveTo(xPos, yPos, xPos + radius, yPos);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(labels[index], xPos + barWidth / 2, padding.top + chartHeight + 8);
+                ctx.fillStyle = '#4361ee';
+            });
+
+            // Line Chart
+            ctx.beginPath();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+            
+            const linePoints = [];
+
+            normalizedLineData.forEach((value, index) => {
+                const xPos = padding.left + barGap + (slotWidth * index) + (barWidth / 2);
+                const yPos = padding.top + chartHeight - ( (value / roundedMax) * chartHeight );
+                linePoints.push({x: xPos, y: yPos, originalValue: lineData[index]});
+
+                if (index === 0) {
+                    ctx.moveTo(xPos, yPos);
+                } else {
+                    ctx.lineTo(xPos, yPos);
+                }
+            });
+            ctx.stroke();
+
+            // Line Points
+            linePoints.forEach(point => {
+                ctx.beginPath();
+                ctx.fillStyle = point.originalValue > 0 && point.originalValue < 600 ? '#ef476f' : '#06d6a0';
+                ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        // ==========================================
+        // EXISTING LOGIC
+        // ==========================================
 
         function handleAuthSuccess(user) {
-            if(isLoggingOut) return; // Prevent re-trigger if logging out
+            if(isLoggingOut) return; 
             window.notify('Terhubung', 'success');
             document.getElementById('loading-overlay').classList.add('hidden-fade');
             setTimeout(() => {
@@ -762,8 +1096,6 @@
             });
         }
 
-        // Utils
-        window.Chart.register(ChartDataLabels);
         window.formatNumber = (n) => (!n && n!==0)?'':n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         window.parseFormattedNumber = (s) => { if(!s)return 0; return parseInt(s.toString().replace(/[^0-9]/g,''),10)||0; };
         window.formatCostInput = (e) => { let v=e.value.replace(/[^0-9]/g,''); e.value=window.formatNumber(v); };
@@ -771,7 +1103,6 @@
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
-        // Auth
         window.switchLoginTab = (t) => {
             const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
             if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-slate-700','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
@@ -796,8 +1127,6 @@
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
             
-            // Show Navbars appropriate for device
-            // FIX: Explicitly set class string to handle responsive visibility
             document.getElementById('app-navbar').className = "glass sticky top-0 z-50 hidden md:flex border-b border-slate-200/50";
             
             document.getElementById('mobile-topbar').classList.remove('hidden');
@@ -819,34 +1148,28 @@
             window.notify(`Halo, ${name}`, 'success');
         };
         
-        // BUG FIX: Soft Logout (No Reload)
         window.doLogout = async () => {
             isLoggingOut = true;
             try {
-                // UI Reset
-                document.getElementById('app-navbar').className = "glass sticky top-0 z-50 hidden border-b border-slate-200/50"; // Reset to default hidden state
+                document.getElementById('app-navbar').className = "glass sticky top-0 z-50 hidden border-b border-slate-200/50"; 
                 document.getElementById('mobile-topbar').classList.add('hidden');
                 document.getElementById('mobile-bottom-nav').classList.add('hidden');
                 document.getElementById('mobile-bottom-nav').classList.remove('flex');
                 document.getElementById('app-content').classList.add('hidden');
                 
-                // Show Login
                 document.getElementById('login-section').classList.remove('hidden');
                 
-                // Clear State
                 currentUser = null;
                 document.getElementById('login-id').value = '';
                 document.getElementById('login-pass-user').value = '';
                 document.getElementById('login-pass-admin').value = '';
                 
                 await signOut(auth);
-                // Re-sign in anonymously immediately for background data sync
                 setTimeout(() => { signInAnonymously(auth); isLoggingOut=false; }, 500);
                 
                 window.notify('Berhasil Keluar', 'success');
             } catch (e) {
                 console.error("Logout Error:", e);
-                // Fallback if needed, but UI switch is priority
                 location.reload();
             }
         };
@@ -867,7 +1190,6 @@
             }
         };
 
-        // Navigation
         window.navigate = (id) => {
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
             document.getElementById(`view-${id}`).classList.remove('hidden');
@@ -886,7 +1208,6 @@
             if(id==='absensi') window.initAbsensiFilters();
         };
 
-        // Dashboard
         window.toggleHubDropdown = (e) => { e.stopPropagation(); document.getElementById('hub-filter-dropdown').classList.toggle('hidden'); };
         window.onclick = (e) => { if(!e.target.closest('#hub-filter-btn') && !e.target.closest('#hub-filter-dropdown')) document.getElementById('hub-filter-dropdown').classList.add('hidden'); };
         
@@ -1000,66 +1321,30 @@
             }}); else t=r.total_mpp*hr; return t;
         };
 
+        // ==========================================
+        // UPDATE CHARTS (RAW CANVAS)
+        // ==========================================
         window.updateCharts = (data, hubs) => {
-            const cy = new Date().getFullYear(), mD = Array(12).fill(0).map(()=>({p:0,m:0}));
+            const cy = new Date().getFullYear();
+            
+            const mD = Array(12).fill(0).map(()=>({p:0,m:0}));
             let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
             if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
             yrData.forEach(l=>{ const m=new Date(l.tanggal).getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
             
-            const chartOptions = {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { type: 'linear', display: false, position: 'left' },
-                    y1: { type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false } }
-                },
-                plugins: {
-                    legend: { display: false },
-                    datalabels: {
-                        backgroundColor: function(context) {
-                             if (context.datasetIndex === 1) { 
-                                 return context.dataset.data[context.dataIndex] < 600 ? '#ef4444' : '#10b981';
-                             }
-                             return 'rgba(15, 23, 42, 0.7)';
-                        },
-                        borderRadius: 4,
-                        color: 'white',
-                        font: { weight: 'bold', size: 10 },
-                        padding: 4
-                    }
-                }
-            };
+            const annualLabels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            const annualBarData = mD.map(d=>d.p);
+            const annualLineData = mD.map(d=>d.m?Math.round(d.p/d.m):0);
+            drawRawCanvas('chart-annual', annualLabels, annualBarData, annualLineData);
 
-            const ctx1=document.getElementById('chart-annual').getContext('2d');
-            if(annualChart) annualChart.destroy();
-            annualChart=new Chart(ctx1, { 
-                type:'bar', 
-                data:{ 
-                    labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
-                    datasets:[
-                        {label:'Paket', data:mD.map(d=>d.p), backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
-                        {label:'Prod', data:mD.map(d=>d.m?Math.round(d.p/d.m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: mD.map(d=>(d.m && Math.round(d.p/d.m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
-                    ] 
-                }, 
-                options: chartOptions 
-            });
-
-            const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
-            const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b)), lbs=sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
+            const agg={}; 
+            data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
+            const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b));
             
-            const ctx2=document.getElementById('chart-daily').getContext('2d');
-            if(dailyChart) dailyChart.destroy();
-            dailyChart=new Chart(ctx2, { 
-                type:'bar', 
-                data:{ 
-                    labels:lbs, 
-                    datasets:[
-                        {label:'Paket', data:sD.map(d=>agg[d].p), backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
-                        {label:'Prod', data:sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
-                    ] 
-                }, 
-                options: chartOptions 
-            });
+            const dailyLabels = sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
+            const dailyBarData = sD.map(d=>agg[d].p);
+            const dailyLineData = sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0);
+            drawRawCanvas('chart-daily', dailyLabels, dailyBarData, dailyLineData);
         };
 
         window.updateDashboardTables = (data) => {
@@ -1081,7 +1366,6 @@
         };
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
 
-        // --- ABSENSI MATRIX ---
         window.initAbsensiFilters = () => {
              const d = new Date(); document.getElementById('abs-end-date').valueAsDate = d;
              d.setDate(d.getDate()-7); document.getElementById('abs-start-date').valueAsDate = d;
@@ -1145,18 +1429,18 @@
 
                 if(r.attendance_data) {
                     r.attendance_data.forEach(a => {
-                         let status = '';
-                         if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3';
-                         else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
-                         
-                         if(status) {
-                             if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
-                             attMap[r.hub][a.userId][r.tanggal] = status;
-                             if(['1','2','3'].includes(status)) {
-                                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
-                                 colTotals[r.tanggal]++;
-                             }
-                         }
+                          let status = '';
+                          if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3';
+                          else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
+                          
+                          if(status) {
+                              if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
+                              attMap[r.hub][a.userId][r.tanggal] = status;
+                              if(['1','2','3'].includes(status)) {
+                                  if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
+                                  colTotals[r.tanggal]++;
+                              }
+                          }
                     });
                 }
             });
@@ -1191,9 +1475,9 @@
                 });
 
                 visibleUsers.sort((a,b) => {
-                     const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
-                     const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
-                     if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id);
+                      const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
+                      const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
+                      if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id);
                 });
 
                 if (visibleUsers.length > 0) {
@@ -1202,36 +1486,36 @@
                     let currentRole = '';
 
                     visibleUsers.forEach(u => {
-                         let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
-                         if(roleType !== currentRole) {
-                             currentRole = roleType;
-                             html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length + 1}" class="border-b bg-slate-50/50"></td></tr>`;
-                         }
+                          let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
+                          if(roleType !== currentRole) {
+                              currentRole = roleType;
+                              html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length + 1}" class="border-b bg-slate-50/50"></td></tr>`;
+                          }
 
-                         let rowTotal = 0;
-                         html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
-                         
-                         dateRange.forEach(d => {
-                             const y = d.getFullYear();
-                             const m = String(d.getMonth() + 1).padStart(2, '0');
-                             const da = String(d.getDate()).padStart(2, '0');
-                             const dateKey = `${y}-${m}-${da}`;
-                             
-                             let status = '';
-                             if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
-                                 status = attMap[h][u.id][dateKey];
-                             }
-                             
-                             let cellClass = '';
-                             if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; rowTotal++; }
-                             else if(status==='I') cellClass='bg-yellow-50 text-amber-500 font-bold';
-                             else if(status==='S') cellClass='bg-purple-50 text-purple-500 font-bold';
-                             else if(status==='A') cellClass='bg-red-50 text-red-500 font-bold';
+                          let rowTotal = 0;
+                          html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
+                          
+                          dateRange.forEach(d => {
+                              const y = d.getFullYear();
+                              const m = String(d.getMonth() + 1).padStart(2, '0');
+                              const da = String(d.getDate()).padStart(2, '0');
+                              const dateKey = `${y}-${m}-${da}`;
+                              
+                              let status = '';
+                              if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
+                                  status = attMap[h][u.id][dateKey];
+                              }
+                              
+                              let cellClass = '';
+                              if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; rowTotal++; }
+                              else if(status==='I') cellClass='bg-yellow-50 text-amber-500 font-bold';
+                              else if(status==='S') cellClass='bg-purple-50 text-purple-500 font-bold';
+                              else if(status==='A') cellClass='bg-red-50 text-red-500 font-bold';
 
-                             html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
-                         });
-                         
-                         html += `<td class="p-2 border-b text-center font-bold bg-slate-50 text-slate-700">${rowTotal}</td></tr>`;
+                              html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
+                          });
+                          
+                          html += `<td class="p-2 border-b text-center font-bold bg-slate-50 text-slate-700">${rowTotal}</td></tr>`;
                     });
                 }
             });
@@ -1251,9 +1535,134 @@
 
             html += `</tbody></table>`;
             container.innerHTML = html;
+
+            // Trigger Summary Generation
+            window.renderAbsensiSummaries(reports);
         };
 
-        // MODIFIED: Edit with Access Code Check
+        // ==========================================
+        // NEW: SUMMARY RENDER LOGIC
+        // ==========================================
+        window.renderAbsensiSummaries = (reports) => {
+            const hubStats = {};
+            const userStats = {};
+
+            reports.forEach(r => {
+                if(!hubStats[r.hub]) hubStats[r.hub] = { h:0, s:0, i:0, a:0 };
+                
+                if(r.attendance_data) {
+                    r.attendance_data.forEach(a => {
+                        // Summary per HUB
+                        if(a.s1||a.s2||a.s3) hubStats[r.hub].h++;
+                        if(a.s) hubStats[r.hub].s++;
+                        if(a.i) hubStats[r.hub].i++;
+                        if(a.a) hubStats[r.hub].a++;
+
+                        // Summary Manpower
+                        if(!userStats[a.userId]) {
+                            let u = appData.users.find(u => u.id === a.userId);
+                            let role = u ? u.posisi : (a.userId.startsWith('manual') ? 'DW' : 'Unknown');
+                            let isLeader = (role === 'LEADER' || role === 'Admin');
+                            
+                            userStats[a.userId] = {
+                                id: a.userId,
+                                name: a.name || a.nama,
+                                hub: r.hub,
+                                role: role,
+                                isLeader: isLeader,
+                                h:0, s:0, i:0, a:0,
+                                notes: new Set()
+                            };
+                        }
+                        
+                        let us = userStats[a.userId];
+                        if(a.s1||a.s2||a.s3) us.h++;
+                        if(a.s) us.s++;
+                        if(a.i) us.i++;
+                        if(a.a) us.a++;
+                        if(a.ket && a.ket.trim()) us.notes.add(a.ket);
+                    });
+                }
+            });
+
+            // 1. Render Summary per HUB
+            const hubContainer = document.getElementById('summary-hub-container');
+            let hubHtml = `<table class="w-full text-xs text-center border-collapse">
+                <thead class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
+                    <tr>
+                        <th class="p-3 text-left pl-4 border border-slate-200">Nama HUB</th>
+                        <th class="p-3 bg-blue-50 text-blue-700 border border-slate-200">Hadir</th>
+                        <th class="p-3 text-purple-600 border border-slate-200">Sakit</th>
+                        <th class="p-3 text-amber-600 border border-slate-200">Ijin</th>
+                        <th class="p-3 text-red-600 border border-slate-200">Alfa</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            Object.keys(hubStats).sort().forEach(h => {
+                const s = hubStats[h];
+                hubHtml += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-2 text-left pl-4 font-bold text-slate-700 border border-slate-200">${h}</td>
+                        <td class="p-2 font-bold text-slate-700 border border-slate-200 bg-blue-50/30">${s.h}</td>
+                        <td class="p-2 text-slate-500 border border-slate-200">${s.s}</td>
+                        <td class="p-2 text-slate-500 border border-slate-200">${s.i}</td>
+                        <td class="p-2 text-slate-500 border border-slate-200">${s.a}</td>
+                    </tr>
+                `;
+            });
+            hubHtml += `</tbody></table>`;
+            hubContainer.innerHTML = Object.keys(hubStats).length ? hubHtml : '<div class="p-4 text-center text-slate-400 text-xs">Tidak ada data.</div>';
+
+            // 2. Render Summary Manpower
+            const mpContainer = document.getElementById('summary-manpower-container');
+            let mpHtml = `<table class="w-full text-xs text-center border-collapse">
+                <thead class="bg-slate-50 font-bold text-slate-600 border-b border-slate-200">
+                    <tr>
+                        <th class="p-3 text-left pl-4 border border-slate-200">Nama</th>
+                        <th class="p-3 border border-slate-200">NIK/ID</th>
+                        <th class="p-3 border border-slate-200">Posisi</th>
+                        <th class="p-3 bg-blue-50 text-blue-700 border border-slate-200">Total Hadir</th>
+                        <th class="p-3 text-amber-600 border border-slate-200">Ijin</th>
+                        <th class="p-3 text-purple-600 border border-slate-200">Sakit</th>
+                        <th class="p-3 text-red-600 border border-slate-200">Alfa</th>
+                        <th class="p-3 text-left border border-slate-200">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            const usersArr = Object.values(userStats);
+            // Sort: HUB ASC -> Leader DESC -> ID ASC (Oldest first assuming ID represents time)
+            usersArr.sort((a, b) => {
+                if (a.hub !== b.hub) return a.hub.localeCompare(b.hub);
+                if (a.isLeader !== b.isLeader) return b.isLeader - a.isLeader;
+                return a.id.localeCompare(b.id);
+            });
+
+            let currHub = '';
+            usersArr.forEach(u => {
+                if(u.hub !== currHub) {
+                    currHub = u.hub;
+                    mpHtml += `<tr class="bg-indigo-50"><td colspan="8" class="p-2 text-left pl-4 font-extrabold text-indigo-700 border border-indigo-100">${currHub}</td></tr>`;
+                }
+                const notesStr = Array.from(u.notes).join(', ');
+                mpHtml += `
+                    <tr class="hover:bg-slate-50 group">
+                        <td class="p-2 text-left pl-4 font-medium text-slate-700 border border-slate-200">${u.name}</td>
+                        <td class="p-2 font-mono text-[10px] text-slate-500 border border-slate-200">${u.id.startsWith('manual')?'-':u.id}</td>
+                        <td class="p-2 text-[10px] font-bold border border-slate-200 ${u.isLeader?'text-indigo-600':'text-slate-400'}">${u.role}</td>
+                        <td class="p-2 font-bold text-slate-800 bg-blue-50/30 border border-slate-200">${u.h}</td>
+                        <td class="p-2 text-slate-500 border border-slate-200">${u.i}</td>
+                        <td class="p-2 text-slate-500 border border-slate-200">${u.s}</td>
+                        <td class="p-2 text-slate-500 border border-slate-200">${u.a}</td>
+                        <td class="p-2 text-left text-slate-500 text-[10px] border border-slate-200 truncate max-w-[150px]" title="${notesStr}">${notesStr}</td>
+                    </tr>
+                `;
+            });
+            mpHtml += `</tbody></table>`;
+            mpContainer.innerHTML = usersArr.length ? mpHtml : '<div class="p-4 text-center text-slate-400 text-xs">Tidak ada data manpower.</div>';
+        };
+
         window.editLaporan = async (id) => {
             const processEdit = () => {
                 const d = appData.laporan.find(x => x.id === id); 
@@ -1328,7 +1737,6 @@
             const dateInput = document.getElementById('lap-tanggal').value;
             const editId = document.getElementById('edit-laporan-id').value;
 
-            // Check Duplicate (Only for New Entry)
             if (!editId) {
                 const exists = appData.laporan.some(l => l.hub === h && l.tanggal === dateInput);
                 if (exists) return window.notify('Laporan Tgl/HUB ini sudah ada!', 'error');
@@ -1352,8 +1760,6 @@
         window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
-        
-        window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded text-xs' : 'bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded text-xs';
     </script>
 </body>
 </html>

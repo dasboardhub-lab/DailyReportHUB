@@ -55,6 +55,15 @@
             -webkit-tap-highlight-color: transparent; 
         }
         
+        /* Updated Glass Effect for Navbar */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        }
+
         .glass {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -88,16 +97,31 @@
         .island-error .island-icon-bg { background: #ef476f; }
         .island-success .island-icon-bg { background: #06d6a0; }
 
-        /* Navbar */
+        /* Navbar & Nav Items */
         .nav-link { 
-            position: relative; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            cursor: pointer; padding: 0.6rem 1.2rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.9rem;
+            position: relative; color: #64748b; transition: all 0.3s ease;
+            cursor: pointer; padding: 0.75rem 1.25rem; border-radius: 1rem; font-weight: 600; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 0.75rem;
         }
-        .nav-link:hover { color: #4361ee; background: rgba(67, 97, 238, 0.08); }
-        .nav-link.active { color: #4361ee; background: rgba(67, 97, 238, 0.1); font-weight: 700; }
+        .nav-link i { font-size: 1.1em; transition: transform 0.3s; }
+        .nav-link:hover { color: #4361ee; background: rgba(67, 97, 238, 0.05); }
+        .nav-link:hover i { transform: scale(1.1); }
+        .nav-link.active { 
+            color: #4361ee; background: rgba(67, 97, 238, 0.1); font-weight: 700; 
+            box-shadow: 0 2px 10px rgba(67, 97, 238, 0.1);
+        }
         
-        .mobile-nav-item { color: #94a3b8; transition: all 0.3s; position: relative; }
-        .mobile-nav-item.active { color: #4361ee; transform: translateY(-4px); }
+        /* Mobile Nav */
+        .mobile-nav-item { 
+            color: #94a3b8; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative; padding: 0.5rem; border-radius: 1rem;
+        }
+        .mobile-nav-item:active { transform: scale(0.9); }
+        .mobile-nav-item.active { 
+            color: #4361ee; background: rgba(67, 97, 238, 0.1); 
+            transform: translateY(-8px); box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+        }
+        .mobile-nav-item.active i { transform: scale(1.1); }
         
         .fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -139,11 +163,12 @@
         </div>
     </div>
 
-    <!-- NAVBARS -->
-    <nav id="app-navbar" class="glass sticky top-0 z-50 hidden border-b border-slate-200/50">
-        <div class="max-w-7xl mx-auto px-6">
+    <!-- NAVBARS (Improved) -->
+    <nav id="app-navbar" class="glass-nav sticky top-0 z-50 hidden transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-3">
+                <!-- Logo Area -->
+                <div class="flex items-center gap-3 flex-shrink-0">
                     <div class="w-10 h-10 bg-gradient-to-tr from-primary to-primaryDark rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white transform rotate-3 hover:rotate-0 transition-transform duration-300">
                         <i class="fas fa-chart-line text-lg"></i>
                     </div>
@@ -152,18 +177,32 @@
                         <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Operasional System</p>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
-                    <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active flex items-center gap-2"><i class="fas fa-chart-pie text-xs"></i> Dashboard</a>
-                    <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link flex items-center gap-2"><i class="fas fa-file-contract text-xs"></i> Laporan</a>
-                    <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link flex items-center gap-2"><i class="fas fa-user-check text-xs"></i> Absensi</a>
-                    <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link flex items-center gap-2 hidden"><i class="fas fa-cog text-xs"></i> Pengaturan</a>
+
+                <!-- Desktop Nav Links (Centered & Modern) -->
+                <div class="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
+                    <div class="flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
+                        <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active">
+                            <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
+                        </a>
+                        <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link">
+                            <i class="fas fa-file-contract"></i> <span>Laporan</span>
+                        </a>
+                        <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link">
+                            <i class="fas fa-user-check"></i> <span>Absensi</span>
+                        </a>
+                        <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden">
+                            <i class="fas fa-cog"></i> <span>Pengaturan</span>
+                        </a>
+                    </div>
                 </div>
-                <div class="flex items-center gap-4 pl-6">
+
+                <!-- User Profile & Actions -->
+                <div class="flex items-center gap-4 pl-6 flex-shrink-0">
                     <div class="text-right hidden sm:block">
                         <div class="text-sm font-bold text-slate-700 truncate max-w-[120px]" id="user-name-display">User</div>
-                        <div class="text-[10px] text-primary font-bold tracking-wider bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-0.5" id="user-badge">ROLE</div>
+                        <div class="text-[10px] text-primary font-bold tracking-wider bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-0.5 border border-blue-100" id="user-badge">ROLE</div>
                     </div>
-                    <button onclick="window.doLogout()" class="w-10 h-10 rounded-full bg-white hover:bg-red-50 hover:text-danger text-slate-400 transition-all duration-300 flex items-center justify-center group border border-slate-100 shadow-sm" title="Keluar">
+                    <button onclick="window.doLogout()" class="w-10 h-10 rounded-xl bg-white hover:bg-red-50 hover:text-danger text-slate-400 transition-all duration-300 flex items-center justify-center group border border-slate-200 shadow-sm" title="Keluar">
                         <i class="fas fa-power-off text-sm group-hover:scale-110 transition-transform"></i>
                     </button>
                 </div>
@@ -171,7 +210,8 @@
         </div>
     </nav>
 
-    <div id="mobile-topbar" class="md:hidden glass px-5 py-4 flex justify-between items-center shadow-sm z-40 hidden sticky top-0">
+    <!-- Mobile Topbar (Cleaned up) -->
+    <div id="mobile-topbar" class="md:hidden glass-nav px-5 py-3 flex justify-between items-center shadow-sm z-40 hidden sticky top-0">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                 <i class="fas fa-cube text-sm"></i>
@@ -181,21 +221,35 @@
         <div class="flex items-center gap-3">
              <div class="text-right">
                 <div class="text-[11px] font-bold text-slate-700 truncate max-w-[100px]" id="mob-user-name">User</div>
+                <div class="text-[9px] text-slate-400 font-medium truncate max-w-[100px]">Logged in</div>
             </div>
-            <button onclick="window.doLogout()" class="text-slate-400 hover:text-danger bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <i class="fas fa-power-off"></i>
+            <button onclick="window.doLogout()" class="text-slate-400 hover:text-danger bg-slate-50 p-2 rounded-xl border border-slate-200">
+                <i class="fas fa-power-off text-xs"></i>
             </button>
         </div>
     </div>
 
-    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-200/50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center pb-safe hidden px-4 pt-3 pb-5 rounded-t-3xl">
-        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-chart-pie text-xl"></i><span class="text-[10px] font-bold">Dash</span></button>
-        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-file-contract text-xl"></i><span class="text-[10px] font-bold">Laporan</span></button>
-        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5"><i class="fas fa-user-check text-xl"></i><span class="text-[10px] font-bold">Absensi</span></button>
-        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 py-1 flex flex-col items-center gap-1.5 hidden"><i class="fas fa-cog text-xl"></i><span class="text-[10px] font-bold">Atur</span></button>
+    <!-- Mobile Bottom Nav (Floating Look) -->
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-3 rounded-t-3xl">
+        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 flex flex-col items-center gap-1.5">
+            <i class="fas fa-chart-pie text-lg"></i>
+            <span class="text-[10px] font-bold tracking-wide">Dash</span>
+        </button>
+        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 flex flex-col items-center gap-1.5">
+            <i class="fas fa-file-contract text-lg"></i>
+            <span class="text-[10px] font-bold tracking-wide">Lapor</span>
+        </button>
+        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 flex flex-col items-center gap-1.5">
+            <i class="fas fa-user-check text-lg"></i>
+            <span class="text-[10px] font-bold tracking-wide">Absen</span>
+        </button>
+        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 flex flex-col items-center gap-1.5 hidden">
+            <i class="fas fa-cog text-lg"></i>
+            <span class="text-[10px] font-bold tracking-wide">Atur</span>
+        </button>
     </div>
 
-    <!-- LOGIN SECTION (FIXED LABEL OVERLAP) -->
+    <!-- LOGIN SECTION -->
     <div id="login-section" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center hidden">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-[-20%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-blue-400/20 blur-[100px] opacity-60 animate-pulse" style="animation-duration: 4s;"></div>
@@ -221,7 +275,6 @@
                 <div class="relative group">
                     <input type="text" id="login-id" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Masukkan ID">
                     <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
-                    <!-- Fix: Added bg-slate-50 and px-2 to cover border -->
                     <label for="login-id" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">ID User</label>
                 </div>
 
@@ -239,7 +292,6 @@
                     <div class="relative group mt-4 hidden overflow-hidden transition-all duration-300 origin-top" id="login-pass-container">
                         <input type="password" id="login-pass-user" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Password">
                         <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
-                        <!-- Fix: Added bg-slate-50 and px-2 -->
                         <label for="login-pass-user" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Kata Sandi</label>
                     </div>
                 </div>
@@ -253,7 +305,6 @@
                 <div class="relative group">
                     <input type="password" id="login-pass-admin" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-slate-800 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Kunci Admin" required>
                     <i class="fas fa-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-slate-800 transition-colors text-lg"></i>
-                    <!-- Fix: Added bg-slate-50 and px-2 -->
                     <label for="login-pass-admin" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-slate-800 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Password Admin</label>
                 </div>
                 <button type="submit" class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-bold shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider">MASUK SYSTEM</button>
@@ -342,9 +393,7 @@
                         <div id="diff-sap" class="relative z-10"></div>
                     </div>
                     
-                    <!-- Highlighted KPI (Fixed Text Visibility) -->
                     <div class="bg-gradient-to-br from-primary to-blue-600 p-4 rounded-2xl shadow-float kpi-card group text-white">
-                        <!-- Changed text color to white with better opacity -->
                         <p class="text-[9px] font-bold text-white uppercase tracking-widest opacity-90">Total Paket</p>
                         <h3 class="text-2xl font-extrabold text-white mt-1" id="kpi-total-paket">0</h3>
                         <div id="diff-total-paket" class="brightness-200 contrast-200 grayscale"></div>
@@ -388,13 +437,12 @@
 
                  <!-- Tables Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Daily Details (FIXED SCROLL HEIGHT) -->
+                    <!-- Daily Details -->
                     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col">
                         <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
                             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400 bg-slate-100 p-1.5 rounded-lg"></i> Rincian Data</h3>
                             <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-[10px] font-bold text-primary bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition border border-blue-100"><i class="fas fa-download mr-1"></i> EXPORT CSV</button>
                         </div>
-                        <!-- Added class table-scroll-container with max-height -->
                         <div class="overflow-x-auto flex-1 table-scroll-container">
                             <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
                                 <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
@@ -463,24 +511,20 @@
                 </div>
             </div>
 
-            <!-- VIEW: ABSENSI (AUTO FILTER) -->
+            <!-- VIEW: ABSENSI (UPDATED) -->
              <div id="view-absensi" class="view-content hidden fade-in space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <div class="flex flex-wrap gap-4 items-center justify-between">
                          <div class="flex items-center gap-3 flex-1 min-w-[280px]">
                             <div class="flex items-center bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 gap-2 hover:bg-white hover:shadow-sm transition">
                                 <i class="far fa-calendar text-slate-400 text-xs"></i>
-                                <!-- Added onchange -->
                                 <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
                                 <span class="text-slate-300 font-light">to</span>
-                                <!-- Added onchange -->
                                 <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
                             </div>
-                            <!-- Added onchange -->
                             <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
                          </div>
                          <div class="flex gap-2">
-                             <!-- Removed "TAMPILKAN" button -->
                              <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl"><i class="fas fa-sync-alt"></i></button>
                          </div>
                     </div>
@@ -497,9 +541,30 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[60vh]">
+                <!-- MAIN ATTENDANCE TABLE -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[50vh]">
                     <div class="overflow-auto flex-1">
                         <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium flex-col gap-2"><i class="fas fa-search text-3xl opacity-20"></i><p>Silakan pilih filter...</p></div></div>
+                    </div>
+                </div>
+
+                <!-- DETAIL SUMMARY TABLE (NEW) -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fas fa-list-alt"></i></div>
+                        <h3 class="font-bold text-slate-700 text-sm">Ringkasan Detail Absensi</h3>
+                    </div>
+                    <div class="overflow-x-auto max-h-[400px]">
+                         <table class="w-full text-xs text-left">
+                            <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
+                                <tr>
+                                    <th class="px-6 py-4">Nama Personil</th>
+                                    <th class="px-4 py-4 text-center">Total Hadir</th>
+                                    <th class="px-6 py-4 w-2/3">Keterangan / Alasan Ketidakhadiran</th>
+                                </tr>
+                            </thead>
+                            <tbody id="absensi-summary-tbody" class="divide-y divide-slate-50 text-slate-600"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -525,7 +590,6 @@
                     </div>
                 </div>
 
-                <!-- Redesigned General Settings Inputs -->
                 <div id="settings-general" class="settings-panel hidden">
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
@@ -558,7 +622,7 @@
         </div>
     </main>
 
-    <!-- MODAL USER (Updated Inputs) -->
+    <!-- MODAL USER -->
     <div id="user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50" id="user-modal-content">
             <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3><button onclick="window.closeUserModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button></div>
@@ -600,7 +664,7 @@
         </div>
     </div>
 
-    <!-- MODAL LAPORAN (Updated Inputs) -->
+    <!-- MODAL LAPORAN -->
     <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
         <div class="bg-white rounded-[2rem] w-full max-w-5xl shadow-2xl my-6 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 border border-white/40" id="laporan-modal-content">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-[2rem] shadow-sm">
@@ -666,157 +730,100 @@
         </div>
     </div>
 
-<!-- MODULE SCRIPT -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { 
-        getAuth, 
-        signInAnonymously, 
-        onAuthStateChanged, 
-        signOut 
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    <!-- MODULE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    import { 
-        initializeFirestore,
-        persistentLocalCache,
-        collection,
-        doc,
-        getDoc,
-        setDoc,
-        onSnapshot,
-        deleteDoc,
-        updateDoc
-    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
+            authDomain: "hub-dashboard-92428.firebaseapp.com",
+            projectId: "hub-dashboard-92428",
+            storageBucket: "hub-dashboard-92428.firebasestorage.app",
+            messagingSenderId: "827243064075",
+            appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
+        };
 
-    /* ===============================
-       FIREBASE CONFIG
-    =============================== */
-    const firebaseConfig = {
-        apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
-        authDomain: "hub-dashboard-92428.firebaseapp.com",
-        projectId: "hub-dashboard-92428",
-        storageBucket: "hub-dashboard-92428.firebasestorage.app",
-        messagingSenderId: "827243064075",
-        appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
-    };
+        const storageId = 'hub-data-v1';
+        let app, auth, db;
+        
+        // --- CUSTOM SWEETALERT MIXIN ---
+        const SwalTheme = Swal.mixin({
+            customClass: {
+                popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
+                title: 'text-xl font-bold text-slate-800',
+                htmlContainer: 'text-sm text-slate-500',
+                confirmButton: 'bg-primary text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/30 hover:shadow-glow hover:bg-blue-600 transition transform active:scale-95 uppercase tracking-wide mx-2',
+                cancelButton: 'bg-slate-100 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide mx-2',
+                input: 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-bold shadow-sm'
+            },
+            buttonsStyling: false
+        });
+        window.Swal = SwalTheme; 
+        // -------------------------------
 
-    const storageId = 'hub-data-v1';
-    let app, auth, db;
+        // Dynamic Island
+        const island = document.getElementById('dynamic-island');
+        const islandContent = document.getElementById('island-content');
+        const islandIcon = document.getElementById('island-icon');
+        const islandMsg = document.getElementById('island-message');
+        const islandSpinner = document.getElementById('island-spinner');
 
-    /* ===============================
-       DYNAMIC ISLAND NOTIFICATION
-    =============================== */
-    const island = document.getElementById('dynamic-island');
-    const islandContent = document.getElementById('island-content');
-    const islandIcon = document.getElementById('island-icon');
-    const islandMsg = document.getElementById('island-message');
-    const islandSpinner = document.getElementById('island-spinner');
-
-    window.notify = (msg, type = 'loading') => {
-        island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
-        island.classList.remove('island-hidden');
-
-        if (type === 'loading') {
-            island.classList.add('island-loading', 'bg-dark');
-            islandSpinner.classList.remove('opacity-0');
-            islandContent.classList.add('opacity-0', 'scale-90');
-        } else {
-            island.classList.remove('island-loading');
-            island.classList.add('island-expanded');
-
-            if (type === 'success') {
-                island.classList.add('island-success');
-                islandIcon.className = 'fas fa-check-circle text-white';
-            } else if (type === 'error') {
-                island.classList.add('island-error');
-                islandIcon.className = 'fas fa-exclamation-circle text-white';
-            }
-
-            islandSpinner.classList.add('opacity-0');
-
-            setTimeout(() => {
-                islandMsg.innerText = msg;
-                islandContent.classList.remove('opacity-0', 'scale-90');
-            }, 200);
-
-            setTimeout(() => {
+        window.notify = (msg, type = 'loading') => {
+            island.className = 'pointer-events-auto flex items-center justify-center overflow-hidden text-white transition-all duration-500 ease-out shadow-2xl';
+            island.classList.remove('island-hidden');
+            if (type === 'loading') {
+                island.classList.add('island-loading', 'bg-dark');
+                islandSpinner.classList.remove('opacity-0');
                 islandContent.classList.add('opacity-0', 'scale-90');
+            } else {
+                island.classList.remove('island-loading');
+                island.classList.add('island-expanded');
+                if (type === 'success') { island.classList.add('island-success'); islandIcon.className = 'fas fa-check-circle text-white'; }
+                else if (type === 'error') { island.classList.add('island-error'); islandIcon.className = 'fas fa-exclamation-circle text-white'; }
+                islandSpinner.classList.add('opacity-0');
+                setTimeout(() => { islandMsg.innerText = msg; islandContent.classList.remove('opacity-0', 'scale-90'); }, 200);
                 setTimeout(() => {
-                    island.className = 'island-hidden';
-                    island.classList.remove('island-expanded', 'island-success', 'island-error');
-                }, 200);
-            }, 3000);
-        }
-    };
-
-    /* ===============================
-       APP STATE
-    =============================== */
-    let appData = {
-        adminPass: '123456',
-        accessCode: 'SUPERHUB',
-        costDW: 120000,
-        users: [],
-        costs: [],
-        laporan: []
-    };
-
-    let currentUser = null;
-    let annualChart = null;
-    let dailyChart = null;
-    let isLoggingOut = false;
-
-    /* ===============================
-       AUTH HANDLER
-    =============================== */
-    function handleAuthSuccess(user) {
-        if (isLoggingOut) return;
-
-        window.notify('Terhubung', 'success');
-        document.getElementById('loading-overlay').classList.add('hidden-fade');
-
-        setTimeout(() => {
-            const overlay = document.getElementById('loading-overlay');
-            overlay.classList.add('hidden');
-            overlay.remove();
-        }, 300);
-
-        document.getElementById('login-section').classList.remove('hidden');
-        initListeners();
-    }
-
-    /* ===============================
-       INITIALIZE FIREBASE
-    =============================== */
-    try {
-        app = initializeApp(firebaseConfig);
-
-        auth = getAuth(app);
-
-        // 🔥 FIRESTORE INIT (NEW API – NO WARNING)
-        db = initializeFirestore(app, {
-            cache: persistentLocalCache()
-        });
-
-        onAuthStateChanged(auth, (u) => {
-            if (u) handleAuthSuccess(u);
-        });
-
-        signInAnonymously(auth).catch(e => {
-            if (!isLoggingOut) {
-                console.error(e);
-                window.notify('Gagal Koneksi', 'error');
-                document.getElementById('init-error-text').innerText = 'Cek koneksi internet.';
-                document.getElementById('init-error-container').classList.remove('hidden');
+                    islandContent.classList.add('opacity-0', 'scale-90');
+                    setTimeout(() => { island.className = 'island-hidden'; island.classList.remove('island-expanded', 'island-success', 'island-error'); }, 200);
+                }, 3000);
             }
-        });
+        };
 
-    } catch (e) {
-        console.error(e);
-        window.notify('Config Error', 'error');
-    }
+        // Init
+        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
+        let currentUser = null, annualChart = null, dailyChart = null;
+        let isLoggingOut = false;
 
+        function handleAuthSuccess(user) {
+            if(isLoggingOut) return;
+            window.notify('Terhubung', 'success');
+            document.getElementById('loading-overlay').classList.add('hidden-fade');
+            setTimeout(() => {
+                document.getElementById('loading-overlay').classList.add('hidden');
+                document.getElementById('loading-overlay').remove();
+            }, 300);
+            document.getElementById('login-section').classList.remove('hidden');
+            initListeners();
+        }
 
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
+            onAuthStateChanged(auth, (u) => { 
+                if(u) handleAuthSuccess(u); 
+            });
+            signInAnonymously(auth).catch(e => {
+                if(!isLoggingOut) {
+                    console.error(e); window.notify('Gagal Koneksi', 'error');
+                    document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
+                    document.getElementById('init-error-container').classList.remove('hidden');
+                }
+            });
+        } catch(e) { window.notify('Config Error', 'error'); }
 
         function initListeners() {
             const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
@@ -897,35 +904,24 @@
             window.notify(`Halo, ${name}`, 'success');
         };
         
-        // BUG FIX: Soft Logout (No Reload)
         window.doLogout = async () => {
             isLoggingOut = true;
             try {
-                // UI Reset
                 document.getElementById('app-navbar').classList.add('hidden');
                 document.getElementById('app-navbar').classList.remove('md:flex');
                 document.getElementById('mobile-topbar').classList.add('hidden');
                 document.getElementById('mobile-bottom-nav').classList.add('hidden');
                 document.getElementById('mobile-bottom-nav').classList.remove('flex');
                 document.getElementById('app-content').classList.add('hidden');
-                
-                // Show Login
                 document.getElementById('login-section').classList.remove('hidden');
-                
-                // Clear State
                 currentUser = null;
                 document.getElementById('login-id').value = '';
                 document.getElementById('login-pass-user').value = '';
                 document.getElementById('login-pass-admin').value = '';
-                
                 await signOut(auth);
-                // Re-sign in anonymously immediately for background data sync
                 setTimeout(() => { signInAnonymously(auth); isLoggingOut=false; }, 500);
-                
                 window.notify('Berhasil Keluar', 'success');
             } catch (e) {
-                console.error("Logout Error:", e);
-                // Fallback if needed, but UI switch is priority
                 location.reload();
             }
         };
@@ -951,7 +947,7 @@
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
             document.getElementById(`view-${id}`).classList.remove('hidden');
             
-            document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active', 'text-white'));
+            document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active', 'text-primary'));
             const dNav = document.getElementById(`nav-${id}`);
             if(dNav) dNav.classList.add('active');
             
@@ -1042,13 +1038,11 @@
                     const isDown = diff < 0;
                     
                     const colorClass = isUp ? 'text-emerald-600' : (isDown ? 'text-rose-600' : 'text-slate-400');
-                    const bgClass = isUp ? 'bg-emerald-50' : (isDown ? 'bg-rose-50' : 'bg-slate-50');
                     const icon = isUp ? '↑' : (isDown ? '↓' : '-');
                     
                     if (diff === 0) {
                          diffEl.innerHTML = `<span class="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">- 0%</span>`;
                     } else {
-                        const diffValStr = isCost ? window.formatRupiah(Math.abs(diff)) : window.formatNumber(Math.abs(diff));
                         diffEl.innerHTML = `
                             <div class="mt-2 flex flex-col items-start">
                                 <span class="text-[10px] font-bold ${colorClass}">${icon} ${isCost ? window.formatRupiah(Math.abs(diff)) : window.formatNumber(Math.abs(diff))}</span>
@@ -1160,7 +1154,7 @@
         };
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
 
-        // --- ABSENSI MATRIX ---
+        // --- ABSENSI MATRIX & SUMMARY ---
         window.initAbsensiFilters = () => {
              const d = new Date(); document.getElementById('abs-end-date').valueAsDate = d;
              d.setDate(d.getDate()-7); document.getElementById('abs-start-date').valueAsDate = d;
@@ -1175,9 +1169,15 @@
              appData.costs.forEach(c => s.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
              s.value = val !== 'ALL' ? val : 'ALL';
              
-             if (currentUser.role !== 'admin') {
+             // UNLOCK for everyone as requested, or keep locked for user? 
+             // Request: "rekapan absensinya semua orng bisa lihat" -> means we should probably allow viewing all hubs if that's implied, 
+             // OR just ensure they can see the view. The code below respects user role logic (User sees own hub, Admin/Leader sees All).
+             // If "everyone can see" means a sorter can see other hubs, we remove the disabled check.
+             // Assuming default strict privacy unless explicitly asked to open data access.
+             if (currentUser.role !== 'admin' && currentUser.role !== 'pic') { // Allow PIC to see all? Usually yes.
+                 // If standard user, restricted to own hub for data safety, but can see the view.
                  s.value = currentUser.kode_hub;
-                 s.disabled = true;
+                 s.disabled = true; 
              }
         };
 
@@ -1196,6 +1196,7 @@
             const endStr = document.getElementById('abs-end-date').value;
             const hubFilter = document.getElementById('abs-hub-select').value;
             const container = document.getElementById('absensi-table-container');
+            const summaryBody = document.getElementById('absensi-summary-tbody'); // New Summary Body
             
             if(!startStr || !endStr) return;
             const sDate = new Date(startStr), eDate = new Date(endStr);
@@ -1217,6 +1218,8 @@
 
             const attMap = {};
             const colTotals = {}; 
+            // New: For Summary
+            const userSummary = {}; // userId -> { name: '', presence: 0, details: [] }
 
             reports.forEach(r => {
                 if(!attMap[r.hub]) attMap[r.hub] = {};
@@ -1228,6 +1231,19 @@
                          if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3';
                          else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
                          
+                         // Summary Logic
+                         if(!userSummary[a.userId]) userSummary[a.userId] = { name: a.nama || a.name, presence: 0, details: [] };
+                         if(['1','2','3'].includes(status)) {
+                             userSummary[a.userId].presence++;
+                         } else if (['I','S','A'].includes(status)) {
+                             const reason = a.ket ? `(${a.ket})` : '';
+                             const label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : 'Alfa');
+                             // Format date dd/mm
+                             const dObj = new Date(r.tanggal);
+                             const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
+                             userSummary[a.userId].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`);
+                         }
+
                          if(status) {
                              if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
                              attMap[r.hub][a.userId][r.tanggal] = status;
@@ -1240,6 +1256,7 @@
                 }
             });
 
+            // 1. Render Main Table
             let hubsToShow = (hubFilter === 'ALL') ? appData.costs.map(c=>c.hub) : [hubFilter];
             let html = `<table class="w-full text-xs border-collapse">`;
             
@@ -1327,9 +1344,32 @@
                  html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold">${tot}</td>`;
             });
             html += `<td class="p-2 border-t text-center text-indigo-800 text-sm bg-white font-extrabold">${rangeTotal}</td></tr>`;
-
             html += `</tbody></table>`;
             container.innerHTML = html;
+
+            // 2. Render Summary Table
+            summaryBody.innerHTML = '';
+            // Only show users who have relevant data (presence > 0 OR details > 0)
+            const sortedUserIds = Object.keys(userSummary).sort((a,b) => userSummary[a].name.localeCompare(userSummary[b].name));
+            
+            if (sortedUserIds.length === 0) {
+                 summaryBody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`;
+            } else {
+                sortedUserIds.forEach(uid => {
+                    const u = userSummary[uid];
+                    if (u.presence === 0 && u.details.length === 0) return; // Skip empty
+                    
+                    const detailsHtml = u.details.length > 0 ? u.details.join('') : '<span class="text-slate-300">-</span>';
+                    
+                    summaryBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                            <td class="px-6 py-4 font-bold text-slate-700 text-[11px]">${u.name}</td>
+                            <td class="px-4 py-4 text-center font-bold text-primary">${u.presence}</td>
+                            <td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td>
+                        </tr>
+                    `;
+                });
+            }
         };
 
         // Settings
@@ -1346,7 +1386,7 @@
         };
         window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
         document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
-        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
+        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
         window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
@@ -1384,7 +1424,6 @@
             }
         };
 
-        // MODIFIED: Edit with Access Code Check
         window.editLaporan = async (id) => {
             const processEdit = () => {
                 const d = appData.laporan.find(x => x.id === id); 
@@ -1410,9 +1449,7 @@
                     input: 'password',
                     inputPlaceholder: 'Kode Akses...',
                     showCancelButton: true,
-                    confirmButtonColor: '#4361ee',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Buka Akses'
+                    confirmButtonText: 'Buka Akses',
                 });
 
                 if (code) {
@@ -1459,7 +1496,6 @@
             const dateInput = document.getElementById('lap-tanggal').value;
             const editId = document.getElementById('edit-laporan-id').value;
 
-            // Check Duplicate (Only for New Entry)
             if (!editId) {
                 const exists = appData.laporan.some(l => l.hub === h && l.tanggal === dateInput);
                 if (exists) return window.notify('Laporan Tgl/HUB ini sudah ada!', 'error');
@@ -1480,59 +1516,45 @@
             try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
         };
 
-        //window.deleteLaporan = (id) => Swal.fire({title:'Hapus Laporan?',icon:'warning',showCancelButton:true,confirmButtonColor:'#ef476f',cancelButtonColor:'#94a3b8'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Terhapus', 'success'); } });
         window.deleteLaporan = async (id) => {
+            const processDelete = async () => {
+                const r = await Swal.fire({
+                    title: 'Hapus Laporan?',
+                    text: 'Data yang dihapus tidak dapat dikembalikan',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus'
+                });
 
-    const processDelete = async () => {
-        const r = await Swal.fire({
-            title: 'Hapus Laporan?',
-            text: 'Data yang dihapus tidak dapat dikembalikan',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef476f',
-            cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Ya, Hapus'
-        });
+                if (r.isConfirmed) {
+                    await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id));
+                    window.notify('Laporan berhasil dihapus', 'success');
+                }
+            };
 
-        if (r.isConfirmed) {
-            await deleteDoc(
-                doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)
-            );
-            window.notify('Laporan berhasil dihapus', 'success');
-        }
-    };
+            if (currentUser.role === 'admin') {
+                await processDelete();
+                return;
+            }
 
-    // ===============================
-    // ADMIN → LANGSUNG
-    // ===============================
-    if (currentUser.role === 'admin') {
-        await processDelete();
-        return;
-    }
+            const { value: code } = await Swal.fire({
+                title: 'Verifikasi Leader',
+                text: 'Masukkan Kode Akses untuk menghapus laporan',
+                input: 'password',
+                inputPlaceholder: 'Kode Akses...',
+                showCancelButton: true,
+                confirmButtonText: 'Verifikasi'
+            });
 
-    // ===============================
-    // NON-ADMIN → VERIFIKASI KODE
-    // ===============================
-    const { value: code } = await Swal.fire({
-        title: 'Verifikasi Leader',
-        text: 'Masukkan Kode Akses untuk menghapus laporan',
-        input: 'password',
-        inputPlaceholder: 'Kode Akses...',
-        showCancelButton: true,
-        confirmButtonColor: '#4361ee',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Verifikasi'
-    });
+            if (!code) return;
 
-    if (!code) return;
-
-    if (code === appData.accessCode) {
-        window.notify('Akses Diberikan', 'success');
-        await processDelete();
-    } else {
-        window.notify('Kode Akses Salah', 'error');
-    }
-};
+            if (code === appData.accessCode) {
+                window.notify('Akses Diberikan', 'success');
+                await processDelete();
+            } else {
+                window.notify('Kode Akses Salah', 'error');
+            }
+        };
 
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };

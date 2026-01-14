@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.3</title>
+    <title>DailyReport v2.4</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -435,9 +435,27 @@
                     </div>
                 </div>
 
-                 <!-- Tables Grid -->
+                 <!-- Tables Grid (MODIFIED ORDER) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Daily Details -->
+                    <!-- HUB Performance (Now on LEFT) -->
+                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-fit">
+                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
+                             <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-trophy"></i></div>
+                            <h3 class="font-bold text-slate-700 text-sm">Top Performa</h3>
+                        </div>
+                        <div class="overflow-x-auto table-scroll-container" style="max-height: 500px;">
+                            <table class="w-full text-xs text-center">
+                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
+                                    <tr>
+                                        <th class="px-3 py-4 text-left pl-6">HUB</th><th class="px-2 py-4 text-primary">MPP</th>
+                                        <th class="px-3 py-4 text-slate-700">Out.</th><th class="px-2 py-4 text-success">Prod</th><th class="px-3 py-4 text-right pr-6 text-slate-400">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-hub-breakdown" class="text-slate-600 divide-y divide-slate-50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Daily Details (Now on RIGHT) -->
                     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col">
                         <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
                             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400 bg-slate-100 p-1.5 rounded-lg"></i> Rincian Data</h3>
@@ -454,24 +472,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-daily-detail" class="text-slate-600 divide-y divide-slate-50"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- HUB Performance -->
-                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-fit">
-                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
-                             <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-trophy"></i></div>
-                            <h3 class="font-bold text-slate-700 text-sm">Top Performa</h3>
-                        </div>
-                        <div class="overflow-x-auto table-scroll-container" style="max-height: 500px;">
-                            <table class="w-full text-xs text-center">
-                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
-                                    <tr>
-                                        <th class="px-3 py-4 text-left pl-6">HUB</th><th class="px-2 py-4 text-primary">MPP</th>
-                                        <th class="px-3 py-4 text-slate-700">Out.</th><th class="px-2 py-4 text-success">Prod</th><th class="px-3 py-4 text-right pr-6 text-slate-400">Cost</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-hub-breakdown" class="text-slate-600 divide-y divide-slate-50"></tbody>
                             </table>
                         </div>
                     </div>
@@ -541,30 +541,58 @@
                     </div>
                 </div>
 
-                <!-- MAIN ATTENDANCE TABLE -->
+                <!-- MAIN ATTENDANCE TABLE (Modified: Descending Date, Removed Row Total) -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[50vh]">
                     <div class="overflow-auto flex-1">
                         <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium flex-col gap-2"><i class="fas fa-search text-3xl opacity-20"></i><p>Silakan pilih filter...</p></div></div>
                     </div>
                 </div>
 
-                <!-- DETAIL SUMMARY TABLE (NEW) -->
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fas fa-list-alt"></i></div>
-                        <h3 class="font-bold text-slate-700 text-sm">Ringkasan Detail Absensi</h3>
+                <!-- NEW GRID FOR SUMMARY TABLES -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <!-- NEW HUB RECAP TABLE -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-fit">
+                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
+                            <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><i class="fas fa-building"></i></div>
+                            <h3 class="font-bold text-slate-700 text-sm">Rekapitulasi per HUB</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                             <table class="w-full text-xs text-center">
+                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
+                                    <tr>
+                                        <th class="px-4 py-4 text-left">HUB</th>
+                                        <th class="px-3 py-4 text-primary">H</th>
+                                        <th class="px-3 py-4 text-amber-500">I</th>
+                                        <th class="px-3 py-4 text-purple-500">S</th>
+                                        <th class="px-3 py-4 text-red-500">A</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hub-recap-tbody" class="divide-y divide-slate-50 text-slate-600"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto max-h-[400px]">
-                         <table class="w-full text-xs text-left">
-                            <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
-                                <tr>
-                                    <th class="px-6 py-4">Nama Personil</th>
-                                    <th class="px-4 py-4 text-center">Total Hadir</th>
-                                    <th class="px-6 py-4 w-2/3">Keterangan / Alasan Ketidakhadiran</th>
-                                </tr>
-                            </thead>
-                            <tbody id="absensi-summary-tbody" class="divide-y divide-slate-50 text-slate-600"></tbody>
-                        </table>
+
+                    <!-- DETAIL SUMMARY TABLE (Modified: Added I,S,A cols) -->
+                    <div class="lg:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fas fa-list-alt"></i></div>
+                            <h3 class="font-bold text-slate-700 text-sm">Ringkasan Detail Absensi</h3>
+                        </div>
+                        <div class="overflow-x-auto max-h-[400px]">
+                             <table class="w-full text-xs text-left">
+                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
+                                    <tr>
+                                        <th class="px-6 py-4">Nama Personil</th>
+                                        <th class="px-2 py-4 text-center text-primary" title="Hadir">H</th>
+                                        <th class="px-2 py-4 text-center text-amber-500" title="Ijin">I</th>
+                                        <th class="px-2 py-4 text-center text-purple-500" title="Sakit">S</th>
+                                        <th class="px-2 py-4 text-center text-red-500" title="Alfa">A</th>
+                                        <th class="px-6 py-4 w-1/2">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="absensi-summary-tbody" class="divide-y divide-slate-50 text-slate-600"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1169,13 +1197,7 @@
              appData.costs.forEach(c => s.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
              s.value = val !== 'ALL' ? val : 'ALL';
              
-             // UNLOCK for everyone as requested, or keep locked for user? 
-             // Request: "rekapan absensinya semua orng bisa lihat" -> means we should probably allow viewing all hubs if that's implied, 
-             // OR just ensure they can see the view. The code below respects user role logic (User sees own hub, Admin/Leader sees All).
-             // If "everyone can see" means a sorter can see other hubs, we remove the disabled check.
-             // Assuming default strict privacy unless explicitly asked to open data access.
-             if (currentUser.role !== 'admin' && currentUser.role !== 'pic') { // Allow PIC to see all? Usually yes.
-                 // If standard user, restricted to own hub for data safety, but can see the view.
+             if (currentUser.role !== 'admin' && currentUser.role !== 'pic') {
                  s.value = currentUser.kode_hub;
                  s.disabled = true; 
              }
@@ -1196,11 +1218,13 @@
             const endStr = document.getElementById('abs-end-date').value;
             const hubFilter = document.getElementById('abs-hub-select').value;
             const container = document.getElementById('absensi-table-container');
-            const summaryBody = document.getElementById('absensi-summary-tbody'); // New Summary Body
+            const summaryBody = document.getElementById('absensi-summary-tbody');
+            const hubRecapBody = document.getElementById('hub-recap-tbody'); // New body for Hub Recap
             
             if(!startStr || !endStr) return;
             const sDate = new Date(startStr), eDate = new Date(endStr);
-            const dateRange = window.getDatesInRange(sDate, eDate);
+            // REVERSED DATE RANGE
+            const dateRange = window.getDatesInRange(sDate, eDate).reverse();
 
             const reports = appData.laporan.filter(l => {
                 const d = new Date(l.tanggal);
@@ -1218,12 +1242,15 @@
 
             const attMap = {};
             const colTotals = {}; 
-            // New: For Summary
-            const userSummary = {}; // userId -> { name: '', presence: 0, details: [] }
+            const userSummary = {};
+            const hubStats = {}; // New Hub Stats tracking
 
             reports.forEach(r => {
                 if(!attMap[r.hub]) attMap[r.hub] = {};
                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
+                
+                // Init Hub Stats
+                if(!hubStats[r.hub]) hubStats[r.hub] = { h:0, i:0, s:0, a:0 };
 
                 if(r.attendance_data) {
                     r.attendance_data.forEach(a => {
@@ -1232,13 +1259,25 @@
                          else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
                          
                          // Summary Logic
-                         if(!userSummary[a.userId]) userSummary[a.userId] = { name: a.nama || a.name, presence: 0, details: [] };
+                         if(!userSummary[a.userId]) userSummary[a.userId] = { name: a.nama || a.name, h:0, i:0, s:0, a:0, details: [] };
+                         
                          if(['1','2','3'].includes(status)) {
-                             userSummary[a.userId].presence++;
-                         } else if (['I','S','A'].includes(status)) {
+                             userSummary[a.userId].h++;
+                             hubStats[r.hub].h++;
+                         } else if (status === 'I') {
+                             userSummary[a.userId].i++;
+                             hubStats[r.hub].i++;
+                         } else if (status === 'S') {
+                             userSummary[a.userId].s++;
+                             hubStats[r.hub].s++;
+                         } else if (status === 'A') {
+                             userSummary[a.userId].a++;
+                             hubStats[r.hub].a++;
+                         }
+
+                         if (['I','S','A'].includes(status)) {
                              const reason = a.ket ? `(${a.ket})` : '';
                              const label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : 'Alfa');
-                             // Format date dd/mm
                              const dObj = new Date(r.tanggal);
                              const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
                              userSummary[a.userId].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`);
@@ -1266,7 +1305,8 @@
                 const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
                 html += `<th class="p-2 border-b bg-white abs-cell font-bold text-slate-500">${dStr}</th>`;
             });
-            html += `<th class="p-2 border-b bg-slate-50 font-bold w-12 text-slate-700">Total</th></tr></thead><tbody>`;
+            // Removed Row Total Header
+            html += `</tr></thead><tbody>`;
 
             hubsToShow.forEach(h => {
                 const visibleUsers = [...appData.users.filter(u => u.kode_hub === h)];
@@ -1293,7 +1333,7 @@
                 });
 
                 if (visibleUsers.length > 0) {
-                    html += `<tr class="bg-indigo-50"><td class="p-3 border-b font-extrabold text-indigo-700 abs-name-col sticky left-0 z-20 shadow-sm" colspan="1">${h}</td><td colspan="${dateRange.length + 1}" class="bg-indigo-50 border-b"></td></tr>`;
+                    html += `<tr class="bg-indigo-50"><td class="p-3 border-b font-extrabold text-indigo-700 abs-name-col sticky left-0 z-20 shadow-sm" colspan="1">${h}</td><td colspan="${dateRange.length}" class="bg-indigo-50 border-b"></td></tr>`;
 
                     let currentRole = '';
 
@@ -1301,10 +1341,10 @@
                          let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
                          if(roleType !== currentRole) {
                              currentRole = roleType;
-                             html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length + 1}" class="border-b bg-slate-50/50"></td></tr>`;
+                             html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length}" class="border-b bg-slate-50/50"></td></tr>`;
                          }
 
-                         let rowTotal = 0;
+                         // Removed rowTotal calc
                          html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
                          
                          dateRange.forEach(d => {
@@ -1319,52 +1359,68 @@
                              }
                              
                              let cellClass = '';
-                             if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; rowTotal++; }
+                             if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; }
                              else if(status==='I') cellClass='bg-yellow-50 text-amber-500 font-bold';
                              else if(status==='S') cellClass='bg-purple-50 text-purple-500 font-bold';
                              else if(status==='A') cellClass='bg-red-50 text-red-500 font-bold';
 
                              html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
                          });
-                         
-                         html += `<td class="p-2 border-b text-center font-bold bg-slate-50 text-slate-700">${rowTotal}</td></tr>`;
+                         // Removed Row Total Cell
+                         html += `</tr>`;
                     });
                 }
             });
             
+            // Column Totals Row
             html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-3 border-t text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
-            let rangeTotal = 0;
             dateRange.forEach(d => {
                  const y = d.getFullYear();
                  const m = String(d.getMonth() + 1).padStart(2, '0');
                  const da = String(d.getDate()).padStart(2, '0');
                  const dateKey = `${y}-${m}-${da}`;
                  const tot = colTotals[dateKey] || 0;
-                 rangeTotal += tot;
                  html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold">${tot}</td>`;
             });
-            html += `<td class="p-2 border-t text-center text-indigo-800 text-sm bg-white font-extrabold">${rangeTotal}</td></tr>`;
+            html += `</tr>`;
             html += `</tbody></table>`;
             container.innerHTML = html;
 
-            // 2. Render Summary Table
+            // 2. Render Hub Recap Table (NEW)
+            hubRecapBody.innerHTML = '';
+            Object.keys(hubStats).sort().forEach(h => {
+                const s = hubStats[h];
+                hubRecapBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                        <td class="px-4 py-3 font-bold text-slate-700 text-left">${h}</td>
+                        <td class="px-3 py-3 font-bold text-primary">${s.h}</td>
+                        <td class="px-3 py-3 font-bold text-amber-500">${s.i}</td>
+                        <td class="px-3 py-3 font-bold text-purple-500">${s.s}</td>
+                        <td class="px-3 py-3 font-bold text-red-500">${s.a}</td>
+                    </tr>
+                `;
+            });
+
+            // 3. Render Summary Table (Updated with I,S,A cols)
             summaryBody.innerHTML = '';
-            // Only show users who have relevant data (presence > 0 OR details > 0)
             const sortedUserIds = Object.keys(userSummary).sort((a,b) => userSummary[a].name.localeCompare(userSummary[b].name));
             
             if (sortedUserIds.length === 0) {
-                 summaryBody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`;
+                 summaryBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`;
             } else {
                 sortedUserIds.forEach(uid => {
                     const u = userSummary[uid];
-                    if (u.presence === 0 && u.details.length === 0) return; // Skip empty
+                    if (u.h === 0 && u.i === 0 && u.s === 0 && u.a === 0 && u.details.length === 0) return; 
                     
                     const detailsHtml = u.details.length > 0 ? u.details.join('') : '<span class="text-slate-300">-</span>';
                     
                     summaryBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-50">
                             <td class="px-6 py-4 font-bold text-slate-700 text-[11px]">${u.name}</td>
-                            <td class="px-4 py-4 text-center font-bold text-primary">${u.presence}</td>
+                            <td class="px-2 py-4 text-center font-bold text-primary">${u.h}</td>
+                            <td class="px-2 py-4 text-center font-bold text-amber-500">${u.i}</td>
+                            <td class="px-2 py-4 text-center font-bold text-purple-500">${u.s}</td>
+                            <td class="px-2 py-4 text-center font-bold text-red-500">${u.a}</td>
                             <td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td>
                         </tr>
                     `;

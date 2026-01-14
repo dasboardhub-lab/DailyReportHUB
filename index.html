@@ -1607,29 +1607,53 @@
                 title: '',
                 html: `
                     <div class="flex flex-col items-center">
-                        <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-4 text-danger shadow-sm border border-red-100">
-                            <i class="fas fa-user-shield text-2xl"></i>
+                        <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mb-3 text-danger shadow-sm border border-rose-100">
+                            <i class="fas fa-user-shield text-xl"></i>
                         </div>
-                        <h3 class="text-lg font-extrabold text-slate-800">Verifikasi Leader</h3>
-                        <p class="text-xs text-slate-500 mt-1 font-medium">Masukkan kode akses untuk menghapus laporan</p>
+
+                        <h3 class="text-base font-extrabold text-slate-800">
+                            Verifikasi Leader
+                        </h3>
+
+                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">
+                            Masukkan kode akses untuk menghapus laporan
+                        </p>
                     </div>
                 `,
                 input: 'password',
-                inputPlaceholder: 'Kode Akses...',
+                inputPlaceholder: '••••••',
                 inputAttributes: {
                     autocapitalize: 'off',
-                    autocorrect: 'off'
+                    autocorrect: 'off',
+                    maxlength: 10,
+                    inputmode: 'numeric',
+                    pattern: '[0-9A-Za-z]{6,10}'
                 },
+                width: '22rem',
                 showCancelButton: true,
                 confirmButtonText: 'Verifikasi',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
+                buttonsStyling: false,
                 customClass: {
-                    popup: 'rounded-[2.5rem] border border-slate-100 shadow-2xl p-8 font-sans',
-                    input: 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm focus:bg-white focus:ring-2 focus:ring-danger outline-none transition font-bold shadow-sm mt-4 text-center tracking-widest',
-                    confirmButton: 'bg-danger text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition transform active:scale-95 uppercase tracking-wide mx-1 flex-1',
-                    cancelButton: 'bg-slate-100 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide mx-1 flex-1',
-                    actions: 'flex gap-2 w-full justify-center mt-2'
+                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
+                    input: `
+                        w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl
+                        px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em]
+                        focus:bg-white focus:ring-2 focus:ring-danger outline-none
+                        transition shadow-sm mt-4
+                    `,
+                    confirmButton: `
+                        bg-danger text-white px-5 py-2.5 rounded-xl
+                        font-bold text-[11px] shadow-lg shadow-rose-500/30
+                        hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1
+                    `,
+                    cancelButton: `
+                        bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl
+                        font-bold text-[11px] hover:bg-slate-200 transition
+                        active:scale-95 uppercase tracking-wide flex-1
+                    `,
+                    actions: 'flex gap-2 w-full justify-center mt-4'
                 }
             });
 

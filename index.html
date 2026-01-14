@@ -210,27 +210,31 @@
         </div>
     </nav>
 
-    <!-- Mobile Topbar (Cleaned up) -->
-    <div id="mobile-topbar" class="md:hidden glass-nav px-5 py-3 flex justify-between items-center shadow-sm z-40 hidden sticky top-0">
+    <!-- Mobile Topbar (IMPROVED for Mobile) -->
+    <!-- FIX: Increased padding, added backdrop-blur-lg for better visual on mobile -->
+    <div id="mobile-topbar" class="md:hidden glass-nav px-6 py-4 flex justify-between items-center shadow-md z-40 hidden sticky top-0 bg-white/90 backdrop-blur-lg">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                 <i class="fas fa-cube text-sm"></i>
             </div>
-            <span class="font-extrabold text-lg tracking-tight text-slate-800">DailyReport</span>
+            <div>
+                 <span class="font-extrabold text-lg tracking-tight text-slate-800 block leading-tight">DailyReport</span>
+                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Mobile Ops</span>
+            </div>
         </div>
         <div class="flex items-center gap-3">
              <div class="text-right">
                 <div class="text-[11px] font-bold text-slate-700 truncate max-w-[100px]" id="mob-user-name">User</div>
                 <div class="text-[9px] text-slate-400 font-medium truncate max-w-[100px]">Logged in</div>
             </div>
-            <button onclick="window.doLogout()" class="text-slate-400 hover:text-danger bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <button onclick="window.doLogout()" class="text-slate-400 hover:text-danger bg-slate-50 p-2.5 rounded-xl border border-slate-200 hover:border-red-200 transition">
                 <i class="fas fa-power-off text-xs"></i>
             </button>
         </div>
     </div>
 
     <!-- Mobile Bottom Nav (Floating Look) -->
-    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-3 rounded-t-3xl">
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-3 rounded-t-3xl safe-area-bottom">
         <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 flex flex-col items-center gap-1.5">
             <i class="fas fa-chart-pie text-lg"></i>
             <span class="text-[10px] font-bold tracking-wide">Dash</span>
@@ -330,13 +334,15 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-32 md:pb-12 hidden scroll-smooth">
+    <!-- FIX: Increased bottom padding (pb-44) for mobile to prevent cut-off by bottom nav -->
+    <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-44 md:pb-12 hidden scroll-smooth">
         <div class="max-w-7xl mx-auto space-y-8">
             
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
-                <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <!-- FIX: Added 'relative z-30' so the dropdown shows ABOVE the KPI cards -->
+                <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-30">
                     <div>
                         <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
@@ -360,7 +366,8 @@
                 </div>
 
                 <!-- KPI CARDS -->
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                <!-- FIX: Added 'relative z-10' to ensure it sits below the filter dropdown -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
                      <!-- Standard KPI -->
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 rounded-bl-3xl -mr-2 -mt-2"></div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.4</title>
+    <title>DailyReport v2.5</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -928,7 +928,8 @@
             isLoggingOut = false;
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('app-navbar').classList.remove('hidden');
+            // FIX: Don't remove 'hidden' from app-navbar globally, so it stays hidden on mobile
+            // document.getElementById('app-navbar').classList.remove('hidden'); 
             document.getElementById('mobile-topbar').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.add('flex');
@@ -943,6 +944,7 @@
             document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
+            // This adds flex display ONLY for desktop (md breakpoint), overriding 'hidden'
             document.getElementById('app-navbar').classList.add('md:flex');
 
             window.initDashboardFilters(); window.navigate('dashboard');

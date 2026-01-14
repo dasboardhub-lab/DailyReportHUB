@@ -1029,7 +1029,15 @@
             if(document.getElementById('hub-filter-dropdown').children.length === 0) window.renderHubDropdownOptions();
             window.loadDashboardData();
         };
-        window.resetDashboardFilters = window.initDashboardFilters;
+
+        window.resetDashboardFilters = () => {
+            const d = new Date(); document.getElementById('dash-end-date').valueAsDate = d;
+            d.setDate(d.getDate()-30); document.getElementById('dash-start-date').valueAsDate = d;
+            // FIX: Check all checkboxes in dropdown
+            document.querySelectorAll('.hub-checkbox').forEach(c => c.checked = true);
+            window.updateHubLabel();
+            window.loadDashboardData();
+        };
 
         window.loadDashboardData = () => {
             const sEl = document.getElementById('dash-start-date');
@@ -1226,6 +1234,11 @@
              const d = new Date(); document.getElementById('abs-end-date').valueAsDate = d;
              d.setDate(d.getDate()-7); document.getElementById('abs-start-date').valueAsDate = d;
              window.renderAbsensiHubSelect();
+             
+             // FIX: Reset Select to ALL explicitly (if enabled)
+             const s = document.getElementById('abs-hub-select');
+             if(!s.disabled) s.value = 'ALL';
+             
              window.loadAbsensiData();
         };
 

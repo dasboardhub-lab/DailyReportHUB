@@ -165,7 +165,8 @@
 
     <!-- NAVBARS (Improved) -->
     <nav id="app-navbar" class="glass-nav sticky top-0 z-50 hidden transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <!-- MODIFIED: Changed max-w-7xl to w-full px-6 md:px-12 for Full Desktop -->
+        <div class="w-full px-6 md:px-12 mx-auto">
             <div class="flex items-center justify-between h-20">
                 <!-- Logo Area -->
                 <div class="flex items-center gap-3 flex-shrink-0">
@@ -211,7 +212,6 @@
     </nav>
 
     <!-- Mobile Topbar (IMPROVED for Mobile) -->
-    <!-- FIX: Increased padding, added backdrop-blur-lg for better visual on mobile -->
     <div id="mobile-topbar" class="md:hidden glass-nav px-6 py-4 flex justify-between items-center shadow-md z-40 hidden sticky top-0 bg-white/90 backdrop-blur-lg">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -334,14 +334,13 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <!-- FIX: Increased bottom padding (pb-44) for mobile to prevent cut-off by bottom nav -->
+    <!-- MODIFIED: Changed max-w-7xl to w-full px-4 md:px-8 for Full Desktop -->
     <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-44 md:pb-12 hidden scroll-smooth">
-        <div class="max-w-7xl mx-auto space-y-8">
+        <div class="w-full px-2 md:px-4 space-y-8">
             
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
                 <!-- Filter Bar -->
-                <!-- FIX: Added 'relative z-30' so the dropdown shows ABOVE the KPI cards -->
                 <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-30">
                     <div>
                         <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
@@ -366,54 +365,54 @@
                 </div>
 
                 <!-- KPI CARDS -->
-                <!-- FIX: Added 'relative z-10' to ensure it sits below the filter dropdown -->
+                <!-- MODIFIED: Updated text sizes and tracking for better number fitting -->
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
                      <!-- Standard KPI -->
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 rounded-bl-3xl -mr-2 -mt-2"></div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Total MPP</p>
-                        <h3 class="text-2xl font-extrabold text-slate-800 mt-1 relative z-10" id="kpi-total-mpp">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mt-1 relative z-10 tracking-tight truncate" id="kpi-total-mpp">0</h3>
                         <div id="diff-total-mpp" class="relative z-10"></div>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Staging</p>
-                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-staging">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-staging">0</h3>
                         <div id="diff-staging" class="relative z-10"></div>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Gateway</p>
-                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-gateway">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-gateway">0</h3>
                         <div id="diff-gateway" class="relative z-10"></div>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                          <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">JNE</p>
-                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-jne">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-jne">0</h3>
                         <div id="diff-jne" class="relative z-10"></div>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                          <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">SAP</p>
-                        <h3 class="text-2xl font-extrabold text-slate-700 mt-1 relative z-10" id="kpi-sap">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-sap">0</h3>
                         <div id="diff-sap" class="relative z-10"></div>
                     </div>
                     
                     <div class="bg-gradient-to-br from-primary to-blue-600 p-4 rounded-2xl shadow-float kpi-card group text-white">
                         <p class="text-[9px] font-bold text-white uppercase tracking-widest opacity-90">Total Paket</p>
-                        <h3 class="text-2xl font-extrabold text-white mt-1" id="kpi-total-paket">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-white mt-1 tracking-tight truncate" id="kpi-total-paket">0</h3>
                         <div id="diff-total-paket" class="brightness-200 contrast-200 grayscale"></div>
                     </div>
                     
                     <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-success kpi-card group">
                         <p class="text-[9px] font-bold text-success uppercase tracking-widest">Prod.</p>
-                        <h3 class="text-2xl font-extrabold text-slate-800 mt-1" id="kpi-avg-prod">0</h3>
+                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mt-1 tracking-tight truncate" id="kpi-avg-prod">0</h3>
                         <div id="diff-avg-prod"></div>
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-danger kpi-card group">
                         <p class="text-[9px] font-bold text-danger uppercase tracking-widest">Cost</p>
-                        <h3 class="text-lg font-extrabold text-slate-800 mt-2 truncate" id="kpi-total-cost">Rp 0</h3>
+                        <h3 class="text-lg md:text-xl font-extrabold text-slate-800 mt-2 truncate tracking-tight" id="kpi-total-cost">Rp 0</h3>
                         <div id="diff-total-cost"></div>
                     </div>
                 </div>
@@ -666,7 +665,8 @@
             </div>
         </div>
     </main>
-
+    
+    <!-- ... existing code (Modals) ... -->
     <!-- MODAL USER -->
     <div id="user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50" id="user-modal-content">
@@ -793,8 +793,8 @@
         const storageId = 'hub-data-v1';
         let app, auth, db;
         
-        // --- CUSTOM SWEETALERT MIXIN ---
-        const SwalTheme = Swal.mixin({
+        // ... (SweetAlert theme code same as before) ...
+         const SwalTheme = Swal.mixin({
             customClass: {
                 popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
                 title: 'text-xl font-bold text-slate-800',
@@ -806,9 +806,8 @@
             buttonsStyling: false
         });
         window.Swal = SwalTheme; 
-        // -------------------------------
 
-        // Dynamic Island
+        // ... (Dynamic Island code same as before) ...
         const island = document.getElementById('dynamic-island');
         const islandContent = document.getElementById('island-content');
         const islandIcon = document.getElementById('island-icon');
@@ -904,7 +903,7 @@
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
-        // Auth
+        // ... (Auth code same as before) ...
         window.switchLoginTab = (t) => {
             const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
             if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-slate-700','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
@@ -1130,11 +1129,29 @@
                 responsive: true, maintainAspectRatio: false,
                 scales: {
                     x: { grid: { display: false } },
-                    y: { type: 'linear', display: false, position: 'left' },
-                    y1: { type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false } }
+                    y: { 
+                        type: 'linear', display: false, position: 'left',
+                        // MODIFIED: Ensure Y-axis uses #.### format
+                        ticks: { callback: function(value) { return window.formatNumber(value); } }
+                    },
+                    y1: { 
+                        type: 'linear', display: false, position: 'right', grid: { drawOnChartArea: false },
+                        ticks: { callback: function(value) { return window.formatNumber(value); } }
+                    }
                 },
                 plugins: {
                     legend: { display: false },
+                    tooltip: {
+                        // MODIFIED: Ensure Tooltips use #.### format
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) { label += window.formatNumber(context.parsed.y); }
+                                return label;
+                            }
+                        }
+                    },
                     datalabels: {
                         backgroundColor: function(context) {
                              if (context.datasetIndex === 1) { 
@@ -1145,7 +1162,9 @@
                         borderRadius: 4,
                         color: 'white',
                         font: { weight: 'bold', size: 10 },
-                        padding: 4
+                        padding: 4,
+                        // MODIFIED: Format datalabels
+                        formatter: function(value) { return window.formatNumber(value); }
                     }
                 }
             };
@@ -1199,6 +1218,7 @@
                 tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-primary font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-slate-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 font-medium"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-400 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
             });
         };
+        // ... (rest of the script same as before) ...
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
 
         // --- ABSENSI MATRIX & SUMMARY ---

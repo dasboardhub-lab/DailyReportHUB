@@ -1509,14 +1509,59 @@
             if (currentUser.role === 'admin') {
                 processEdit();
             } else {
-                const { value: code } = await Swal.fire({
-                    title: 'Verifikasi Leader',
-                    text: 'Masukkan Kode Akses untuk mengedit',
-                    input: 'password',
-                    inputPlaceholder: 'Kode Akses...',
-                    showCancelButton: true,
-                    confirmButtonText: 'Buka Akses',
-                });
+            const { value: code } = await Swal.fire({
+                title: '',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
+                            <i class="fas fa-lock-open text-xl"></i>
+                        </div>
+
+                        <h3 class="text-base font-extrabold text-slate-800">
+                            Verifikasi Leader
+                        </h3>
+
+                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">
+                            Masukkan kode akses untuk membuka hak edit
+                        </p>
+                    </div>
+                `,
+                input: 'password',
+                inputPlaceholder: '••••••',
+                inputAttributes: {
+                    autocapitalize: 'off',
+                    autocorrect: 'off',
+                    maxlength: 10,
+                    inputmode: 'numeric'
+                },
+                width: '22rem',
+                showCancelButton: true,
+                reverseButtons: true,
+                buttonsStyling: false,
+                confirmButtonText: 'Buka Akses',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
+                    input: `
+                        w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl
+                        px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em]
+                        focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none
+                        transition shadow-sm mt-4
+                    `,
+                    confirmButton: `
+                        bg-blue-600 text-white px-5 py-2.5 rounded-xl
+                        font-bold text-[11px] shadow-lg shadow-blue-500/30
+                        hover:bg-blue-700 transition active:scale-95
+                        uppercase tracking-wide flex-1
+                    `,
+                    cancelButton: `
+                        bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl
+                        font-bold text-[11px] hover:bg-slate-200 transition
+                        active:scale-95 uppercase tracking-wide flex-1
+                    `,
+                    actions: 'flex gap-2 w-full justify-center mt-4'
+                }
+            });
 
                 if (code) {
                     if (code === appData.accessCode) {

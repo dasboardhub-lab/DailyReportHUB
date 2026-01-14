@@ -485,10 +485,17 @@
                         <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                     </div>
+                   
+
+                    <div class="flex items-center gap-3">
+                        <!-- NEW HUB FILTER -->
+                        <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition hover:bg-white shadow-sm">
+                            <option value="ALL">Semua HUB</option>
+                        </select>
                         <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-6 py-3 rounded-2xl font-bold text-xs transition hidden flex items-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30" id="btn-tambah-laporan">
                             <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT LAPORAN</span>
                         </button>
-
+                    </div>
                 </div>
                 <div class="bg-white rounded-3xl shadow-card border border-slate-100/50 overflow-hidden flex flex-col h-[70vh]">
                     <div class="overflow-auto flex-1">
@@ -1445,7 +1452,64 @@
         };
         window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
         document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
-        window.deleteUser = (id) => Swal.fire({title:'Hapus?',icon:'warning',showCancelButton:true,confirmButtonText:'Hapus'}).then(async r=>{ if(r.isConfirmed){ await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('Terhapus', 'success'); } });
+        window.deleteUser = async (id) => {
+
+            const r = await Swal.fire({
+                title: '',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full border-4 border-rose-300
+                                    flex items-center justify-center text-rose-500 mb-4">
+                            <i class="fas fa-user-xmark text-2xl"></i>
+                        </div>
+
+                        <h3 class="text-lg font-extrabold text-slate-800">
+                            Hapus User?
+                        </h3>
+
+                        <p class="text-xs text-slate-500 mt-2 text-center">
+                            Akun user akan dihapus permanen dan tidak dapat dikembalikan
+                        </p>
+                    </div>
+                `,
+                width: '22rem',
+                showCancelButton: true,
+                reverseButtons: true,
+                buttonsStyling: false,
+                confirmButtonText: 'YA, HAPUS',
+                cancelButtonText: 'BATAL',
+                customClass: {
+                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
+                    confirmButton: `
+                        bg-rose-600 text-white px-6 py-2.5 rounded-xl
+                        font-bold text-xs shadow-lg shadow-rose-500/30
+                        hover:bg-rose-700 transition active:scale-95
+                        uppercase tracking-wide flex-1
+                    `,
+                    cancelButton: `
+                        bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl
+                        font-bold text-xs hover:bg-slate-200 transition
+                        active:scale-95 uppercase tracking-wide flex-1
+                    `,
+                    actions: 'flex gap-3 w-full justify-center mt-6'
+                }
+            });
+
+            if (!r.isConfirmed) return;
+
+            try {
+                await deleteDoc(
+                    doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)
+                );
+
+                window.notify('User berhasil dihapus', 'success');
+
+            } catch (err) {
+                console.error(err);
+                window.notify('Gagal menghapus user', 'error');
+            }
+        };
+
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
         window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };

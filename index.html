@@ -485,17 +485,10 @@
                         <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                     </div>
-                   
-
-                    <div class="flex items-center gap-3">
-                        <!-- NEW HUB FILTER -->
-                        <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition hover:bg-white shadow-sm">
-                            <option value="ALL">Semua HUB</option>
-                        </select>
                         <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-6 py-3 rounded-2xl font-bold text-xs transition hidden flex items-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30" id="btn-tambah-laporan">
                             <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT LAPORAN</span>
                         </button>
-                    </div>
+
                 </div>
                 <div class="bg-white rounded-3xl shadow-card border border-slate-100/50 overflow-hidden flex flex-col h-[70vh]">
                     <div class="overflow-auto flex-1">

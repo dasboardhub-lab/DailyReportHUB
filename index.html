@@ -1628,18 +1628,62 @@
         };
 
         window.deleteLaporan = async (id) => {
+
             const processDelete = async () => {
+
                 const r = await Swal.fire({
-                    title: 'Hapus Laporan?',
-                    text: 'Data yang dihapus tidak dapat dikembalikan',
-                    icon: 'warning',
+                    title: '',
+                    html: `
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 rounded-full border-4 border-orange-300
+                                        flex items-center justify-center text-orange-400 mb-4">
+                                <i class="fas fa-exclamation text-2xl"></i>
+                            </div>
+
+                            <h3 class="text-lg font-extrabold text-slate-800">
+                                Hapus Laporan?
+                            </h3>
+
+                            <p class="text-xs text-slate-500 mt-2 text-center">
+                                Data yang dihapus tidak dapat dikembalikan
+                            </p>
+                        </div>
+                    `,
+                    width: '22rem',
                     showCancelButton: true,
-                    confirmButtonText: 'Ya, Hapus'
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    confirmButtonText: 'YA, HAPUS',
+                    cancelButtonText: 'CANCEL',
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
+                        confirmButton: `
+                            bg-blue-600 text-white px-6 py-2.5 rounded-xl
+                            font-bold text-xs shadow-lg shadow-blue-500/30
+                            hover:bg-blue-700 transition active:scale-95
+                            uppercase tracking-wide flex-1
+                        `,
+                        cancelButton: `
+                            bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl
+                            font-bold text-xs hover:bg-slate-200 transition
+                            active:scale-95 uppercase tracking-wide flex-1
+                        `,
+                        actions: 'flex gap-3 w-full justify-center mt-6'
+                    }
                 });
 
-                if (r.isConfirmed) {
-                    await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id));
+                if (!r.isConfirmed) return;
+
+                try {
+                    await deleteDoc(
+                        doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)
+                    );
+
                     window.notify('Laporan berhasil dihapus', 'success');
+
+                } catch (err) {
+                    console.error(err);
+                    window.notify('Gagal menghapus laporan', 'error');
                 }
             };
 

@@ -2085,9 +2085,16 @@
             const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
             const totalPaket = g+st+j+sa;
             
-            // VALIDASI: Mencegah simpan jika Paket 0 DAN Absensi Kosong
+            // VALIDASI:
+            // 1. Mencegah simpan jika Data Kosong (Paket 0 & Absensi Kosong)
             if (totalPaket === 0 && totalFilled === 0) {
                 return window.notify('Data Kosong! Isi Paket/Absen', 'error');
+            }
+
+            // 2. Mencegah simpan jika Paket Terisi tapi TIDAK ADA MPP (Yang Hadir)
+            // Logika: Tidak mungkin ada paket diproses jika tidak ada orang yang masuk (Shift 1/2/3)
+            if (totalPaket > 0 && totalMpp === 0) {
+                 return window.notify('Paket terisi tapi MPP (Hadir) Kosong!', 'error');
             }
 
             window.notify('Menyimpan Laporan...', 'loading');

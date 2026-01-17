@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.91 (Notes Feature)</title>
+    <title>DailyReport v2.9 (Notes Feature)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -690,6 +690,20 @@
                     <div><span class="block text-xs font-bold text-indigo-900">Akses Edit</span><span class="text-[10px] text-indigo-600">Izinkan ubah data?</span></div>
                     <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="input-akses-toggle" class="sr-only peer" onchange="document.getElementById('akses-label').innerText = this.checked ? 'YA' : 'TIDAK'"><div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-sm"></div><span class="ml-3 text-[10px] font-bold text-indigo-800 w-8" id="akses-label">TIDAK</span></label>
                 </div>
+
+                <!-- NEW: Toggle Resign -->
+                <div class="flex items-center justify-between bg-rose-50 p-4 rounded-xl border border-rose-100/50">
+                    <div><span class="block text-xs font-bold text-rose-900">Status Resign</span><span class="text-[10px] text-rose-600">Karyawan Non-Aktif?</span></div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="input-resign-toggle" class="sr-only peer" onchange="window.toggleResignDate()">
+                        <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500 shadow-sm"></div>
+                    </label>
+                </div>
+                <div id="resign-date-container" class="hidden relative group mt-2">
+                     <input type="date" id="input-tanggal-resign" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-white rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-rose-500 appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm">
+                     <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-rose-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Tanggal Resign</label>
+                </div>
+
                 <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
                     <button type="button" onclick="window.closeUserModal()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 transition">Batal</button>
                     <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition transform active:scale-95 tracking-wide uppercase">Simpan</button>
@@ -1510,51 +1524,87 @@
 
         window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
         window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
-        window.renderUserTable = () => { const tb=document.getElementById('user-table-body'); tb.innerHTML=''; appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700">${u.nama}</td><td class="px-6 py-4 font-mono text-slate-500">${u.id}</td><td class="px-6 py-4"><span class="bg-blue-50 text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-blue-100">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm font-medium text-slate-600">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-4 transition transform hover:scale-110"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-400 hover:text-rose-600 transition transform hover:scale-110"><i class="fas fa-trash"></i></button></td></tr>`); };
+        
+        window.toggleResignDate = () => {
+            const isResign = document.getElementById('input-resign-toggle').checked;
+            document.getElementById('resign-date-container').classList.toggle('hidden', !isResign);
+            if(!isResign) document.getElementById('input-tanggal-resign').value = '';
+        };
+
+        window.renderUserTable = () => { 
+            const tb=document.getElementById('user-table-body'); tb.innerHTML=''; 
+            appData.users.forEach(u => {
+                const isResign = u.is_resign === true;
+                const statusBadge = isResign 
+                    ? `<span class="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-bold border border-rose-200 ml-2">RESIGN</span>` 
+                    : '';
+                const rowClass = isResign ? 'bg-slate-50 opacity-70 grayscale' : 'hover:bg-slate-50';
+                const nameDisplay = isResign ? `<span class="line-through text-slate-400">${u.nama}</span>` : `<span class="text-slate-700">${u.nama}</span>`;
+
+                tb.innerHTML+=`<tr class="${rowClass} border-b border-slate-50 transition"><td class="px-6 py-4 font-bold flex items-center">${nameDisplay} ${statusBadge}</td><td class="px-6 py-4 font-mono text-slate-500">${u.id}</td><td class="px-6 py-4"><span class="bg-blue-50 text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-blue-100">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm font-medium text-slate-600">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-4 transition transform hover:scale-110"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-400 hover:text-rose-600 transition transform hover:scale-110"><i class="fas fa-trash"></i></button></td></tr>`;
+            }); 
+        };
+
         window.toggleUserModalPassword = () => { const p=document.getElementById('input-posisi').value, isL=p==='LEADER'||p==='Admin', pc=document.getElementById('password-container'), ic=document.getElementById('id-container'); pc.classList.toggle('hidden', !isL); if(isL){ic.classList.remove('col-span-2');ic.classList.add('col-span-1')}else{ic.classList.remove('col-span-1');ic.classList.add('col-span-2')} };
+        
         window.openUserModal = (id=null) => {
             const m=document.getElementById('user-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
             const hS=document.getElementById('input-kode-hub'); hS.innerHTML='<option value="">-- Pilih --</option>'; appData.costs.forEach(c=>hS.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`);
-            if(id) { const u=appData.users.find(x=>x.id===id); document.getElementById('modal-title').innerText='Edit User'; document.getElementById('edit-user-id').value=id; document.getElementById('input-nama').value=u.nama; document.getElementById('input-id').value=u.id; document.getElementById('input-sandi').value=u.sandi||''; document.getElementById('input-kode-hub').value=u.kode_hub; document.getElementById('input-posisi').value=u.posisi; document.getElementById('input-akses-toggle').checked=(u.akses==='YA'); document.getElementById('akses-label').innerText=u.akses; document.getElementById('input-id').readOnly=true; document.getElementById('input-id').classList.add('bg-slate-100'); }
-            else { document.getElementById('modal-title').innerText='Tambah User'; document.getElementById('edit-user-id').value=''; document.getElementById('user-form').reset(); document.getElementById('input-id').readOnly=false; document.getElementById('input-id').classList.remove('bg-slate-100'); document.getElementById('akses-label').innerText='TIDAK'; }
+            
+            if(id) { 
+                const u=appData.users.find(x=>x.id===id); 
+                document.getElementById('modal-title').innerText='Edit User'; 
+                document.getElementById('edit-user-id').value=id; 
+                document.getElementById('input-nama').value=u.nama; 
+                document.getElementById('input-id').value=u.id; 
+                document.getElementById('input-sandi').value=u.sandi||''; 
+                document.getElementById('input-kode-hub').value=u.kode_hub; 
+                document.getElementById('input-posisi').value=u.posisi; 
+                document.getElementById('input-akses-toggle').checked=(u.akses==='YA'); 
+                document.getElementById('akses-label').innerText=u.akses; 
+                
+                // Load Resign Data
+                document.getElementById('input-resign-toggle').checked = (u.is_resign === true);
+                document.getElementById('input-tanggal-resign').value = u.tanggal_resign || '';
+                window.toggleResignDate();
+
+                document.getElementById('input-id').readOnly=true; 
+                document.getElementById('input-id').classList.add('bg-slate-100'); 
+            } else { 
+                document.getElementById('modal-title').innerText='Tambah User'; 
+                document.getElementById('edit-user-id').value=''; 
+                document.getElementById('user-form').reset(); 
+                document.getElementById('input-id').readOnly=false; 
+                document.getElementById('input-id').classList.remove('bg-slate-100'); 
+                document.getElementById('akses-label').innerText='TIDAK'; 
+                
+                // Reset Resign
+                document.getElementById('input-resign-toggle').checked = false;
+                window.toggleResignDate();
+            }
             window.toggleUserModalPassword();
         };
+
         window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
-        document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
-        window.deleteUser = async (id) => {
-            const r = await Swal.fire({
-                title: '',
-                html: `
-                    <div class="flex flex-col items-center">
-                        <div class="w-16 h-16 rounded-full border-4 border-rose-300
-                                    flex items-center justify-center text-rose-500 mb-4">
-                            <i class="fas fa-user-xmark text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-extrabold text-slate-800">
-                            Hapus User?
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-2 text-center">
-                            Akun user akan dihapus permanen dan tidak dapat dikembalikan
-                        </p>
-                    </div>
-                `,
-                width: '22rem',
-                showCancelButton: true,
-                reverseButtons: true,
-                buttonsStyling: false,
-                confirmButtonText: 'YA, HAPUS',
-                cancelButtonText: 'BATAL',
-                customClass: {
-                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    confirmButton: `bg-rose-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-rose-500/30 hover:bg-rose-700 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    cancelButton: `bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    actions: 'flex gap-3 w-full justify-center mt-6'
-                }
-            });
-
-            if (!r.isConfirmed) return;
-
-            try { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('User berhasil dihapus', 'success'); } catch (err) { console.error(err); window.notify('Gagal menghapus user', 'error'); }
+        
+        document.getElementById('user-form').onsubmit = async (e) => { 
+            e.preventDefault(); 
+            window.notify('Menyimpan...', 'loading'); 
+            const id=document.getElementById('input-id').value;
+            const isResign = document.getElementById('input-resign-toggle').checked;
+            
+            const data={ 
+                nama:document.getElementById('input-nama').value, 
+                id:id, 
+                sandi:document.getElementById('input-sandi').value, 
+                kode_hub:document.getElementById('input-kode-hub').value, 
+                posisi:document.getElementById('input-posisi').value, 
+                akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK',
+                is_resign: isResign,
+                tanggal_resign: isResign ? document.getElementById('input-tanggal-resign').value : ''
+            }; 
+            
+            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } 
         };
 
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
@@ -1782,69 +1832,32 @@
         };
         window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
         window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
-            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; const tb = document.getElementById('attendance-tbody'); tb.innerHTML = ''; if(!h) return;
-            const users = appData.users.filter(u => u.kode_hub === h).sort((a,b) => { const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id); });
+            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; 
+            const tb = document.getElementById('attendance-tbody'); 
+            tb.innerHTML = ''; 
+            if(!h) return;
+            
+            // FILTER USERS: 
+            // 1. By HUB
+            // 2. If Resign, only show if they are already in existingData (Creating new report -> hide resigns. Editing old -> show history)
+            const users = appData.users.filter(u => {
+                if(u.kode_hub !== h) return false;
+                
+                if(u.is_resign === true) {
+                    const inHistory = existingData && existingData.some(ed => ed.userId === u.id);
+                    if(!inHistory) return false; // Hide from new list if resigned
+                }
+                return true;
+            }).sort((a,b) => { 
+                const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; 
+                if(rA!==rB)return rA-rB; 
+                return a.id.localeCompare(b.id); 
+            });
+
             const map = {}; existingData.forEach(x => map[x.userId] = x);
             users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); });
             existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
             window.calcMetrics();
-        };
-        window.renderRow = (tb, id, nm, role, isL, sv, isM) => {
-            const nmH = isM ? `<input type="text" name="user_nama[]" value="${nm}" class="w-full text-xs border-b border-slate-300 focus:border-indigo-500 outline-none pb-1 bg-transparent" placeholder="Nama DW">` : `<div class="font-bold text-slate-700">${nm}</div><div class="text-[10px] text-slate-400 font-medium">${isL?'★ LEADER':role}</div><input type="hidden" name="user_nama[]" value="${nm}">`;
-            const del = isM ? `<button type="button" onclick="this.closest('tr').remove();window.calcMetrics()" class="text-rose-400 hover:text-rose-600"><i class="fas fa-minus-circle"></i></button>` : '';
-            const chk = (n,v,c) => `<input type="checkbox" name="${n}[]" class="attendance-checkbox ${c} w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer transition" onchange="window.handleSingleCheck(this)" ${v?'checked':''}>`;
-            tb.insertAdjacentHTML('beforeend', `<tr class="${isL?'bg-indigo-50/50':'bg-white'} hover:bg-slate-50 transition border-b border-slate-50 group" data-role="${role}"><td class="p-3 text-left pl-6">${nmH}<input type="hidden" name="user_id[]" value="${id}"><input type="hidden" name="is_manual[]" value="${isM}"></td><td class="p-2 bg-blue-50/30 text-center">${chk('s1',sv.s1,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center">${chk('s2',sv.s2,'shift-chk')}</td><td class="p-2 bg-blue-50/30 text-center border-r-2 border-slate-100">${chk('s3',sv.s3,'shift-chk')}</td><td class="p-2 text-center">${chk('ijin',sv.i,'status-chk')}</td><td class="p-2 text-center">${chk('sakit',sv.s,'status-chk')}</td><td class="p-2 text-center">${chk('alfa',sv.a,'status-chk')}</td><td class="p-2"><input type="text" name="ket[]" value="${sv.ket||''}" class="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-indigo-500 outline-none bg-slate-50"></td><td class="p-2 text-center">${del}</td></tr>`);
-        };
-        window.handleSingleCheck = (c) => { if(c.checked) c.closest('tr').querySelectorAll('.attendance-checkbox').forEach(x=>{if(x!==c)x.checked=false}); window.calcMetrics(); };
-        window.calcMetrics = (el) => { if(el) window.formatCostInput(el); const g=window.parseFormattedNumber(document.getElementById('lap-gateway').value), s=window.parseFormattedNumber(document.getElementById('lap-staging').value), j=window.parseFormattedNumber(document.getElementById('lap-jne').value), sa=window.parseFormattedNumber(document.getElementById('lap-sap').value), tot=g+s+j+sa; document.getElementById('disp-total-paket').innerText=window.formatNumber(tot); document.getElementById('val-total-paket').value=tot; let mpp=0; document.querySelectorAll('#attendance-tbody tr').forEach(r=>{ if(r.getAttribute('data-role')!=='LEADER'&&r.getAttribute('data-role')!=='Admin'&&r.querySelector('.shift-chk:checked')) mpp++; }); document.getElementById('disp-total-mpp').innerText=mpp; document.getElementById('disp-productivity').innerText=mpp>0?window.formatNumber(Math.round(tot/mpp)):0; };
-        window.addManualDWRow = () => window.renderRow(document.getElementById('attendance-tbody'), 'manual_'+Date.now(), '', 'DW', false, {}, true);
-
-        document.getElementById('laporan-form').onsubmit = async (e) => {
-            e.preventDefault(); 
-            const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; if(!h) return window.notify('Pilih HUB', 'error');
-            const dateInput = document.getElementById('lap-tanggal').value;
-            const editId = document.getElementById('edit-laporan-id').value;
-            const catatan = document.getElementById('lap-catatan').value; // Ambil catatan
-
-            if (!editId) {
-                const exists = appData.laporan.some(l => l.hub === h && l.tanggal === dateInput);
-                if (exists) return window.notify('Laporan Tgl/HUB ini sudah ada!', 'error');
-            }
-
-            window.notify('Menyimpan...', 'loading');
-            
-            const att=[], rows=document.querySelectorAll('#attendance-tbody tr'); let mpp=0;
-            for(let r of rows) {
-                const uid=r.querySelector('input[name="user_id[]"]').value, nm=r.querySelector('input[name="user_nama[]"]').value, isM=r.querySelector('input[name="is_manual[]"]').value==='true';
-                if(isM && !nm.trim()) return window.notify('Nama DW Kosong', 'error');
-                const s1=r.querySelector('input[name="s1[]"]').checked, s2=r.querySelector('input[name="s2[]"]').checked, s3=r.querySelector('input[name="s3[]"]').checked;
-                if((s1||s2||s3) && r.getAttribute('data-role')!=='LEADER' && r.getAttribute('data-role')!=='Admin') mpp++;
-                att.push({ userId:uid, nama:nm, s1, s2, s3, i:r.querySelector('input[name="ijin[]"]').checked, s:r.querySelector('input[name="sakit[]"]').checked, a:r.querySelector('input[name="alfa[]"]').checked, ket:r.querySelector('input[name="ket[]"]').value });
-            }
-            const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
-            
-            // Masukkan 'catatan' ke objek data
-            const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, catatan, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
-            try { 
-                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); 
-                window.notify('Laporan Tersimpan', 'success'); 
-                window.closeLaporanModal(); 
-                
-                window.Swal.fire({
-                    title: 'Laporan Tersimpan',
-                    text: "Ingin menyalin format laporan ke clipboard?",
-                    icon: 'success',
-                    showCancelButton: true,
-                    confirmButtonColor: '#4361ee', 
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: '<i class="fas fa-copy"></i> Salin Text',
-                    cancelButtonText: 'Tutup'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.copyReportToClipboard(data);
-                    }
-                });
-            } catch(e) { window.notify('Gagal', 'error'); }
         };
 
         window.deleteLaporan = async (id) => {
@@ -1925,6 +1938,187 @@
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
         
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded text-xs' : 'bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded text-xs';
+
+        // ==========================================================
+        // MISSING FUNCTIONS DEFINITIONS (Fixed)
+        // ==========================================================
+        
+        // 1. window.renderRow (Untuk Absensi)
+        window.renderRow = (tb, id, name, pos, isLeader, d, isManual) => {
+            const r = document.createElement('tr');
+            r.className = 'hover:bg-slate-50 transition border-b border-slate-50 last:border-0';
+            
+            // Handle Name Display or Input for Manual
+            let nameContent = '';
+            if (isManual) {
+                nameContent = `<input type="text" class="att-name-input w-full bg-slate-50 border border-slate-200 rounded-lg text-xs px-2 py-1 focus:ring-1 focus:ring-primary font-bold text-slate-700" placeholder="Nama DW..." value="${name}" onkeyup="this.closest('td').querySelector('.att-name').value = this.value">`;
+            } else {
+                nameContent = `<div class="font-bold text-slate-700 text-xs">${name}</div>`;
+            }
+
+            r.innerHTML = `
+                <td class="p-3 pl-6 text-left">
+                    ${nameContent}
+                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isManual ? 'MANUAL DW' : pos}</div>
+                    <input type="hidden" class="att-id" value="${id}">
+                    <input type="hidden" class="att-name" value="${name}">
+                </td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-s1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition cursor-pointer" ${d.s1?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-s2 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition cursor-pointer" ${d.s2?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2 text-center border-r border-slate-100"><input type="checkbox" class="att-s3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition cursor-pointer" ${d.s3?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-i w-4 h-4 text-amber-500 rounded focus:ring-amber-500 border-gray-300 transition cursor-pointer" ${d.i?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-s w-4 h-4 text-purple-500 rounded focus:ring-purple-500 border-gray-300 transition cursor-pointer" ${d.s?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-a w-4 h-4 text-red-500 rounded focus:ring-red-500 border-gray-300 transition cursor-pointer" ${d.a?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2"><input type="text" class="att-ket w-full bg-slate-50 border-none rounded-lg text-xs px-2 py-1.5 focus:ring-1 focus:ring-slate-300 placeholder-slate-300" placeholder="..." value="${d.ket||''}"></td>
+                <td class="p-2 text-center">${isManual ? `<button type="button" onclick="this.closest('tr').remove(); window.calcMetrics()" class="text-rose-400 hover:text-rose-600 transition"><i class="fas fa-times"></i></button>` : ''}</td>
+            `;
+            tb.appendChild(r);
+        };
+
+        // 2. window.calcMetrics (Menghitung Total MPP & Productivity Real-time)
+        window.calcMetrics = () => {
+            let mpp = 0;
+            // Hitung checkbox yang dicentang (Shift 1/2/3)
+            document.querySelectorAll('#attendance-tbody tr').forEach(r => {
+                const s1 = r.querySelector('.att-s1').checked;
+                const s2 = r.querySelector('.att-s2').checked;
+                const s3 = r.querySelector('.att-s3').checked;
+                if(s1 || s2 || s3) mpp++;
+            });
+            
+            // Ambil input paket
+            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
+            const s = window.parseFormattedNumber(document.getElementById('lap-staging').value);
+            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
+            const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            const total = g + s + j + sa;
+            
+            // Update UI
+            document.getElementById('disp-total-paket').innerText = window.formatNumber(total);
+            document.getElementById('val-total-paket').value = total;
+            document.getElementById('disp-total-mpp').innerText = mpp;
+            
+            const prod = mpp > 0 ? Math.round(total / mpp) : 0;
+            const prodEl = document.getElementById('disp-productivity');
+            prodEl.innerText = window.formatNumber(prod);
+            // Dynamic Color Class for Productivity
+            if (prod < 600) {
+                prodEl.className = 'text-3xl font-extrabold mt-2 text-rose-500';
+            } else {
+                prodEl.className = 'text-3xl font-extrabold mt-2 text-emerald-600';
+            }
+        };
+
+        // 3. window.addManualDWRow (Tambah baris manual)
+        window.addManualDWRow = () => {
+            const id = 'manual_' + Date.now();
+            const tb = document.getElementById('attendance-tbody');
+            // Cek jika tabel kosong (misal pesan 'Pilih HUB dulu'), bersihkan dulu
+            if (tb.children.length > 0 && tb.children[0].innerText.includes('Pilih HUB')) {
+                tb.innerHTML = '';
+            }
+            window.renderRow(tb, id, '', 'DW', false, {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, true);
+        };
+
+        // 4. window.deleteUser (Hapus User)
+        window.deleteUser = async (id) => {
+            const r = await Swal.fire({
+                title: 'Hapus User?',
+                text: "User akan dihapus permanen.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
+                    confirmButton: 'bg-rose-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-rose-600 transition',
+                    cancelButton: 'bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition'
+                }
+            });
+            if (r.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id));
+                    window.notify('User dihapus', 'success');
+                } catch(e) {
+                    window.notify('Gagal menghapus', 'error');
+                }
+            }
+        };
+
+        // 5. Logic SUBMIT FORM LAPORAN
+        document.getElementById('laporan-form').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const hub = currentUser.role==='admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value;
+            if(!hub) return window.notify('Pilih HUB', 'error');
+            
+            const rows = document.getElementById('attendance-tbody').children;
+            const attData = [];
+            let totalMpp = 0;
+            let totalFilled = 0; // Variable untuk cek apakah ada absensi yang diisi (Hadir/Ijin/Sakit/Alfa)
+
+            for(let r of rows) {
+                if(r.innerText.includes('Pilih HUB')) continue; 
+                
+                const s1 = r.querySelector('.att-s1').checked;
+                const s2 = r.querySelector('.att-s2').checked;
+                const s3 = r.querySelector('.att-s3').checked;
+                const i = r.querySelector('.att-i').checked;
+                const s = r.querySelector('.att-s').checked;
+                const a = r.querySelector('.att-a').checked;
+                
+                if(s1||s2||s3) totalMpp++;
+                if(s1||s2||s3||i||s||a) totalFilled++; // Cek jika ada checkbox yang dicentang
+                
+                attData.push({
+                    userId: r.querySelector('.att-id').value,
+                    nama: r.querySelector('.att-name').value, // Use hidden input for name stability
+                    s1, s2, s3, i, s, a,
+                    ket: r.querySelector('.att-ket').value
+                });
+            }
+
+            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
+            const st = window.parseFormattedNumber(document.getElementById('lap-staging').value);
+            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
+            const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            const totalPaket = g+st+j+sa;
+            
+            // VALIDASI: Mencegah simpan jika Paket 0 DAN Absensi Kosong
+            if (totalPaket === 0 && totalFilled === 0) {
+                return window.notify('Data Kosong! Isi Paket/Absen', 'error');
+            }
+
+            window.notify('Menyimpan Laporan...', 'loading');
+            
+            const editId = document.getElementById('edit-laporan-id').value;
+            const docId = editId || (hub + '_' + document.getElementById('lap-tanggal').value);
+            
+            const data = {
+                id: docId,
+                tanggal: document.getElementById('lap-tanggal').value,
+                hub: hub,
+                gateway: g, staging: st, jne: j, sap: sa,
+                total_paket: totalPaket,
+                total_mpp: totalMpp,
+                productivity: totalMpp>0 ? totalPaket/totalMpp : 0,
+                attendance_data: attData,
+                last_updated: new Date().toISOString(),
+                updated_by: currentUser.name,
+                catatan: document.getElementById('lap-catatan').value // Simpan catatan
+            };
+
+            try {
+                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', docId), data);
+                window.closeLaporanModal();
+                window.notify('Laporan Tersimpan', 'success');
+            } catch(err) {
+                console.error(err);
+                window.notify('Gagal menyimpan', 'error');
+            }
+        };
+
     </script>
 </body>
 </html>

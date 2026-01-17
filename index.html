@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.5</title>
+    <title>DailyReport v2.7 (Copy Feature)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -55,7 +55,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
         
-        /* Updated Glass Effect for Navbar */
         .glass-nav {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(16px);
@@ -71,19 +70,16 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Custom Scroll for table container */
         .table-scroll-container {
             max-height: 500px;
             overflow-y: auto;
         }
 
-        /* Dynamic Island */
         #dynamic-island-container { pointer-events: none; z-index: 10000; }
         #dynamic-island {
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -97,7 +93,6 @@
         .island-error .island-icon-bg { background: #ef476f; }
         .island-success .island-icon-bg { background: #06d6a0; }
 
-        /* Navbar & Nav Items */
         .nav-link { 
             position: relative; color: #64748b; transition: all 0.3s ease;
             cursor: pointer; padding: 0.75rem 1.25rem; border-radius: 1rem; font-weight: 600; font-size: 0.9rem;
@@ -111,7 +106,6 @@
             box-shadow: 0 2px 10px rgba(67, 97, 238, 0.1);
         }
         
-        /* Mobile Nav */
         .mobile-nav-item { 
             color: #94a3b8; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             position: relative; padding: 0.5rem; border-radius: 1rem;
@@ -126,7 +120,6 @@
         .fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Tables */
         .abs-cell { min-width: 40px; text-align: center; border-right: 1px solid #f1f5f9; font-size: 11px; vertical-align: middle; }
         .abs-header { position: sticky; top: 0; background: #f8fafc; z-index: 20; font-size: 10px; box-shadow: 0 1px 0 rgba(0,0,0,0.05); }
         .abs-name-col { position: sticky; left: 0; background: white; z-index: 30; border-right: 1px solid #e2e8f0; min-width: 140px; box-shadow: 4px 0 10px -5px rgba(0,0,0,0.02); }
@@ -163,12 +156,10 @@
         </div>
     </div>
 
-    <!-- NAVBARS (Improved) -->
-    <nav id="app-navbar" class="glass-nav sticky top-0 z-50 hidden transition-all duration-300">
-        <!-- MODIFIED: Changed max-w-7xl to w-full px-6 md:px-12 for Full Desktop -->
+    <!-- NAVBARS -->
+    <nav id="app-navbar" class="glass-nav sticky top-0 z-50 hidden transition-all duration-300 md:flex">
         <div class="w-full px-6 md:px-12 mx-auto">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo Area -->
                 <div class="flex items-center gap-3 flex-shrink-0">
                     <div class="w-10 h-10 bg-gradient-to-tr from-primary to-primaryDark rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white transform rotate-3 hover:rotate-0 transition-transform duration-300">
                         <i class="fas fa-chart-line text-lg"></i>
@@ -179,7 +170,6 @@
                     </div>
                 </div>
 
-                <!-- Desktop Nav Links (Centered & Modern) -->
                 <div class="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
                     <div class="flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
                         <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active">
@@ -197,7 +187,6 @@
                     </div>
                 </div>
 
-                <!-- User Profile & Actions -->
                 <div class="flex items-center gap-4 pl-6 flex-shrink-0">
                     <div class="text-right hidden sm:block">
                         <div class="text-sm font-bold text-slate-700 truncate max-w-[120px]" id="user-name-display">User</div>
@@ -211,7 +200,7 @@
         </div>
     </nav>
 
-    <!-- Mobile Topbar (IMPROVED for Mobile) -->
+    <!-- Mobile Topbar -->
     <div id="mobile-topbar" class="md:hidden glass-nav px-6 py-4 flex justify-between items-center shadow-md z-40 hidden sticky top-0 bg-white/90 backdrop-blur-lg">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-primary to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
@@ -233,7 +222,7 @@
         </div>
     </div>
 
-    <!-- Mobile Bottom Nav (Floating Look) -->
+    <!-- Mobile Bottom Nav -->
     <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-3 rounded-t-3xl safe-area-bottom">
         <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 flex flex-col items-center gap-1.5">
             <i class="fas fa-chart-pie text-lg"></i>
@@ -275,14 +264,11 @@
             </div>
 
             <form id="form-login-user" class="space-y-6">
-                <!-- User ID Input -->
                 <div class="relative group">
                     <input type="text" id="login-id" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Masukkan ID">
                     <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
                     <label for="login-id" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">ID User</label>
                 </div>
-
-                <!-- Leader Checkbox -->
                 <div>
                     <label class="flex items-center cursor-pointer group select-none">
                         <div class="relative">
@@ -291,15 +277,12 @@
                         </div>
                         <span class="ml-3 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login sebagai Leader / PIC?</span>
                     </label>
-
-                    <!-- Password Input -->
                     <div class="relative group mt-4 hidden overflow-hidden transition-all duration-300 origin-top" id="login-pass-container">
                         <input type="password" id="login-pass-user" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Password">
                         <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
                         <label for="login-pass-user" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Kata Sandi</label>
                     </div>
                 </div>
-
                 <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-primaryDark hover:shadow-glow text-white rounded-2xl font-bold shadow-float transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
                     <span>Masuk Aplikasi</span> <i class="fas fa-arrow-right"></i>
                 </button>
@@ -334,13 +317,11 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <!-- MODIFIED: Changed max-w-7xl to w-full px-4 md:px-8 for Full Desktop -->
     <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-44 md:pb-12 hidden scroll-smooth">
         <div class="w-full px-2 md:px-4 space-y-8">
             
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
-                <!-- Filter Bar -->
                 <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-30">
                     <div>
                         <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
@@ -364,10 +345,7 @@
                     </div>
                 </div>
 
-                <!-- KPI CARDS -->
-                <!-- MODIFIED: Updated text sizes and tracking for better number fitting -->
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
-                     <!-- Standard KPI -->
                     <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 rounded-bl-3xl -mr-2 -mt-2"></div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Total MPP</p>
@@ -398,13 +376,11 @@
                         <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-sap">0</h3>
                         <div id="diff-sap" class="relative z-10"></div>
                     </div>
-                    
                     <div class="bg-gradient-to-br from-primary to-blue-600 p-4 rounded-2xl shadow-float kpi-card group text-white">
                         <p class="text-[9px] font-bold text-white uppercase tracking-widest opacity-90">Total Paket</p>
                         <h3 class="text-xl md:text-2xl font-extrabold text-white mt-1 tracking-tight truncate" id="kpi-total-paket">0</h3>
                         <div id="diff-total-paket" class="brightness-200 contrast-200 grayscale"></div>
                     </div>
-                    
                     <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-success kpi-card group">
                         <p class="text-[9px] font-bold text-success uppercase tracking-widest">Prod.</p>
                         <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mt-1 tracking-tight truncate" id="kpi-avg-prod">0</h3>
@@ -417,7 +393,6 @@
                     </div>
                 </div>
 
-                <!-- Charts -->
                 <div class="space-y-6">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
                         <div class="flex items-center gap-3 mb-6">
@@ -441,9 +416,7 @@
                     </div>
                 </div>
 
-                 <!-- Tables Grid (MODIFIED ORDER) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- HUB Performance (Now on LEFT) -->
                     <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-fit">
                         <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
                              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-trophy"></i></div>
@@ -461,7 +434,6 @@
                             </table>
                         </div>
                     </div>
-                    <!-- Daily Details (Now on RIGHT) -->
                     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col">
                         <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
                             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400 bg-slate-100 p-1.5 rounded-lg"></i> Rincian Data</h3>
@@ -484,17 +456,15 @@
                 </div>
             </div>
 
-            <!-- VIEW: LAPORAN (Main Content same) -->
+            <!-- VIEW: LAPORAN -->
              <div id="view-laporan" class="view-content hidden fade-in space-y-5">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl border border-slate-100 shadow-sm gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                     </div>
-                   
 
                     <div class="flex items-center gap-3">
-                        <!-- NEW HUB FILTER -->
                         <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition hover:bg-white shadow-sm">
                             <option value="ALL">Semua HUB</option>
                         </select>
@@ -506,7 +476,6 @@
                 <div class="bg-white rounded-3xl shadow-card border border-slate-100/50 overflow-hidden flex flex-col h-[70vh]">
                     <div class="overflow-auto flex-1">
                         <table class="w-full text-xs text-left text-slate-600 whitespace-nowrap">
-                            <!-- UPDATED STICKY HEADER -->
                             <thead class="text-slate-400 uppercase bg-slate-50 border-b border-slate-100 font-bold sticky top-0 z-20 shadow-sm">
                                 <tr>
                                     <th class="px-6 py-4 bg-slate-50">Tanggal</th><th class="px-4 py-4 bg-slate-50">HUB</th>
@@ -514,7 +483,6 @@
                                     <th class="px-4 py-4 bg-slate-100/50 font-bold text-slate-800 text-right">Total</th>
                                     <th class="px-4 py-4 text-primary bg-slate-50 text-right">MPP</th><th class="px-4 py-4 text-success bg-slate-50 text-right">Prod</th>
                                     <th class="px-6 py-4 text-right bg-slate-50">Aksi</th>
-
                                 </tr>
                             </thead>
                             <tbody id="laporan-list-body" class="divide-y divide-slate-50"></tbody>
@@ -527,7 +495,7 @@
                 </div>
             </div>
 
-            <!-- VIEW: ABSENSI (UPDATED) -->
+            <!-- VIEW: ABSENSI -->
              <div id="view-absensi" class="view-content hidden fade-in space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <div class="flex flex-wrap gap-4 items-center justify-between">
@@ -557,16 +525,13 @@
                     </div>
                 </div>
 
-                <!-- MAIN ATTENDANCE TABLE (Modified: Descending Date, Removed Row Total) -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[50vh]">
                     <div class="overflow-auto flex-1">
                         <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium flex-col gap-2"><i class="fas fa-search text-3xl opacity-20"></i><p>Silakan pilih filter...</p></div></div>
                     </div>
                 </div>
 
-                <!-- NEW GRID FOR SUMMARY TABLES -->
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <!-- NEW HUB RECAP TABLE -->
                     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-fit">
                         <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
                             <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><i class="fas fa-building"></i></div>
@@ -588,7 +553,6 @@
                         </div>
                     </div>
 
-                    <!-- DETAIL SUMMARY TABLE (Modified: Added I,S,A cols) -->
                     <div class="lg:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
                             <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fas fa-list-alt"></i></div>
@@ -666,7 +630,6 @@
         </div>
     </main>
     
-    <!-- ... existing code (Modals) ... -->
     <!-- MODAL USER -->
     <div id="user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50" id="user-modal-content">
@@ -793,7 +756,6 @@
         const storageId = 'hub-data-v1';
         let app, auth, db;
         
-        // ... (SweetAlert theme code same as before) ...
          const SwalTheme = Swal.mixin({
             customClass: {
                 popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
@@ -807,7 +769,6 @@
         });
         window.Swal = SwalTheme; 
 
-        // ... (Dynamic Island code same as before) ...
         const island = document.getElementById('dynamic-island');
         const islandContent = document.getElementById('island-content');
         const islandIcon = document.getElementById('island-icon');
@@ -835,7 +796,6 @@
             }
         };
 
-        // Init
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
         let currentUser = null, annualChart = null, dailyChart = null;
         let isLoggingOut = false;
@@ -894,7 +854,6 @@
             });
         }
 
-        // Utils
         window.Chart.register(ChartDataLabels);
         window.formatNumber = (n) => (!n && n!==0)?'':n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         window.parseFormattedNumber = (s) => { if(!s)return 0; return parseInt(s.toString().replace(/[^0-9]/g,''),10)||0; };
@@ -903,7 +862,6 @@
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
-        // ... (Auth code same as before) ...
         window.switchLoginTab = (t) => {
             const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
             if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-slate-700','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
@@ -927,8 +885,6 @@
             isLoggingOut = false;
             currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
             document.getElementById('login-section').classList.add('hidden');
-            // FIX: Don't remove 'hidden' from app-navbar globally, so it stays hidden on mobile
-            // document.getElementById('app-navbar').classList.remove('hidden'); 
             document.getElementById('mobile-topbar').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.add('flex');
@@ -943,7 +899,6 @@
             document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
-            // This adds flex display ONLY for desktop (md breakpoint), overriding 'hidden'
             document.getElementById('app-navbar').classList.add('md:flex');
 
             window.initDashboardFilters(); window.navigate('dashboard');
@@ -988,7 +943,6 @@
             }
         };
 
-        // Navigation
         window.navigate = (id) => {
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
             document.getElementById(`view-${id}`).classList.remove('hidden');
@@ -1007,7 +961,6 @@
             if(id==='absensi') window.initAbsensiFilters();
         };
 
-        // Dashboard
         window.toggleHubDropdown = (e) => { e.stopPropagation(); document.getElementById('hub-filter-dropdown').classList.toggle('hidden'); };
         window.onclick = (e) => { if(!e.target.closest('#hub-filter-btn') && !e.target.closest('#hub-filter-dropdown')) document.getElementById('hub-filter-dropdown').classList.add('hidden'); };
         
@@ -1016,11 +969,11 @@
             appData.costs.forEach(h => {
                 c.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg"><input type="checkbox" value="${h.hub}" class="hub-checkbox w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary" checked onchange="window.updateHubLabel(); window.loadDashboardData()"> <span class="text-xs text-slate-700 font-medium">${h.hub}</span></label>`;
             });
+            window.updateHubLabel = () => {
+                const n = document.querySelectorAll('.hub-checkbox:checked').length;
+                document.getElementById('hub-filter-label').innerText = n===0?'Pilih HUB':(n===appData.costs.length?'Semua HUB':`${n} HUB Dipilih`);
+            };
             window.updateHubLabel();
-        };
-        window.updateHubLabel = () => {
-            const n = document.querySelectorAll('.hub-checkbox:checked').length;
-            document.getElementById('hub-filter-label').innerText = n===0?'Pilih HUB':(n===appData.costs.length?'Semua HUB':`${n} HUB Dipilih`);
         };
 
         window.initDashboardFilters = () => {
@@ -1033,7 +986,6 @@
         window.resetDashboardFilters = () => {
             const d = new Date(); document.getElementById('dash-end-date').valueAsDate = d;
             d.setDate(d.getDate()-30); document.getElementById('dash-start-date').valueAsDate = d;
-            // FIX: Check all checkboxes in dropdown
             document.querySelectorAll('.hub-checkbox').forEach(c => c.checked = true);
             window.updateHubLabel();
             window.loadDashboardData();
@@ -1139,7 +1091,6 @@
                     x: { grid: { display: false } },
                     y: { 
                         type: 'linear', display: false, position: 'left',
-                        // MODIFIED: Ensure Y-axis uses #.### format
                         ticks: { callback: function(value) { return window.formatNumber(value); } }
                     },
                     y1: { 
@@ -1150,7 +1101,6 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        // MODIFIED: Ensure Tooltips use #.### format
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
@@ -1171,7 +1121,6 @@
                         color: 'white',
                         font: { weight: 'bold', size: 10 },
                         padding: 4,
-                        // MODIFIED: Format datalabels
                         formatter: function(value) { return window.formatNumber(value); }
                     }
                 }
@@ -1226,16 +1175,14 @@
                 tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-primary font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-slate-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 font-medium"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-400 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
             });
         };
-        // ... (rest of the script same as before) ...
+
         window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
 
-        // --- ABSENSI MATRIX & SUMMARY ---
         window.initAbsensiFilters = () => {
              const d = new Date(); document.getElementById('abs-end-date').valueAsDate = d;
              d.setDate(d.getDate()-7); document.getElementById('abs-start-date').valueAsDate = d;
              window.renderAbsensiHubSelect();
              
-             // FIX: Reset Select to ALL explicitly (if enabled)
              const s = document.getElementById('abs-hub-select');
              if(!s.disabled) s.value = 'ALL';
              
@@ -1271,11 +1218,10 @@
             const hubFilter = document.getElementById('abs-hub-select').value;
             const container = document.getElementById('absensi-table-container');
             const summaryBody = document.getElementById('absensi-summary-tbody');
-            const hubRecapBody = document.getElementById('hub-recap-tbody'); // New body for Hub Recap
+            const hubRecapBody = document.getElementById('hub-recap-tbody');
             
             if(!startStr || !endStr) return;
             const sDate = new Date(startStr), eDate = new Date(endStr);
-            // REVERSED DATE RANGE
             const dateRange = window.getDatesInRange(sDate, eDate).reverse();
 
             const reports = appData.laporan.filter(l => {
@@ -1295,13 +1241,12 @@
             const attMap = {};
             const colTotals = {}; 
             const userSummary = {};
-            const hubStats = {}; // New Hub Stats tracking
+            const hubStats = {};
 
             reports.forEach(r => {
                 if(!attMap[r.hub]) attMap[r.hub] = {};
                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
                 
-                // Init Hub Stats
                 if(!hubStats[r.hub]) hubStats[r.hub] = { h:0, i:0, s:0, a:0 };
 
                 if(r.attendance_data) {
@@ -1310,7 +1255,6 @@
                          if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3';
                          else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
                          
-                         // Summary Logic
                          if(!userSummary[a.userId]) userSummary[a.userId] = { name: a.nama || a.name, h:0, i:0, s:0, a:0, details: [] };
                          
                          if(['1','2','3'].includes(status)) {
@@ -1347,7 +1291,6 @@
                 }
             });
 
-            // 1. Render Main Table
             let hubsToShow = (hubFilter === 'ALL') ? appData.costs.map(c=>c.hub) : [hubFilter];
             let html = `<table class="w-full text-xs border-collapse">`;
             
@@ -1357,7 +1300,6 @@
                 const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
                 html += `<th class="p-2 border-b bg-white abs-cell font-bold text-slate-500">${dStr}</th>`;
             });
-            // Removed Row Total Header
             html += `</tr></thead><tbody>`;
 
             hubsToShow.forEach(h => {
@@ -1396,7 +1338,6 @@
                              html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length}" class="border-b bg-slate-50/50"></td></tr>`;
                          }
 
-                         // Removed rowTotal calc
                          html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
                          
                          dateRange.forEach(d => {
@@ -1418,13 +1359,11 @@
 
                              html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
                          });
-                         // Removed Row Total Cell
                          html += `</tr>`;
                     });
                 }
             });
             
-            // Column Totals Row
             html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-3 border-t text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
             dateRange.forEach(d => {
                  const y = d.getFullYear();
@@ -1438,7 +1377,6 @@
             html += `</tbody></table>`;
             container.innerHTML = html;
 
-            // 2. Render Hub Recap Table (NEW)
             hubRecapBody.innerHTML = '';
             Object.keys(hubStats).sort().forEach(h => {
                 const s = hubStats[h];
@@ -1453,7 +1391,6 @@
                 `;
             });
 
-            // 3. Render Summary Table (Updated with I,S,A cols)
             summaryBody.innerHTML = '';
             const sortedUserIds = Object.keys(userSummary).sort((a,b) => userSummary[a].name.localeCompare(userSummary[b].name));
             
@@ -1480,7 +1417,6 @@
             }
         };
 
-        // Settings
         window.switchSettingsTab = (id) => { document.querySelectorAll('.settings-panel').forEach(e=>e.classList.add('hidden')); document.getElementById(`settings-${id}`).classList.remove('hidden'); };
         window.loadSettingsUI = () => { window.renderUserTable(); document.getElementById('access-code-input').value = appData.accessCode; document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); window.renderCostInputs(); };
         window.renderUserTable = () => { const tb=document.getElementById('user-table-body'); tb.innerHTML=''; appData.users.forEach(u => tb.innerHTML+=`<tr class="hover:bg-slate-50 border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700">${u.nama}</td><td class="px-6 py-4 font-mono text-slate-500">${u.id}</td><td class="px-6 py-4"><span class="bg-blue-50 text-primary px-3 py-1 rounded-lg text-xs font-bold shadow-sm border border-blue-100">${u.kode_hub}</span></td><td class="px-6 py-4 text-sm font-medium text-slate-600">${u.posisi}</td><td class="px-6 py-4 text-right"><button onclick="window.openUserModal('${u.id}')" class="text-blue-500 hover:text-blue-700 mr-4 transition transform hover:scale-110"><i class="fas fa-edit"></i></button><button onclick="window.deleteUser('${u.id}')" class="text-rose-400 hover:text-rose-600 transition transform hover:scale-110"><i class="fas fa-trash"></i></button></td></tr>`); };
@@ -1495,7 +1431,6 @@
         window.closeUserModal = () => { const m=document.getElementById('user-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
         document.getElementById('user-form').onsubmit = async (e) => { e.preventDefault(); window.notify('Menyimpan...', 'loading'); const id=document.getElementById('input-id').value, data={ nama:document.getElementById('input-nama').value, id:id, sandi:document.getElementById('input-sandi').value, kode_hub:document.getElementById('input-kode-hub').value, posisi:document.getElementById('input-posisi').value, akses:document.getElementById('input-akses-toggle').checked?'YA':'TIDAK' }; try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } };
         window.deleteUser = async (id) => {
-
             const r = await Swal.fire({
                 title: '',
                 html: `
@@ -1504,11 +1439,9 @@
                                     flex items-center justify-center text-rose-500 mb-4">
                             <i class="fas fa-user-xmark text-2xl"></i>
                         </div>
-
                         <h3 class="text-lg font-extrabold text-slate-800">
                             Hapus User?
                         </h3>
-
                         <p class="text-xs text-slate-500 mt-2 text-center">
                             Akun user akan dihapus permanen dan tidak dapat dikembalikan
                         </p>
@@ -1522,34 +1455,15 @@
                 cancelButtonText: 'BATAL',
                 customClass: {
                     popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    confirmButton: `
-                        bg-rose-600 text-white px-6 py-2.5 rounded-xl
-                        font-bold text-xs shadow-lg shadow-rose-500/30
-                        hover:bg-rose-700 transition active:scale-95
-                        uppercase tracking-wide flex-1
-                    `,
-                    cancelButton: `
-                        bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl
-                        font-bold text-xs hover:bg-slate-200 transition
-                        active:scale-95 uppercase tracking-wide flex-1
-                    `,
+                    confirmButton: `bg-rose-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-rose-500/30 hover:bg-rose-700 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    cancelButton: `bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
                     actions: 'flex gap-3 w-full justify-center mt-6'
                 }
             });
 
             if (!r.isConfirmed) return;
 
-            try {
-                await deleteDoc(
-                    doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)
-                );
-
-                window.notify('User berhasil dihapus', 'success');
-
-            } catch (err) {
-                console.error(err);
-                window.notify('Gagal menghapus user', 'error');
-            }
+            try { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id)); window.notify('User berhasil dihapus', 'success'); } catch (err) { console.error(err); window.notify('Gagal menghapus user', 'error'); }
         };
 
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
@@ -1557,7 +1471,45 @@
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
         window.saveCosts = async () => { window.notify('Menyimpan...', 'loading'); const dw=window.parseFormattedNumber(document.getElementById('global-cost-dw').value), batch=[]; const rows=document.getElementById('cost-container').children; const newCosts=[]; for(let i=0;i<rows.length;i++){ const h=document.getElementById(`cost-hub-${i}`).value, c=window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); newCosts.push({hub:h, cost:c}); batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), {hub:h, cost:c})); } try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw}); await Promise.all(batch); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); } };
 
-        // Laporan
+        window.copyReportToClipboard = (laporan) => {
+            const d = new Date(laporan.tanggal);
+            const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+            const prod = Math.round(laporan.productivity);
+            
+            let text = `*DAILY REPORT OPERATIONAL*\n`;
+            text += `HUB: ${laporan.hub}\n`;
+            text += `Tanggal: ${dateStr}\n\n`;
+            text += `*Inbound/Outbound:*\n`;
+            text += `• Gateway: ${window.formatNumber(laporan.gateway)}\n`;
+            text += `• Staging: ${window.formatNumber(laporan.staging)}\n`;
+            text += `• JNE: ${window.formatNumber(laporan.jne)}\n`;
+            text += `• SAP: ${window.formatNumber(laporan.sap)}\n`;
+            text += `-----------------------\n`;
+            text += `*TOTAL LOAD: ${window.formatNumber(laporan.total_paket)} Pkt*\n\n`;
+            text += `*Resource:*\n`;
+            text += `• Manpower: ${laporan.total_mpp} Org\n`;
+            text += `• Productivity: ${window.formatNumber(prod)} Pkt/Org\n`;
+            text += `\n_Generated by DailyReport System_`;
+            
+            // Trik copy untuk iframe (agar work di mobile & desktop)
+            const el = document.createElement('textarea');
+            el.value = text;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            window.notify('Laporan Disalin!', 'success');
+        };
+
+        window.copyReportHandler = (id) => {
+            const l = appData.laporan.find(x => x.id == id);
+            if(l) window.copyReportToClipboard(l);
+        };
+
         window.renderLaporanList = () => {
             const tb = document.getElementById('laporan-list-body'); tb.innerHTML = ''; let d = appData.laporan;
             if(currentUser.role !== 'admin') d = d.filter(l => l.hub === currentUser.kode_hub);
@@ -1567,7 +1519,8 @@
                 d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
                 d.forEach(l => {
                     const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
-                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2"><button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
+                    const shareBtn = `<button onclick='window.copyReportHandler("${safeId(l.id)}")' class="text-green-600 bg-green-50 hover:bg-green-100 p-2 rounded-lg transition" title="Salin Laporan"><i class="fab fa-whatsapp"></i></button>`;
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2">${shareBtn}<button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
                     
                     const prod = Math.round(l.productivity);
                     const prodClass = window.getProdColorClass(prod);
@@ -1615,11 +1568,9 @@
                         <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
                             <i class="fas fa-lock-open text-xl"></i>
                         </div>
-
                         <h3 class="text-base font-extrabold text-slate-800">
                             Verifikasi Leader
                         </h3>
-
                         <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">
                             Masukkan kode akses untuk membuka hak edit
                         </p>
@@ -1627,12 +1578,7 @@
                 `,
                 input: 'password',
                 inputPlaceholder: '••••••',
-                inputAttributes: {
-                    autocapitalize: 'off',
-                    autocorrect: 'off',
-                    maxlength: 10,
-                    inputmode: 'numeric'
-                },
+                inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric' },
                 width: '22rem',
                 showCancelButton: true,
                 reverseButtons: true,
@@ -1641,23 +1587,9 @@
                 cancelButtonText: 'Batal',
                 customClass: {
                     popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    input: `
-                        w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl
-                        px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em]
-                        focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none
-                        transition shadow-sm mt-4
-                    `,
-                    confirmButton: `
-                        bg-blue-600 text-white px-5 py-2.5 rounded-xl
-                        font-bold text-[11px] shadow-lg shadow-blue-500/30
-                        hover:bg-blue-700 transition active:scale-95
-                        uppercase tracking-wide flex-1
-                    `,
-                    cancelButton: `
-                        bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl
-                        font-bold text-[11px] hover:bg-slate-200 transition
-                        active:scale-95 uppercase tracking-wide flex-1
-                    `,
+                    input: `w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm mt-4`,
+                    confirmButton: `bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-[11px] shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[11px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
                     actions: 'flex gap-2 w-full justify-center mt-4'
                 }
             });
@@ -1723,13 +1655,31 @@
             }
             const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
             const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
-            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); window.closeLaporanModal(); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); }
+            try { 
+                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); 
+                window.notify('Laporan Tersimpan', 'success'); // FIX: Menghentikan loading
+                window.closeLaporanModal(); 
+                
+                window.Swal.fire({
+                    title: 'Laporan Tersimpan',
+                    text: "Ingin menyalin format laporan ke clipboard?",
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4361ee', // Warna primary, bukan hijau WA lagi
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="fas fa-copy"></i> Salin Text',
+                    cancelButtonText: 'Tutup'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.copyReportToClipboard(data);
+                    }
+                });
+            } catch(e) { window.notify('Gagal', 'error'); }
         };
 
         window.deleteLaporan = async (id) => {
 
             const processDelete = async () => {
-
                 const r = await Swal.fire({
                     title: '',
                     html: `
@@ -1738,11 +1688,9 @@
                                         flex items-center justify-center text-orange-400 mb-4">
                                 <i class="fas fa-exclamation text-2xl"></i>
                             </div>
-
                             <h3 class="text-lg font-extrabold text-slate-800">
                                 Hapus Laporan?
                             </h3>
-
                             <p class="text-xs text-slate-500 mt-2 text-center">
                                 Data yang dihapus tidak dapat dikembalikan
                             </p>
@@ -1756,40 +1704,18 @@
                     cancelButtonText: 'CANCEL',
                     customClass: {
                         popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                        confirmButton: `
-                            bg-blue-600 text-white px-6 py-2.5 rounded-xl
-                            font-bold text-xs shadow-lg shadow-blue-500/30
-                            hover:bg-blue-700 transition active:scale-95
-                            uppercase tracking-wide flex-1
-                        `,
-                        cancelButton: `
-                            bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl
-                            font-bold text-xs hover:bg-slate-200 transition
-                            active:scale-95 uppercase tracking-wide flex-1
-                        `,
+                        confirmButton: `bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
+                        cancelButton: `bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
                         actions: 'flex gap-3 w-full justify-center mt-6'
                     }
                 });
 
                 if (!r.isConfirmed) return;
 
-                try {
-                    await deleteDoc(
-                        doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)
-                    );
-
-                    window.notify('Laporan berhasil dihapus', 'success');
-
-                } catch (err) {
-                    console.error(err);
-                    window.notify('Gagal menghapus laporan', 'error');
-                }
+                try { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Laporan berhasil dihapus', 'success'); } catch (err) { console.error(err); window.notify('Gagal menghapus laporan', 'error'); }
             };
 
-            if (currentUser.role === 'admin') {
-                await processDelete();
-                return;
-            }
+            if (currentUser.role === 'admin') { await processDelete(); return; }
 
             const { value: code } = await Swal.fire({
                 title: '',
@@ -1798,25 +1724,13 @@
                         <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mb-3 text-danger shadow-sm border border-rose-100">
                             <i class="fas fa-user-shield text-xl"></i>
                         </div>
-
-                        <h3 class="text-base font-extrabold text-slate-800">
-                            Verifikasi Leader
-                        </h3>
-
-                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">
-                            Masukkan kode akses untuk menghapus laporan
-                        </p>
+                        <h3 class="text-base font-extrabold text-slate-800">Verifikasi Leader</h3>
+                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">Masukkan kode akses untuk menghapus laporan</p>
                     </div>
                 `,
                 input: 'password',
                 inputPlaceholder: '••••••',
-                inputAttributes: {
-                    autocapitalize: 'off',
-                    autocorrect: 'off',
-                    maxlength: 10,
-                    inputmode: 'numeric',
-                    pattern: '[0-9A-Za-z]{6,10}'
-                },
+                inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric', pattern: '[0-9A-Za-z]{6,10}' },
                 width: '22rem',
                 showCancelButton: true,
                 confirmButtonText: 'Verifikasi',
@@ -1825,34 +1739,16 @@
                 buttonsStyling: false,
                 customClass: {
                     popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    input: `
-                        w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl
-                        px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em]
-                        focus:bg-white focus:ring-2 focus:ring-danger outline-none
-                        transition shadow-sm mt-4
-                    `,
-                    confirmButton: `
-                        bg-danger text-white px-5 py-2.5 rounded-xl
-                        font-bold text-[11px] shadow-lg shadow-rose-500/30
-                        hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1
-                    `,
-                    cancelButton: `
-                        bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl
-                        font-bold text-[11px] hover:bg-slate-200 transition
-                        active:scale-95 uppercase tracking-wide flex-1
-                    `,
+                    input: `w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-danger outline-none transition shadow-sm mt-4`,
+                    confirmButton: `bg-danger text-white px-5 py-2.5 rounded-xl font-bold text-[11px] shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[11px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
                     actions: 'flex gap-2 w-full justify-center mt-4'
                 }
             });
 
             if (!code) return;
 
-            if (code === appData.accessCode) {
-                window.notify('Akses Diberikan', 'success');
-                await processDelete();
-            } else {
-                window.notify('Kode Akses Salah', 'error');
-            }
+            if (code === appData.accessCode) { window.notify('Akses Diberikan', 'success'); await processDelete(); } else { window.notify('Kode Akses Salah', 'error'); }
         };
 
         window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };

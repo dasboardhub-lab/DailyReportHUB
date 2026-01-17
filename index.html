@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2.9</title>
+    <title>DailyReport v2.91 (Notes Feature)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -454,6 +454,22 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Bagian Baru: Log Kendala & Catatan -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60 mt-6">
+                    <div class="flex items-center gap-3 mb-4 border-b border-slate-50 pb-4">
+                         <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm"><i class="fas fa-clipboard-list"></i></div>
+                         <div>
+                            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Log Kendala & Catatan Operasional</h3>
+                            <p class="text-[10px] text-slate-400">Rekapitulasi isu lapangan berdasarkan filter tanggal</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="dashboard-notes-container">
+                        <!-- Content populated by JS -->
+                    </div>
+                    <div id="dashboard-notes-empty" class="hidden text-center py-8 text-slate-400 text-xs italic">Tidak ada catatan kendala pada periode ini.</div>
+                </div>
+
             </div>
 
             <!-- VIEW: LAPORAN -->
@@ -727,6 +743,16 @@
                             <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 text-center shadow-sm"><p class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Productivity</p><p class="text-3xl font-extrabold text-emerald-600 mt-2" id="disp-productivity">0</p></div>
                         </div>
                     </div>
+
+                    <!-- BAGIAN CATATAN KENDALA BARU -->
+                    <div class="mb-6">
+                        <h4 class="font-bold text-slate-700 mb-2 text-sm flex items-center">
+                            <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center mr-3"><i class="fas fa-exclamation-triangle"></i></span>
+                            Catatan Kendala / Isu Lapangan
+                        </h4>
+                        <textarea id="lap-catatan" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary outline-none transition shadow-sm h-24 resize-none" placeholder="Tuliskan kendala operasional, isu system, atau kejadian khusus di sini..."></textarea>
+                    </div>
+
                     <div>
                         <div class="flex justify-between items-end mb-4"><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
                         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
@@ -1096,6 +1122,43 @@
             render('kpi-total-cost', curr.cost, 'diff-total-cost', prev.cost, true);
 
             window.updateCharts(data, hubs); window.updateDashboardTables(data);
+            window.renderDashboardNotes(data);
+        };
+
+        window.renderDashboardNotes = (data) => {
+            const container = document.getElementById('dashboard-notes-container');
+            const emptyMsg = document.getElementById('dashboard-notes-empty');
+            container.innerHTML = '';
+
+            const notesData = data.filter(l => l.catatan && l.catatan.trim().length > 0);
+
+            if (notesData.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                container.classList.add('hidden');
+            } else {
+                emptyMsg.classList.add('hidden');
+                container.classList.remove('hidden');
+
+                notesData.forEach(l => {
+                    // Create Date Object
+                    const d = new Date(l.tanggal);
+                    const dayName = d.toLocaleDateString('id-ID', { weekday: 'long' });
+                    const dateStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    container.innerHTML += `
+                        <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100 hover:shadow-sm transition group relative">
+                             <div class="absolute top-4 right-4 text-orange-200 group-hover:text-orange-300 transition"><i class="fas fa-quote-right text-2xl"></i></div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="bg-white text-slate-600 border border-slate-100 px-2 py-0.5 rounded-lg text-[10px] font-bold shadow-sm">${l.hub}</span>
+                                <span class="text-[10px] font-bold text-orange-600/80 uppercase tracking-wide">${dayName}, ${dateStr}</span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed font-medium relative z-10 whitespace-pre-line">
+                                "${l.catatan}"
+                            </p>
+                        </div>
+                    `;
+                });
+            }
         };
 
         const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;
@@ -1507,7 +1570,7 @@
             let text = `*DAILY REPORT OPERATIONAL*\n`;
             text += `HUB: ${laporan.hub}\n`;
             text += `Tanggal: ${dateStr}\n\n`;
-            text += `*Outbound:*\n`;
+            text += `*Inbound/Outbound:*\n`;
             text += `• Gateway: ${window.formatNumber(laporan.gateway)}\n`;
             text += `• Staging: ${window.formatNumber(laporan.staging)}\n`;
             text += `• JNE: ${window.formatNumber(laporan.jne)}\n`;
@@ -1517,6 +1580,11 @@
             text += `*Resource:*\n`;
             text += `• Manpower: ${laporan.total_mpp} Org\n`;
             text += `• Productivity: ${window.formatNumber(prod)} Pkt/Org\n`;
+
+            if (laporan.catatan && laporan.catatan.trim().length > 0) {
+                text += `\n*Catatan Kendala:*\n`;
+                text += `${laporan.catatan}\n`;
+            }
 
             // Logic Absensi Detail
             if (laporan.attendance_data && laporan.attendance_data.length > 0) {
@@ -1651,6 +1719,7 @@
                 document.getElementById('lap-staging').value=window.formatNumber(d.staging); 
                 document.getElementById('lap-jne').value=window.formatNumber(d.jne); 
                 document.getElementById('lap-sap').value=window.formatNumber(d.sap);
+                document.getElementById('lap-catatan').value = d.catatan || ''; // Load catatan
                 window.loadHubUsersForAttendance(d.hub, d.attendance_data); 
                 window.calcMetrics();
             };
@@ -1705,6 +1774,7 @@
         window.openLaporanModal = () => {
             const m=document.getElementById('laporan-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
             document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText='Buat Laporan Baru'; document.getElementById('edit-laporan-id').value=''; document.getElementById('lap-tanggal').valueAsDate=new Date();
+            document.getElementById('lap-catatan').value = ''; // Reset catatan
             const s=document.getElementById('lap-hub-select'), t=document.getElementById('lap-hub-text');
             if(currentUser.role==='admin') { s.classList.remove('hidden'); t.classList.add('hidden'); s.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>s.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="9" class="p-8 text-center text-slate-400">Pilih HUB dulu.</td></tr>'; }
             else { s.classList.add('hidden'); t.classList.remove('hidden'); t.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
@@ -1734,6 +1804,7 @@
             const h = currentUser.role==='admin'?document.getElementById('lap-hub-select').value:document.getElementById('lap-hub-text').value; if(!h) return window.notify('Pilih HUB', 'error');
             const dateInput = document.getElementById('lap-tanggal').value;
             const editId = document.getElementById('edit-laporan-id').value;
+            const catatan = document.getElementById('lap-catatan').value; // Ambil catatan
 
             if (!editId) {
                 const exists = appData.laporan.some(l => l.hub === h && l.tanggal === dateInput);
@@ -1751,10 +1822,12 @@
                 att.push({ userId:uid, nama:nm, s1, s2, s3, i:r.querySelector('input[name="ijin[]"]').checked, s:r.querySelector('input[name="sakit[]"]').checked, a:r.querySelector('input[name="alfa[]"]').checked, ket:r.querySelector('input[name="ket[]"]').value });
             }
             const mets={ gateway:window.parseFormattedNumber(document.getElementById('lap-gateway').value), staging:window.parseFormattedNumber(document.getElementById('lap-staging').value), jne:window.parseFormattedNumber(document.getElementById('lap-jne').value), sap:window.parseFormattedNumber(document.getElementById('lap-sap').value), total_paket:parseInt(document.getElementById('val-total-paket').value)||0 };
-            const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
+            
+            // Masukkan 'catatan' ke objek data
+            const id=editId||Date.now().toString(), data={id, tanggal:dateInput, hub:h, catatan, ...mets, total_mpp:mpp, productivity:mpp>0?mets.total_paket/mpp:0, attendance_data:att};
             try { 
                 await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id), data); 
-                window.notify('Laporan Tersimpan', 'success'); // FIX: Menghentikan loading
+                window.notify('Laporan Tersimpan', 'success'); 
                 window.closeLaporanModal(); 
                 
                 window.Swal.fire({
@@ -1762,7 +1835,7 @@
                     text: "Ingin menyalin format laporan ke clipboard?",
                     icon: 'success',
                     showCancelButton: true,
-                    confirmButtonColor: '#4361ee', // Warna primary, bukan hijau WA lagi
+                    confirmButtonColor: '#4361ee', 
                     cancelButtonColor: '#64748b',
                     confirmButtonText: '<i class="fas fa-copy"></i> Salin Text',
                     cancelButtonText: 'Tutup'

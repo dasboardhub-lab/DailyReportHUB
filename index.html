@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v3.3</title>
+    <title>DailyReport v2</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -1622,10 +1622,10 @@
             let totalActive = 0;
             let totalResign = 0;
 
-            // Sort by HUB then Name
+            // UPDATE: Sort by NIK (ID) Ascending (Terlama ke Terbaru)
             appData.users.sort((a,b) => {
-                if(a.kode_hub !== b.kode_hub) return a.kode_hub.localeCompare(b.kode_hub);
-                return a.nama.localeCompare(b.nama);
+                // Menggunakan numeric: true agar "2" dianggap lebih kecil dari "10"
+                return a.id.localeCompare(b.id, 'en', { numeric: true });
             });
 
             appData.users.forEach(u => {

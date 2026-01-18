@@ -474,6 +474,33 @@
                     <div id="dashboard-notes-empty" class="hidden text-center py-8 text-slate-400 text-xs italic">Tidak ada catatan kendala pada periode ini.</div>
                 </div>
 
+                <!-- NEW: MANAGER SUMMARY SECTION (Added) -->
+                <div id="manager-summary-section" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-lg border border-slate-700 text-white relative overflow-hidden mt-6">
+                    <!-- Decoration -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 relative z-10 gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-inner">
+                                <i class="fas fa-briefcase text-blue-300"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg tracking-tight text-white">Manager Summary</h3>
+                                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Executive Briefing</p>
+                            </div>
+                        </div>
+                        <button onclick="window.copyManagerSummary()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group shadow-lg">
+                            <i class="fas fa-copy text-blue-300 group-hover:text-white transition"></i>
+                            <span>Salin Laporan</span>
+                        </button>
+                    </div>
+
+                    <!-- Target ID for JS Injection -->
+                    <div id="manager-summary-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+                        <!-- Content will be injected by window.renderManagerBrief -->
+                    </div>
+                </div>
+
             </div>
 
             <!-- VIEW: LAPORAN -->
@@ -1009,6 +1036,10 @@
             document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
+            // UPDATE: Show Manager Summary only for Admin
+            const sumSec = document.getElementById('manager-summary-section');
+            if (sumSec) sumSec.classList.toggle('hidden', !isAdm);
+            
             document.getElementById('app-navbar').classList.add('md:flex');
 
             window.initDashboardFilters(); window.navigate('dashboard');
@@ -1195,8 +1226,16 @@
             render('kpi-avg-prod', curr.prod, 'diff-avg-prod', prev.prod);
             render('kpi-total-cost', curr.cost, 'diff-total-cost', prev.cost, true);
 
-            window.updateCharts(data, hubs); window.updateDashboardTables(data);
+            // Pass hubs array correctly for charts
+            // If hubs is empty (ALL), we need to pass all available hubs to charts for correct coloring/data
+            const chartHubs = hubs.length > 0 ? hubs : appData.costs.map(c => c.hub);
+
+            window.updateCharts(data, chartHubs); 
+            window.updateDashboardTables(data);
             window.renderDashboardNotes(data);
+            
+            // Trigger Manager Summary Render (Pass Current & Previous Data)
+            window.renderManagerBrief(data, prevData);
         };
 
         window.renderDashboardNotes = (data) => {
@@ -1233,6 +1272,155 @@
                     `;
                 });
             }
+        };
+       
+        // NEW: FUNCTION TO RENDER MANAGER REPORT SUMMARY
+        window.renderManagerBrief = (currData, prevData) => {
+            const container = document.getElementById('manager-summary-stats');
+            
+            if (!container) return;
+
+            // Helper for Summing Data
+            const calcStats = (arr) => {
+                let stats = {
+                    pkt: 0, mpp: 0, cost: 0,
+                    stg: 0, gtw: 0, jne: 0, sap: 0, lastMile: 0,
+                    hubMap: {} // { hubName: { pkt: 0, mpp: 0 } }
+                };
+                
+                arr.forEach(r => {
+                    stats.pkt += r.total_paket || 0;
+                    stats.mpp += r.total_mpp || 0;
+                    stats.cost += window.calculateReportCost(r);
+                    stats.stg += r.staging || 0;
+                    stats.gtw += r.gateway || 0;
+                    stats.jne += r.jne || 0;
+                    stats.sap += r.sap || 0;
+
+                    if (!stats.hubMap[r.hub]) stats.hubMap[r.hub] = { pkt: 0, mpp: 0 };
+                    stats.hubMap[r.hub].pkt += r.total_paket || 0;
+                    stats.hubMap[r.hub].mpp += r.total_mpp || 0;
+                });
+                
+                stats.lastMile = stats.jne + stats.sap;
+                stats.prod = stats.mpp > 0 ? Math.round(stats.pkt / stats.mpp) : 0;
+                return stats;
+            };
+
+            const curr = calcStats(currData);
+            const prev = calcStats(prevData);
+
+            // Determine Best Hub (Productivity) & Top Hub (Load)
+            let bestHubName = '-'; let bestHubProd = 0;
+            let topLoadHubName = '-'; let topLoadHubVal = 0;
+
+            Object.keys(curr.hubMap).forEach(h => {
+                const d = curr.hubMap[h];
+                // Prod
+                const p = d.mpp > 0 ? Math.round(d.pkt / d.mpp) : 0;
+                if (p > bestHubProd) { bestHubProd = p; bestHubName = h; }
+                // Load
+                if (d.pkt > topLoadHubVal) { topLoadHubVal = d.pkt; topLoadHubName = h; }
+            });
+
+            // Helper for formatted comparison string: "Val (↑ Diff | %)"
+            const getCompStr = (valNow, valPrev, isRp = false, isUnit = false) => {
+                const diff = valNow - valPrev;
+                const pct = valPrev === 0 ? (valNow === 0 ? 0 : 100) : Math.round((diff / valPrev) * 100);
+                const icon = diff > 0 ? '+' : (diff < 0 ? '-' : '');
+                const displayVal = isRp ? window.formatRupiah(valNow) : window.formatNumber(valNow);
+                const displayDiff = isRp ? window.formatRupiah(Math.abs(diff)) : window.formatNumber(Math.abs(diff));
+                
+                // Format: "1.000 (+ 100 | 10%)"
+                return `${displayVal}${isUnit?isUnit:''} (${icon}${displayDiff} | ${icon}${Math.abs(pct)}%)`;
+            };
+
+            // Collect Issues (Unique strings) with DATE
+            const issues = [];
+            // Sort chronological for report text (Oldest -> Newest)
+            const sortedLogs = [...currData].sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+            
+            sortedLogs.forEach(r => {
+                if (r.catatan && r.catatan.trim().length > 0) {
+                     const dObj = new Date(r.tanggal);
+                     const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; // Format DD/M
+                     const issueStr = `[${dStr}] [${r.hub}] ${r.catatan}`;
+                     if (!issues.includes(issueStr)) issues.push(issueStr);
+                }
+            });
+
+            // --- 1. RENDER VISUAL CARDS IN SUMMARY SECTION (UI ONLY) ---
+            container.innerHTML = `
+                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-blue-200 tracking-wider mb-1">Total Load</p>
+                    <h4 class="text-2xl font-extrabold text-white">${window.formatNumber(curr.pkt)} <span class="text-xs font-normal opacity-70">Pkt</span></h4>
+                     <p class="text-[10px] text-white/50 mt-1">${curr.pkt >= prev.pkt ? '↑' : '↓'} ${Math.abs(curr.pkt - prev.pkt)} vs prev</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider mb-1">Avg Productivity</p>
+                    <h4 class="text-2xl font-extrabold text-white">${window.formatNumber(curr.prod)} <span class="text-xs font-normal opacity-70">/Org</span></h4>
+                     <p class="text-[10px] text-white/50 mt-1">${curr.prod >= prev.prod ? '↑' : '↓'} ${Math.abs(curr.prod - prev.prod)} vs prev</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-amber-200 tracking-wider mb-1">Top Hub Load</p>
+                    <h4 class="text-xl font-extrabold text-white truncate" title="${topLoadHubName}">${topLoadHubName}</h4>
+                    <p class="text-[10px] text-white/60 font-mono">${window.formatNumber(topLoadHubVal)} Pkt</p>
+                </div>
+                 <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-rose-200 tracking-wider mb-1">Total Cost</p>
+                    <h4 class="text-xl font-extrabold text-white truncate">${window.formatRupiah(curr.cost)}</h4>
+                </div>
+            `;
+            
+            // --- 2. GENERATE TEXT FOR CLIPBOARD ---
+            const sDate = document.getElementById('dash-start-date').value;
+            const eDate = document.getElementById('dash-end-date').value;
+            const dateDisplay = (sDate === eDate) ? sDate : `${sDate} s/d ${eDate}`;
+            
+            let txt = `*SUMMARY REPORT HUB KALSULAMP*\n`;
+            txt += `Periode: ${dateDisplay}\n\n`;
+            
+            txt += `*Global Performance:*\n`;
+            txt += `📦 Load: ${getCompStr(curr.pkt, prev.pkt, false, ' Pkt')}\n`;
+            txt += `👥 Manpower: ${getCompStr(curr.mpp, prev.mpp, false, ' Org')}\n`;
+            txt += `⚡ Avg Prod: ${getCompStr(curr.prod, prev.prod, false, ' Pkt/Org')}\n`;
+            txt += `💰 Total Cost: ${getCompStr(curr.cost, prev.cost, true)}\n\n`;
+            
+            txt += `*Volume Breakdown:*\n`;
+            txt += `• Staging: ${getCompStr(curr.stg, prev.stg)}\n`;
+            txt += `• Gateway: ${getCompStr(curr.gtw, prev.gtw)}\n`;
+            txt += `• JNE & SAP: ${getCompStr(curr.lastMile, prev.lastMile)}\n\n`;
+
+            txt += `*Top HUB Load:* ${topLoadHubName} (${window.formatNumber(topLoadHubVal)} Pkt)\n`;
+            txt += `*Top Hub Performance:* ${bestHubName} (${window.formatNumber(bestHubProd)} Pkt/Org)\n\n`;
+            
+            if (issues.length > 0) {
+                txt += `*Log Kendala / Isu:*\n`;
+                issues.forEach(i => txt += `- ${i}\n`);
+            } else {
+                 txt += `*Log Kendala:* Nihil\n`;
+            }
+            
+            txt += `\n_Generated by DailyReport System_`;
+            
+            // Store in a global variable for the copy button
+            window.managerSummaryText = txt;
+        };
+        
+        window.copyManagerSummary = () => {
+            if (!window.managerSummaryText) return window.notify('Data belum siap', 'error');
+            
+            const el = document.createElement('textarea');
+            el.value = window.managerSummaryText;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            window.notify('Laporan Manager Disalin!', 'success');
         };
 
         const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;

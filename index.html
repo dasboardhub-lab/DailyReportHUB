@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4</title>
+    <title>DailyReport v3.1</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -2018,10 +2018,29 @@
                 let ijin = [], sakit = [], alfa = [];
 
                 laporan.attendance_data.forEach(p => {
+                    // LOGIC BARU: Ambil Posisi untuk ditampilkan
+                    let pos = p.pos; // Coba ambil dari data laporan yang tersimpan (format baru)
+                    
+                    // Fallback untuk laporan lama yang belum menyimpan 'pos'
+                    if (!pos) {
+                        if (p.userId.startsWith('manual_')) {
+                            pos = 'DW';
+                        } else if (appData.users) {
+                            const u = appData.users.find(user => user.id === p.userId);
+                            if (u) pos = u.posisi;
+                        }
+                    }
+                    
+                    // Format tampilan nama: "Nama (POSISI)"
+                    // Jika posisi Admin/Leader, kita singkat atau biarkan jelas
+                    if (pos === 'Admin') pos = 'LEADER';
+                    
+                    const nameDisplay = pos ? `${p.nama} (${pos})` : p.nama;
+
                     // Cek Shift
-                    if (p.s1) s1.push(p.nama);
-                    if (p.s2) s2.push(p.nama);
-                    if (p.s3) s3.push(p.nama);
+                    if (p.s1) s1.push(nameDisplay);
+                    if (p.s2) s2.push(nameDisplay);
+                    if (p.s3) s3.push(nameDisplay);
                     
                     // Cek Absen
                     if (p.i) ijin.push(`${p.nama} (${p.ket || '-'})`);
@@ -2440,7 +2459,7 @@
             const rows = document.getElementById('attendance-tbody').children;
             const attData = [];
             let totalMpp = 0;
-            let totalFilled = 0; // Variable untuk cek apakah ada absensi yang diisi (Hadir/Ijin/Sakit/Alfa)
+            let totalFilled = 0; 
 
             for(let r of rows) {
                 if(r.innerText.includes('Pilih HUB')) continue; 
@@ -2459,11 +2478,12 @@
                 // UPDATE: Hanya hitung Total MPP jika Sorter/DW
                 if((s1||s2||s3) && (pos === 'Sorter' || pos === 'DW')) totalMpp++;
                 
-                if(s1||s2||s3||i||s||a) totalFilled++; // Cek jika ada checkbox yang dicentang
+                if(s1||s2||s3||i||s||a) totalFilled++; 
                 
                 attData.push({
                     userId: r.querySelector('.att-id').value,
-                    nama: r.querySelector('.att-name').value, // Use hidden input for name stability
+                    nama: r.querySelector('.att-name').value, 
+                    pos: pos, // NEW: Simpan posisi ke database agar bisa disalin nanti
                     s1, s2, s3, i, s, a,
                     ket: r.querySelector('.att-ket').value
                 });
@@ -2509,7 +2529,35 @@
             try {
                 await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', docId), data);
                 window.closeLaporanModal();
-                window.notify('Laporan Tersimpan', 'success');
+                
+                // PERBAIKAN: Ubah status Dynamic Island dari 'loading' menjadi 'success'
+                // agar tidak stuck loading saat popup muncul
+                window.notify('Data Tersimpan', 'success'); 
+                
+                // POPUP SUCCESS DENGAN PILIHAN AKSI
+                const r = await Swal.fire({
+                    title: 'Laporan Tersimpan!',
+                    text: 'Data berhasil diperbarui ke database.',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fab fa-whatsapp"></i> Salin Laporan',
+                    cancelButtonText: 'Tutup',
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
+                        title: 'text-xl font-bold text-slate-800',
+                        htmlContainer: 'text-sm text-slate-500',
+                        confirmButton: 'bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-green-500/30 hover:bg-green-600 transition transform active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        cancelButton: 'bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        actions: 'flex gap-2 w-full justify-center mt-4'
+                    }
+                });
+
+                if (r.isConfirmed) {
+                    window.copyReportToClipboard(data);
+                }
+
             } catch(err) {
                 console.error(err);
                 window.notify('Gagal menyimpan', 'error');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v3.1</title>
+    <title>DailyReport v4</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -246,64 +246,123 @@
     </div>
 
     <!-- LOGIN SECTION -->
-    <div id="login-section" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center hidden">
+    <div id="login-section" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-100/80 backdrop-blur-sm hidden">
+        <!-- Background Elements -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-[-20%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-blue-400/20 blur-[100px] opacity-60 animate-pulse" style="animation-duration: 4s;"></div>
-            <div class="absolute bottom-[-20%] right-[-10%] w-[40rem] h-[40rem] rounded-full bg-purple-400/20 blur-[100px] opacity-60 animate-pulse" style="animation-duration: 6s;"></div>
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50/50 to-blue-50/50"></div>
+            <div class="absolute -top-[10%] -left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 blur-[80px] opacity-50 animate-pulse"></div>
+            <div class="absolute top-[20%] right-[10%] w-[30rem] h-[30rem] rounded-full bg-purple-400/20 blur-[80px] opacity-50 animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute -bottom-[10%] left-[20%] w-[35rem] h-[35rem] rounded-full bg-teal-400/20 blur-[80px] opacity-50 animate-pulse" style="animation-delay: 4s;"></div>
         </div>
         
-        <div class="glass p-8 md:p-12 rounded-[2.5rem] shadow-glass w-full max-w-sm border border-white/60 relative fade-in z-10 m-6">
-            <div class="text-center mb-10">
-                <div class="w-24 h-24 bg-gradient-to-tr from-primary to-primaryDark rounded-[2rem] mx-auto flex items-center justify-center shadow-glow mb-6 rotate-6 transition-transform hover:rotate-0">
-                    <i class="fas fa-chart-simple text-white text-5xl drop-shadow-md"></i>
-                </div>
-                <h2 class="text-3xl font-extrabold text-slate-800 mb-1 tracking-tight">DailyReport</h2>
-                <p class="text-slate-400 text-xs font-semibold tracking-wide uppercase">Operational Management System</p>
-            </div>
+        <!-- Login Card -->
+        <div class="bg-white w-full max-w-[900px] rounded-[2.5rem] shadow-2xl overflow-hidden flex relative z-10 m-4 border border-white/60">
             
-            <div class="flex p-1.5 bg-slate-100/80 rounded-2xl mb-8 border border-slate-200/60">
-                <button onclick="window.switchLoginTab('user')" id="tab-user" class="flex-1 py-3 rounded-xl text-xs font-bold transition-all shadow-sm bg-white text-primary ring-1 ring-black/5 uppercase tracking-wide">User Team</button>
-                <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="flex-1 py-3 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-600 transition-all uppercase tracking-wide">Admin</button>
-            </div>
-
-            <form id="form-login-user" class="space-y-6">
-                <div class="relative group">
-                    <input type="text" id="login-id" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Masukkan ID">
-                    <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
-                    <label for="login-id" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">ID User</label>
+            <!-- Left Side: Visual / Branding (Desktop Only) -->
+            <div class="hidden md:flex w-5/12 bg-gradient-to-br from-slate-800 to-slate-900 relative flex-col justify-between p-10 text-white overflow-hidden">
+                <!-- Decorative Patterns -->
+                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -ml-16 -mb-16"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 shadow-lg mb-6">
+                        <i class="fas fa-boxes-stacked text-2xl text-blue-300"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold tracking-tight leading-tight">Operational<br><span class="text-blue-400">Excellence</span></h2>
+                    <p class="text-slate-400 text-xs mt-4 leading-relaxed font-light border-l-2 border-blue-500/30 pl-3">
+                        Sistem manajemen terpadu untuk monitoring kinerja, absensi, dan laporan harian hub operasional secara real-time.
+                    </p>
                 </div>
-                <div>
-                    <label class="flex items-center cursor-pointer group select-none">
-                        <div class="relative">
-                            <input type="checkbox" id="is-pic-checkbox" class="peer sr-only" onchange="window.togglePasswordField()">
-                            <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="flex -space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-500 border-2 border-slate-800 flex items-center justify-center text-[10px] font-bold ring-2 ring-slate-800">A</div>
+                            <div class="w-8 h-8 rounded-full bg-indigo-500 border-2 border-slate-800 flex items-center justify-center text-[10px] font-bold ring-2 ring-slate-800">B</div>
+                            <div class="w-8 h-8 rounded-full bg-teal-500 border-2 border-slate-800 flex items-center justify-center text-[10px] font-bold ring-2 ring-slate-800">C</div>
                         </div>
-                        <span class="ml-3 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login sebagai Leader / PIC?</span>
-                    </label>
-                    <div class="relative group mt-4 hidden overflow-hidden transition-all duration-300 origin-top" id="login-pass-container">
-                        <input type="password" id="login-pass-user" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Password">
-                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-primary transition-colors text-lg"></i>
-                        <label for="login-pass-user" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Kata Sandi</label>
+                        <p class="text-[10px] text-slate-400 font-medium ml-1">Team Dashboard</p>
+                    </div>
+                    <div class="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
+                        <p class="text-[9px] text-slate-500 font-mono">v3.4 </p>
+                        <i class="fas fa-shield-alt text-slate-600 text-xs"></i>
                     </div>
                 </div>
-                <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-primaryDark hover:shadow-glow text-white rounded-2xl font-bold shadow-float transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider flex items-center justify-center gap-2">
-                    <span>Masuk Aplikasi</span> <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
+            </div>
 
-            <form id="form-login-admin" class="space-y-6 hidden">
-                <div class="relative group">
-                    <input type="password" id="login-pass-admin" class="peer block px-4 py-4 w-full text-sm text-slate-900 bg-slate-50 rounded-2xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-slate-800 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold pl-12 shadow-sm" placeholder="Kunci Admin" required>
-                    <i class="fas fa-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 peer-focus:text-slate-800 transition-colors text-lg"></i>
-                    <label for="login-pass-admin" class="absolute text-xs font-bold text-slate-400 bg-slate-50 px-2 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] peer-focus:px-2 peer-focus:text-slate-800 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-12 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-12 cursor-text rounded-md">Password Admin</label>
+            <!-- Right Side: Form -->
+            <div class="w-full md:w-7/12 p-8 md:p-12 bg-white/80 backdrop-blur-xl relative">
+                <div class="text-left mb-8">
+                    <h3 class="text-2xl font-extrabold text-slate-800 tracking-tight">Selamat Datang</h3>
+                    <p class="text-slate-400 text-xs font-medium mt-1">Silakan masuk untuk mengakses workspace.</p>
                 </div>
-                <button type="submit" class="w-full py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-2xl font-bold shadow-lg transition-all transform hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-wider">MASUK SYSTEM</button>
-            </form>
 
-            <div id="init-error-container" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl hidden animate-pulse">
-                <div class="flex items-center gap-2 text-danger mb-1"><i class="fas fa-wifi"></i><span class="text-xs font-bold">Gagal Terhubung</span></div>
-                <p id="init-error-text" class="text-[10px] text-red-400 leading-relaxed"></p>
-                <button onclick="location.reload()" class="w-full mt-3 text-xs bg-white border border-red-200 text-danger py-2 rounded-lg font-bold hover:bg-red-50 transition">Coba Lagi</button>
+                <!-- Tab Switcher -->
+                <div class="flex p-1 bg-slate-100 rounded-xl mb-8 w-fit shadow-inner">
+                    <button onclick="window.switchLoginTab('user')" id="tab-user" class="px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-slate-800 ring-1 ring-black/5">Team</button>
+                    <button onclick="window.switchLoginTab('admin')" id="tab-admin" class="px-6 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-slate-600 transition-all">Admin</button>
+                </div>
+
+                <!-- Form User -->
+                <form id="form-login-user" class="space-y-6">
+                    <div class="space-y-5">
+                        <div class="group">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">ID Pengguna</label>
+                            <div class="relative">
+                                <input type="text" id="login-id" class="block w-full px-4 py-3.5 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all placeholder-slate-300 shadow-sm" placeholder="Masukkan ID Anda...">
+                                <i class="fas fa-user absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors"></i>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center cursor-pointer select-none group w-fit">
+                                <div class="relative">
+                                    <input type="checkbox" id="is-pic-checkbox" class="sr-only peer" onchange="window.togglePasswordField()">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                                </div>
+                                <span class="ml-2 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login Leader / PIC</span>
+                            </label>
+                            
+                            <div id="login-pass-container" class="hidden mt-4 origin-top transition-all duration-300">
+                                <div class="group">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Kata Sandi</label>
+                                    <div class="relative">
+                                        <input type="password" id="login-pass-user" class="block w-full px-4 py-3.5 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none transition-all placeholder-slate-300 shadow-sm" placeholder="••••••••">
+                                        <i class="fas fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg shadow-slate-200 transition-all transform active:scale-95 text-sm flex items-center justify-center gap-2 mt-6 group">
+                        <span>Masuk Aplikasi</span> <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <!-- Form Admin -->
+                <form id="form-login-admin" class="space-y-5 hidden">
+                    <div class="group">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Kunci Administrator</label>
+                        <div class="relative">
+                            <input type="password" id="login-pass-admin" class="block w-full px-4 py-3.5 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800/20 focus:border-slate-800 focus:bg-white outline-none transition-all placeholder-slate-300 shadow-sm" placeholder="••••••••" required>
+                            <i class="fas fa-shield-alt absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-800 transition-colors"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg shadow-slate-200 transition-all transform active:scale-95 text-sm flex items-center justify-center gap-2 mt-6">
+                        <span>Akses Admin</span> <i class="fas fa-unlock text-[10px]"></i>
+                    </button>
+                </form>
+
+                <div id="init-error-container" class="mt-6 p-3 bg-rose-50 border border-rose-100 rounded-xl hidden animate-pulse flex items-start gap-3">
+                    <div class="bg-rose-100 text-rose-500 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5"><i class="fas fa-wifi text-[10px]"></i></div>
+                    <div>
+                        <span class="text-xs font-bold text-rose-600 block mb-0.5">Gagal Terhubung</span>
+                        <p id="init-error-text" class="text-[10px] text-rose-400 leading-tight"></p>
+                        <button onclick="location.reload()" class="mt-2 text-[10px] font-bold text-rose-500 hover:text-rose-700 underline">Muat Ulang Halaman</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -940,12 +999,23 @@
         function handleAuthSuccess(user) {
             if(isLoggingOut) return;
             window.notify('Terhubung', 'success');
-            document.getElementById('loading-overlay').classList.add('hidden-fade');
-            setTimeout(() => {
-                document.getElementById('loading-overlay').classList.add('hidden');
-                document.getElementById('loading-overlay').remove();
-            }, 300);
-            document.getElementById('login-section').classList.remove('hidden');
+            
+            // PERBAIKAN: Cek apakah loading overlay masih ada sebelum mengakses classList
+            const overlay = document.getElementById('loading-overlay');
+            if(overlay) {
+                overlay.classList.add('hidden-fade');
+                setTimeout(() => {
+                    // Cek lagi sebelum menghapus
+                    if(overlay) {
+                        overlay.classList.add('hidden');
+                        overlay.remove();
+                    }
+                }, 300);
+            }
+            
+            const loginSec = document.getElementById('login-section');
+            if(loginSec) loginSec.classList.remove('hidden');
+            
             initListeners();
         }
 
@@ -1000,19 +1070,44 @@
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
         window.switchLoginTab = (t) => {
-            const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
-            if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-slate-700','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
-            else { u.classList.add('hidden'); a.classList.remove('hidden'); ta.classList.add('bg-slate-700','text-white','shadow-md'); ta.classList.remove('text-slate-400','hover:text-white'); tu.classList.remove('bg-primary','text-white','shadow-md'); tu.classList.add('text-slate-400','hover:text-white'); }
+            const u = document.getElementById('form-login-user');
+            const a = document.getElementById('form-login-admin');
+            const tu = document.getElementById('tab-user');
+            const ta = document.getElementById('tab-admin');
+            
+            // Define active and inactive styles for new design
+            const activeClasses = ['bg-white', 'text-slate-800', 'shadow-sm', 'ring-1', 'ring-black/5'];
+            const inactiveClasses = ['text-slate-400', 'hover:text-slate-600', 'bg-transparent', 'shadow-none', 'ring-0'];
+
+            if(t==='user') { 
+                u.classList.remove('hidden'); 
+                a.classList.add('hidden'); 
+                
+                tu.classList.add(...activeClasses);
+                tu.classList.remove(...inactiveClasses);
+                
+                ta.classList.remove(...activeClasses);
+                ta.classList.add(...inactiveClasses);
+            } else { 
+                u.classList.add('hidden'); 
+                a.classList.remove('hidden'); 
+                
+                ta.classList.add(...activeClasses);
+                ta.classList.remove(...inactiveClasses);
+                
+                tu.classList.remove(...activeClasses);
+                tu.classList.add(...inactiveClasses);
+            }
         };
+        
         window.togglePasswordField = () => { 
             const c=document.getElementById('is-pic-checkbox'), p=document.getElementById('login-pass-container'), i=document.getElementById('login-pass-user'); 
             if(c.checked) {
                 p.classList.remove('hidden');
-                p.classList.add('block');
+                // Added slight animation class or logic if needed, but CSS handles transition
                 i.setAttribute('required','true');
             } else {
                 p.classList.add('hidden');
-                p.classList.remove('block');
                 i.removeAttribute('required');
                 i.value='';
             }

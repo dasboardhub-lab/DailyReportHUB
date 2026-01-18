@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v2</title>
+    <title>DailyReport v3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -75,6 +75,11 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide { -ms-overflow-style: none;  scrollbar-width: none; }
+
         .table-scroll-container {
             max-height: 500px;
             overflow-y: auto;
@@ -130,6 +135,44 @@
         button:active { transform: scale(0.96); }
         .kpi-card { transition: all 0.3s ease; border: 1px solid transparent; }
         .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08); border-color: rgba(67, 97, 238, 0.2); }
+        
+        /* New Filter Style */
+        .filter-container {
+            display: flex; gap: 0.5rem; align-items: center; 
+            background: white; border: 1px solid #e2e8f0; 
+            padding: 0.35rem 0.75rem; border-radius: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+        .filter-container:hover { border-color: #cbd5e1; }
+        .filter-input-date { background: transparent; border: none; font-size: 0.75rem; font-weight: 700; color: #334155; width: 85px; outline: none; padding: 0; }
+        
+        /* Hub Buttons */
+        .hub-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            text-transform: uppercase;
+        }
+        .hub-btn.active {
+            background-color: #4361ee;
+            color: white;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            border-color: #4361ee;
+        }
+        .hub-btn.inactive {
+            background-color: white;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+        .hub-btn.inactive:hover {
+            border-color: #4361ee;
+            color: #4361ee;
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
@@ -161,8 +204,6 @@
         <div class="w-full px-6 md:px-12 mx-auto">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-3 flex-shrink-0">
-                    <!-- LOGO UPDATED: Menggunakan fa-boxes-stacked agar sesuai konteks Operasional -->
-                    <!-- Jika ingin menggunakan gambar sendiri, ganti div ini dengan: <img src="URL_GAMBAR_ANDA" class="w-10 h-10 rounded-xl shadow-lg"> -->
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white transform hover:scale-105 transition-transform duration-300 border border-white/20">
                         <i class="fas fa-boxes-stacked text-lg"></i>
                     </div>
@@ -205,7 +246,6 @@
     <!-- Mobile Topbar -->
     <div id="mobile-topbar" class="md:hidden glass-nav px-6 py-4 flex justify-between items-center shadow-md z-40 hidden sticky top-0 bg-white/90 backdrop-blur-lg">
         <div class="flex items-center gap-3">
-            <!-- LOGO MOBILE UPDATED: Disamakan dengan Desktop -->
             <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 border border-white/20">
                 <i class="fas fa-boxes-stacked text-sm"></i>
             </div>
@@ -325,26 +365,33 @@
             
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
-                <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-30">
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
-                        <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                        <div class="flex items-center gap-3 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 flex-1 md:flex-none hover:shadow-sm transition cursor-pointer group">
-                            <i class="far fa-calendar text-slate-400 text-xs group-hover:text-primary transition-colors"></i>
-                            <input type="date" id="dash-start-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
-                            <span class="text-slate-300 font-light">to</span>
-                            <input type="date" id="dash-end-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
+                <!-- NEW DASHBOARD HEADER LAYOUT -->
+                <div class="glass p-5 rounded-3xl shadow-sm border border-white/50 relative z-30">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
+                            <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
                         </div>
-                        <div class="relative flex-1 md:flex-none md:w-48">
-                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200/60 text-slate-600 text-xs rounded-xl px-4 py-3 flex justify-between items-center hover:border-primary/50 hover:shadow-sm transition" onclick="window.toggleHubDropdown(event)">
-                                <span id="hub-filter-label" class="truncate font-bold">Semua HUB</span>
-                                <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
+                        
+                        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50">
+                            <!-- Date Range Group -->
+                            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 flex-1 shadow-sm transition hover:border-primary/30 group min-w-[200px] shrink-0">
+                                <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
+                                <input type="date" id="dash-start-date" class="filter-input-date" onchange="window.loadDashboardData()">
+                                <span class="text-slate-300 text-[10px] font-bold mx-1">SD</span>
+                                <input type="date" id="dash-end-date" class="filter-input-date" onchange="window.loadDashboardData()">
+                            </div>
+
+                            <!-- Hub Filter Buttons Container -->
+                            <div id="hub-filter-container" class="flex flex-1 items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear">
+                                <!-- Buttons injected by JS -->
+                            </div>
+
+                            <!-- Reset Button -->
+                            <button onclick="window.resetDashboardFilters()" class="bg-white text-slate-400 hover:text-primary border border-slate-200 hover:border-primary/30 p-2 rounded-xl shadow-sm transition h-full w-10 flex items-center justify-center shrink-0" title="Reset Filter">
+                                <i class="fas fa-undo-alt text-xs"></i>
                             </button>
-                            <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto"></div>
                         </div>
-                        <button onclick="window.resetDashboardFilters()" class="p-3 rounded-xl text-slate-400 border border-slate-200/60 bg-white hover:text-primary hover:border-primary/30 shadow-sm transition" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
                     </div>
                 </div>
 
@@ -474,35 +521,56 @@
                     <div id="dashboard-notes-empty" class="hidden text-center py-8 text-slate-400 text-xs italic">Tidak ada catatan kendala pada periode ini.</div>
                 </div>
 
+                <!-- MOVED: EXECUTIVE BRIEF SECTION -->
+                <div id="manager-summary-section" class="hidden bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-6 shadow-xl text-white relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-white/10 transition duration-700"></div>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-lg text-white flex items-center gap-2"><i class="fas fa-briefcase text-blue-300"></i> SUMMARY REPORT HUB KALSULAMP</h3>
+                            <p class="text-xs text-slate-400 mt-1">Ringkasan agregat dari data input tim untuk pelaporan ke Management</p>
+                        </div>
+                        <button onclick="window.copyManagerSummary()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-blue-500/50 shadow-lg shadow-blue-500/20 active:scale-95">
+                            <i class="far fa-copy"></i> SALIN UNTUK MANAGER
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-white/5 rounded-2xl border border-white/10" id="manager-summary-stats">
+                        <!-- Content populated by JS -->
+                    </div>
+                </div>
+
             </div>
 
             <!-- VIEW: LAPORAN -->
              <div id="view-laporan" class="view-content hidden fade-in space-y-5">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl border border-slate-100 shadow-sm gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
-                        <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
-                    </div>
-
-                    <div class="flex flex-wrap items-center gap-3 justify-end w-full md:w-auto">
-                        <!-- Date Filter -->
-                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 hover:bg-white hover:shadow-sm transition">
-                            <i class="far fa-calendar text-slate-400 text-xs"></i>
-                            <input type="date" id="lap-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.renderLaporanList()">
-                            <span class="text-slate-300 font-light text-xs">to</span>
-                            <input type="date" id="lap-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.renderLaporanList()">
+                <!-- NEW LAPORAN HEADER LAYOUT -->
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 relative z-30">
+                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800">Laporan Harian</h2>
+                            <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                         </div>
 
-                        <!-- Hub Filter -->
-                        <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition hover:bg-white shadow-sm hidden">
-                            <option value="ALL">Semua HUB</option>
-                        </select>
+                        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50">
+                            <!-- Date Filter -->
+                            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 flex-1 shadow-sm transition hover:border-primary/30 group min-w-[200px]">
+                                <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
+                                <input type="date" id="lap-start-date" class="filter-input-date" onchange="window.renderLaporanList()">
+                                <span class="text-slate-300 font-bold mx-1 text-[10px]">SD</span>
+                                <input type="date" id="lap-end-date" class="filter-input-date" onchange="window.renderLaporanList()">
+                            </div>
 
-                        <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-5 py-2.5 rounded-xl font-bold text-xs transition hidden flex items-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30" id="btn-tambah-laporan">
-                            <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT BARU</span>
-                        </button>
+                            <!-- Hub Filter -->
+                            <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition shadow-sm hidden h-full hover:border-primary/50">
+                                <option value="ALL">Semua HUB</option>
+                            </select>
+
+                            <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-5 py-2 rounded-xl font-bold text-xs transition hidden flex items-center justify-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30 shrink-0 h-full" id="btn-tambah-laporan">
+                                <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT BARU</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
+
                 <div class="bg-white rounded-3xl shadow-card border border-slate-100/50 overflow-hidden flex flex-col h-[70vh]">
                     <div class="overflow-auto flex-1">
                         <table class="w-full text-xs text-left text-slate-600 whitespace-nowrap">
@@ -527,19 +595,29 @@
 
             <!-- VIEW: ABSENSI -->
              <div id="view-absensi" class="view-content hidden fade-in space-y-6">
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <div class="flex flex-wrap gap-4 items-center justify-between">
-                         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
-                            <div class="flex items-center bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 gap-2 hover:bg-white hover:shadow-sm transition">
-                                <i class="far fa-calendar text-slate-400 text-xs"></i>
-                                <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
-                                <span class="text-slate-300 font-light">to</span>
-                                <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
+                <!-- NEW ABSENSI HEADER LAYOUT -->
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 relative z-30">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                         <div>
+                            <h2 class="text-xl font-bold text-slate-800">Absensi</h2>
+                            <p class="text-xs text-slate-500 font-medium mt-1">Monitoring kehadiran tim</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50">
+                             <!-- Date Range -->
+                             <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 flex-1 shadow-sm transition hover:border-primary/30 group min-w-[200px]">
+                                <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
+                                <input type="date" id="abs-start-date" class="filter-input-date" onchange="window.loadAbsensiData()">
+                                <span class="text-slate-300 font-bold mx-1 text-[10px]">SD</span>
+                                <input type="date" id="abs-end-date" class="filter-input-date" onchange="window.loadAbsensiData()">
                             </div>
-                            <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
-                         </div>
-                         <div class="flex gap-2">
-                             <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl"><i class="fas fa-sync-alt"></i></button>
+                            
+                            <!-- Hub Selector -->
+                            <select id="abs-hub-select" class="bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-primary outline-none cursor-pointer hover:border-primary/50 transition shadow-sm flex-1 md:flex-none" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
+                            
+                            <!-- Refresh -->
+                            <button onclick="window.initAbsensiFilters()" class="bg-white text-slate-400 hover:text-primary border border-slate-200 hover:border-primary/30 p-2 rounded-xl shadow-sm transition h-full w-10 flex items-center justify-center shrink-0">
+                                <i class="fas fa-sync-alt text-xs"></i>
+                            </button>
                          </div>
                     </div>
                 </div>
@@ -948,10 +1026,13 @@
             });
 
             onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
-            onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); window.renderHubDropdownOptions(); if(currentUser) { 
-                window.renderCostInputs(); 
-                if(document.getElementById('view-absensi').classList.contains('hidden')===false) window.renderAbsensiHubSelect();
-            } });
+            onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); 
+                window.renderHubFilterButtons(); // Updated to Buttons
+                if(currentUser) { 
+                    window.renderCostInputs(); 
+                    if(document.getElementById('view-absensi').classList.contains('hidden')===false) window.renderAbsensiHubSelect();
+                } 
+            });
             
             onSnapshot(pub('laporan'), (s) => { 
                 appData.laporan=[]; 
@@ -972,86 +1053,7 @@
         const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
-        window.switchLoginTab = (t) => {
-            const u = document.getElementById('form-login-user'), a = document.getElementById('form-login-admin'), tu = document.getElementById('tab-user'), ta = document.getElementById('tab-admin');
-            if(t==='user') { u.classList.remove('hidden'); a.classList.add('hidden'); tu.classList.add('bg-primary','text-white','shadow-md'); tu.classList.remove('text-slate-400','hover:text-white'); ta.classList.remove('bg-slate-700','text-white','shadow-md'); ta.classList.add('text-slate-400','hover:text-white'); }
-            else { u.classList.add('hidden'); a.classList.remove('hidden'); ta.classList.add('bg-slate-700','text-white','shadow-md'); ta.classList.remove('text-slate-400','hover:text-white'); tu.classList.remove('bg-primary','text-white','shadow-md'); tu.classList.add('text-slate-400','hover:text-white'); }
-        };
-        window.togglePasswordField = () => { 
-            const c=document.getElementById('is-pic-checkbox'), p=document.getElementById('login-pass-container'), i=document.getElementById('login-pass-user'); 
-            if(c.checked) {
-                p.classList.remove('hidden');
-                p.classList.add('block');
-                i.setAttribute('required','true');
-            } else {
-                p.classList.add('hidden');
-                p.classList.remove('block');
-                i.removeAttribute('required');
-                i.value='';
-            }
-        };
-
-        const doLogin = (role, name, id, access, hub) => {
-            isLoggingOut = false;
-            currentUser = { role, name, id, akses_laporan: access, kode_hub: hub };
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('mobile-topbar').classList.remove('hidden');
-            document.getElementById('mobile-bottom-nav').classList.remove('hidden');
-            document.getElementById('mobile-bottom-nav').classList.add('flex');
-            document.getElementById('app-content').classList.remove('hidden');
-            
-            document.getElementById('user-name-display').innerText = name;
-            document.getElementById('mob-user-name').innerText = name;
-            document.getElementById('user-badge').innerText = role.toUpperCase();
-            
-            const isAdm = role==='admin', isAcc = role==='pic'||access==='YA';
-            document.getElementById('nav-pengaturan').classList.toggle('hidden', !isAdm);
-            document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
-            document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
-            
-            document.getElementById('app-navbar').classList.add('md:flex');
-
-            window.initDashboardFilters(); window.navigate('dashboard');
-            window.notify(`Halo, ${name}`, 'success');
-        };
-        
-        window.doLogout = async () => {
-            isLoggingOut = true;
-            try {
-                document.getElementById('app-navbar').classList.add('hidden');
-                document.getElementById('app-navbar').classList.remove('md:flex');
-                document.getElementById('mobile-topbar').classList.add('hidden');
-                document.getElementById('mobile-bottom-nav').classList.add('hidden');
-                document.getElementById('mobile-bottom-nav').classList.remove('flex');
-                document.getElementById('app-content').classList.add('hidden');
-                document.getElementById('login-section').classList.remove('hidden');
-                currentUser = null;
-                document.getElementById('login-id').value = '';
-                document.getElementById('login-pass-user').value = '';
-                document.getElementById('login-pass-admin').value = '';
-                await signOut(auth);
-                setTimeout(() => { signInAnonymously(auth); isLoggingOut=false; }, 500);
-                window.notify('Berhasil Keluar', 'success');
-            } catch (e) {
-                location.reload();
-            }
-        };
-        window.logout = window.doLogout;
-
-        document.getElementById('form-login-admin').onsubmit = (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value===appData.adminPass) doLogin('admin','Administrator','admin','YA','ALL'); else window.notify('Password Salah', 'error'); };
-        document.getElementById('form-login-user').onsubmit = (e) => { 
-            e.preventDefault(); 
-            const u = appData.users.find(x => x.id === document.getElementById('login-id').value);
-            if(!u) return window.notify('ID Tidak Ditemukan', 'error');
-            const isLeader = document.getElementById('is-pic-checkbox').checked;
-            if(isLeader) {
-                if(u.sandi === document.getElementById('login-pass-user').value) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
-                else window.notify('Password Salah', 'error');
-            } else {
-                if(u.posisi === 'LEADER' || u.posisi === 'Admin') return window.notify('Gunakan Login Leader', 'error');
-                doLogin('sorter', u.nama, u.id, u.akses, u.kode_hub);
-            }
-        };
+        // ... existing login code ...
 
         window.navigate = (id) => {
             document.querySelectorAll('.view-content').forEach(e => e.classList.add('hidden'));
@@ -1065,7 +1067,10 @@
             const mNav = document.getElementById(`mob-nav-${id}`);
             if(mNav) mNav.classList.add('active', 'text-primary');
 
-            if(id==='dashboard') window.loadDashboardData();
+            if(id==='dashboard') {
+                 if(document.getElementById('hub-filter-container').children.length === 0) window.renderHubFilterButtons();
+                 window.loadDashboardData();
+            }
             if(id==='pengaturan') window.loadSettingsUI();
             if(id==='laporan') {
                 if(!document.getElementById('lap-start-date').value) {
@@ -1089,34 +1094,80 @@
             if(id==='absensi') window.initAbsensiFilters();
         };
 
-        window.toggleHubDropdown = (e) => { e.stopPropagation(); document.getElementById('hub-filter-dropdown').classList.toggle('hidden'); };
-        window.onclick = (e) => { if(!e.target.closest('#hub-filter-btn') && !e.target.closest('#hub-filter-dropdown')) document.getElementById('hub-filter-dropdown').classList.add('hidden'); };
-        
-        window.renderHubDropdownOptions = () => {
-            const c = document.getElementById('hub-filter-dropdown'); c.innerHTML = '';
+        // --- NEW: HUB FILTER BUTTONS LOGIC ---
+        window.renderHubFilterButtons = () => {
+            const container = document.getElementById('hub-filter-container');
+            container.innerHTML = '';
+            
+            // 1. Tombol "Semua"
+            const allBtn = document.createElement('button');
+            allBtn.className = 'hub-btn active'; // Default active
+            allBtn.dataset.hub = 'ALL';
+            allBtn.innerText = 'Semua';
+            allBtn.onclick = () => window.toggleHubFilter('ALL');
+            container.appendChild(allBtn);
+
+            // 2. Tombol Hubs
             appData.costs.forEach(h => {
-                c.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg"><input type="checkbox" value="${h.hub}" class="hub-checkbox w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary" checked onchange="window.updateHubLabel(); window.loadDashboardData()"> <span class="text-xs text-slate-700 font-medium">${h.hub}</span></label>`;
+                const btn = document.createElement('button');
+                btn.className = 'hub-btn inactive';
+                btn.dataset.hub = h.hub;
+                btn.innerText = h.hub;
+                btn.onclick = () => window.toggleHubFilter(h.hub);
+                container.appendChild(btn);
             });
-            window.updateHubLabel = () => {
-                const n = document.querySelectorAll('.hub-checkbox:checked').length;
-                document.getElementById('hub-filter-label').innerText = n===0?'Pilih HUB':(n===appData.costs.length?'Semua HUB':`${n} HUB Dipilih`);
-            };
-            window.updateHubLabel();
+        };
+
+        window.toggleHubFilter = (hubName) => {
+            const allBtn = document.querySelector('.hub-btn[data-hub="ALL"]');
+            const targetBtn = document.querySelector(`.hub-btn[data-hub="${hubName}"]`);
+            
+            if (hubName === 'ALL') {
+                // Reset to ALL
+                document.querySelectorAll('.hub-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.add('inactive');
+                });
+                allBtn.classList.remove('inactive');
+                allBtn.classList.add('active');
+            } else {
+                // If currently ALL is active, deactivate it first
+                if (allBtn.classList.contains('active')) {
+                    allBtn.classList.remove('active');
+                    allBtn.classList.add('inactive');
+                }
+
+                // Toggle logic
+                if (targetBtn.classList.contains('active')) {
+                    targetBtn.classList.remove('active');
+                    targetBtn.classList.add('inactive');
+                } else {
+                    targetBtn.classList.remove('inactive');
+                    targetBtn.classList.add('active');
+                }
+
+                // Check if any specific hub is still active
+                const anyActive = document.querySelector('.hub-btn.active:not([data-hub="ALL"])');
+                if (!anyActive) {
+                    // Fallback to ALL if none selected
+                    allBtn.classList.remove('inactive');
+                    allBtn.classList.add('active');
+                }
+            }
+            window.loadDashboardData();
         };
 
         window.initDashboardFilters = () => {
             const d = new Date(); document.getElementById('dash-end-date').valueAsDate = d;
             d.setDate(d.getDate()-30); document.getElementById('dash-start-date').valueAsDate = d;
-            if(document.getElementById('hub-filter-dropdown').children.length === 0) window.renderHubDropdownOptions();
+            window.renderHubFilterButtons();
             window.loadDashboardData();
         };
 
         window.resetDashboardFilters = () => {
             const d = new Date(); document.getElementById('dash-end-date').valueAsDate = d;
             d.setDate(d.getDate()-30); document.getElementById('dash-start-date').valueAsDate = d;
-            document.querySelectorAll('.hub-checkbox').forEach(c => c.checked = true);
-            window.updateHubLabel();
-            window.loadDashboardData();
+            window.toggleHubFilter('ALL'); // Reset hubs to ALL
         };
 
         window.loadDashboardData = () => {
@@ -1126,7 +1177,16 @@
 
             const s = new Date(sEl.value);
             const e = new Date(eEl.value);
-            const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
+            
+            // Get Selected Hubs from Buttons
+            const activeBtns = Array.from(document.querySelectorAll('.hub-btn.active'));
+            let hubs = [];
+            // If ALL is active (or implicitly if list is empty/contains ALL), we treat hubs as empty list (which means ALL in filter logic)
+            const isAll = activeBtns.some(b => b.dataset.hub === 'ALL');
+            
+            if (!isAll) {
+                hubs = activeBtns.map(b => b.dataset.hub);
+            }
             
             const data = appData.laporan.filter(l => { 
                 const d = new Date(l.tanggal); 
@@ -1143,6 +1203,7 @@
                 return d>=prevStart && d<=prevEnd && (hubs.length===0 || hubs.includes(l.hub)); 
             });
 
+            // ... existing calculation logic ...
             const sum = (arr, key) => arr.reduce((acc, curr) => acc + (curr[key]||0), 0);
             const sumCost = (arr) => arr.reduce((acc, curr) => acc + window.calculateReportCost(curr), 0);
 
@@ -1195,8 +1256,16 @@
             render('kpi-avg-prod', curr.prod, 'diff-avg-prod', prev.prod);
             render('kpi-total-cost', curr.cost, 'diff-total-cost', prev.cost, true);
 
-            window.updateCharts(data, hubs); window.updateDashboardTables(data);
+            // Pass hubs array correctly for charts
+            // If hubs is empty (ALL), we need to pass all available hubs to charts for correct coloring/data
+            const chartHubs = hubs.length > 0 ? hubs : appData.costs.map(c => c.hub);
+
+            window.updateCharts(data, chartHubs); 
+            window.updateDashboardTables(data);
             window.renderDashboardNotes(data);
+            
+            // Trigger Manager Summary Render (Pass Current & Previous Data)
+            window.renderManagerBrief(data, prevData);
         };
 
         window.renderDashboardNotes = (data) => {
@@ -1233,6 +1302,155 @@
                     `;
                 });
             }
+        };
+        
+        // NEW: FUNCTION TO RENDER MANAGER REPORT SUMMARY
+        window.renderManagerBrief = (currData, prevData) => {
+            const container = document.getElementById('manager-summary-stats');
+            
+            if (!container) return;
+
+            // Helper for Summing Data
+            const calcStats = (arr) => {
+                let stats = {
+                    pkt: 0, mpp: 0, cost: 0,
+                    stg: 0, gtw: 0, jne: 0, sap: 0, lastMile: 0,
+                    hubMap: {} // { hubName: { pkt: 0, mpp: 0 } }
+                };
+                
+                arr.forEach(r => {
+                    stats.pkt += r.total_paket || 0;
+                    stats.mpp += r.total_mpp || 0;
+                    stats.cost += window.calculateReportCost(r);
+                    stats.stg += r.staging || 0;
+                    stats.gtw += r.gateway || 0;
+                    stats.jne += r.jne || 0;
+                    stats.sap += r.sap || 0;
+
+                    if (!stats.hubMap[r.hub]) stats.hubMap[r.hub] = { pkt: 0, mpp: 0 };
+                    stats.hubMap[r.hub].pkt += r.total_paket || 0;
+                    stats.hubMap[r.hub].mpp += r.total_mpp || 0;
+                });
+                
+                stats.lastMile = stats.jne + stats.sap;
+                stats.prod = stats.mpp > 0 ? Math.round(stats.pkt / stats.mpp) : 0;
+                return stats;
+            };
+
+            const curr = calcStats(currData);
+            const prev = calcStats(prevData);
+
+            // Determine Best Hub (Productivity) & Top Hub (Load)
+            let bestHubName = '-'; let bestHubProd = 0;
+            let topLoadHubName = '-'; let topLoadHubVal = 0;
+
+            Object.keys(curr.hubMap).forEach(h => {
+                const d = curr.hubMap[h];
+                // Prod
+                const p = d.mpp > 0 ? Math.round(d.pkt / d.mpp) : 0;
+                if (p > bestHubProd) { bestHubProd = p; bestHubName = h; }
+                // Load
+                if (d.pkt > topLoadHubVal) { topLoadHubVal = d.pkt; topLoadHubName = h; }
+            });
+
+            // Helper for formatted comparison string: "Val (↑ Diff | %)"
+            const getCompStr = (valNow, valPrev, isRp = false, isUnit = false) => {
+                const diff = valNow - valPrev;
+                const pct = valPrev === 0 ? (valNow === 0 ? 0 : 100) : Math.round((diff / valPrev) * 100);
+                const icon = diff > 0 ? '+' : (diff < 0 ? '-' : '');
+                const displayVal = isRp ? window.formatRupiah(valNow) : window.formatNumber(valNow);
+                const displayDiff = isRp ? window.formatRupiah(Math.abs(diff)) : window.formatNumber(Math.abs(diff));
+                
+                // Format: "1.000 (+ 100 | 10%)"
+                return `${displayVal}${isUnit?isUnit:''} (${icon}${displayDiff} | ${icon}${Math.abs(pct)}%)`;
+            };
+
+            // Collect Issues (Unique strings) with DATE
+            const issues = [];
+            // Sort chronological for report text (Oldest -> Newest)
+            const sortedLogs = [...currData].sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+            
+            sortedLogs.forEach(r => {
+                if (r.catatan && r.catatan.trim().length > 0) {
+                     const dObj = new Date(r.tanggal);
+                     const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; // Format DD/M
+                     const issueStr = `[${dStr}] [${r.hub}] ${r.catatan}`;
+                     if (!issues.includes(issueStr)) issues.push(issueStr);
+                }
+            });
+
+            // --- 1. RENDER VISUAL CARDS IN SUMMARY SECTION (UI ONLY) ---
+            container.innerHTML = `
+                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-blue-200 tracking-wider mb-1">Total Load</p>
+                    <h4 class="text-2xl font-extrabold text-white">${window.formatNumber(curr.pkt)} <span class="text-xs font-normal opacity-70">Pkt</span></h4>
+                     <p class="text-[10px] text-white/50 mt-1">${curr.pkt >= prev.pkt ? '↑' : '↓'} ${Math.abs(curr.pkt - prev.pkt)} vs prev</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider mb-1">Avg Productivity</p>
+                    <h4 class="text-2xl font-extrabold text-white">${window.formatNumber(curr.prod)} <span class="text-xs font-normal opacity-70">/Org</span></h4>
+                     <p class="text-[10px] text-white/50 mt-1">${curr.prod >= prev.prod ? '↑' : '↓'} ${Math.abs(curr.prod - prev.prod)} vs prev</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-amber-200 tracking-wider mb-1">Top Hub Load</p>
+                    <h4 class="text-xl font-extrabold text-white truncate" title="${topLoadHubName}">${topLoadHubName}</h4>
+                    <p class="text-[10px] text-white/60 font-mono">${window.formatNumber(topLoadHubVal)} Pkt</p>
+                </div>
+                 <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-rose-200 tracking-wider mb-1">Total Cost</p>
+                    <h4 class="text-xl font-extrabold text-white truncate">${window.formatRupiah(curr.cost)}</h4>
+                </div>
+            `;
+            
+            // --- 2. GENERATE TEXT FOR CLIPBOARD ---
+            const sDate = document.getElementById('dash-start-date').value;
+            const eDate = document.getElementById('dash-end-date').value;
+            const dateDisplay = (sDate === eDate) ? sDate : `${sDate} s/d ${eDate}`;
+            
+            let txt = `*SUMMARY REPORT HUB KALSULAMP*\n`;
+            txt += `Periode: ${dateDisplay}\n\n`;
+            
+            txt += `*Global Performance:*\n`;
+            txt += `📦 Load: ${getCompStr(curr.pkt, prev.pkt, false, ' Pkt')}\n`;
+            txt += `👥 Manpower: ${getCompStr(curr.mpp, prev.mpp, false, ' Org')}\n`;
+            txt += `⚡ Avg Prod: ${getCompStr(curr.prod, prev.prod, false, ' Pkt/Org')}\n`;
+            txt += `💰 Total Cost: ${getCompStr(curr.cost, prev.cost, true)}\n\n`;
+            
+            txt += `*Volume Breakdown:*\n`;
+            txt += `• Staging: ${getCompStr(curr.stg, prev.stg)}\n`;
+            txt += `• Gateway: ${getCompStr(curr.gtw, prev.gtw)}\n`;
+            txt += `• JNE & SAP: ${getCompStr(curr.lastMile, prev.lastMile)}\n\n`;
+
+            txt += `*Top HUB Load:* ${topLoadHubName} (${window.formatNumber(topLoadHubVal)} Pkt)\n`;
+            txt += `*Top Hub Performance:* ${bestHubName} (${window.formatNumber(bestHubProd)} Pkt/Org)\n\n`;
+            
+            if (issues.length > 0) {
+                txt += `*Log Kendala / Isu:*\n`;
+                issues.forEach(i => txt += `- ${i}\n`);
+            } else {
+                 txt += `*Log Kendala:* Nihil\n`;
+            }
+            
+            txt += `\n_Generated by DailyReport System_`;
+            
+            // Store in a global variable for the copy button
+            window.managerSummaryText = txt;
+        };
+        
+        window.copyManagerSummary = () => {
+            if (!window.managerSummaryText) return window.notify('Data belum siap', 'error');
+            
+            const el = document.createElement('textarea');
+            el.value = window.managerSummaryText;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            window.notify('Laporan Manager Disalin!', 'success');
         };
 
         const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;
@@ -2126,6 +2344,153 @@
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
         
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded text-xs' : 'bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded text-xs';
+
+        // ==========================================================
+        // LOGIN & AUTH FUNCTIONS (ADDED FIX)
+        // ==========================================================
+
+        window.switchLoginTab = (type) => {
+            document.getElementById('form-login-user').classList.toggle('hidden', type !== 'user');
+            document.getElementById('form-login-admin').classList.toggle('hidden', type !== 'admin');
+            
+            const btnUser = document.getElementById('tab-user');
+            const btnAdmin = document.getElementById('tab-admin');
+            
+            if (type === 'user') {
+                btnUser.classList.add('bg-white', 'text-primary', 'ring-1', 'ring-black/5', 'shadow-sm');
+                btnUser.classList.remove('text-slate-400', 'hover:text-slate-600');
+                btnAdmin.classList.remove('bg-white', 'text-primary', 'ring-1', 'ring-black/5', 'shadow-sm');
+                btnAdmin.classList.add('text-slate-400', 'hover:text-slate-600');
+            } else {
+                btnAdmin.classList.add('bg-white', 'text-primary', 'ring-1', 'ring-black/5', 'shadow-sm');
+                btnAdmin.classList.remove('text-slate-400', 'hover:text-slate-600');
+                btnUser.classList.remove('bg-white', 'text-primary', 'ring-1', 'ring-black/5', 'shadow-sm');
+                btnUser.classList.add('text-slate-400', 'hover:text-slate-600');
+            }
+        };
+
+        window.togglePasswordField = () => {
+            const isPic = document.getElementById('is-pic-checkbox').checked;
+            const container = document.getElementById('login-pass-container');
+            const passInput = document.getElementById('login-pass-user');
+            
+            if (isPic) {
+                container.classList.remove('hidden');
+                setTimeout(() => container.style.opacity = '1', 10);
+                passInput.setAttribute('required', '');
+            } else {
+                container.style.opacity = '0';
+                setTimeout(() => container.classList.add('hidden'), 300);
+                passInput.removeAttribute('required');
+                passInput.value = '';
+            }
+        };
+
+        window.doLogout = () => {
+             isLoggingOut = true;
+             currentUser = null;
+             document.getElementById('app-navbar').classList.add('hidden');
+             document.getElementById('app-navbar').classList.remove('md:flex');
+             document.getElementById('mobile-topbar').classList.add('hidden');
+             document.getElementById('mobile-bottom-nav').classList.add('hidden');
+             document.getElementById('mobile-bottom-nav').classList.remove('flex');
+             document.getElementById('app-content').classList.add('hidden');
+             document.getElementById('login-section').classList.remove('hidden');
+             
+             // Reset Inputs
+             document.getElementById('login-id').value = '';
+             document.getElementById('login-pass-user').value = '';
+             document.getElementById('login-pass-admin').value = '';
+             
+             window.switchLoginTab('user');
+             isLoggingOut = false;
+        };
+
+        function proceedLogin() {
+            window.notify('Login Berhasil', 'success');
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            
+            // Render UI based on role
+            const role = currentUser.role;
+            document.getElementById('user-name-display').innerText = currentUser.nama;
+            document.getElementById('mob-user-name').innerText = currentUser.nama;
+            document.getElementById('user-badge').innerText = role === 'admin' ? 'ADMINISTRATOR' : (role === 'pic' ? 'LEADER / PIC' : currentUser.posisi);
+            
+            // Access Control
+            const isAdm = role === 'admin';
+            const isAcc = role === 'pic' || (currentUser.akses === 'YA');
+            
+            // Nav visibility
+            document.getElementById('nav-pengaturan').classList.toggle('hidden', !isAdm);
+            document.getElementById('mob-nav-pengaturan').classList.toggle('hidden', !isAdm);
+            
+            // Button Create Laporan visibility
+            const btnAdd = document.getElementById('btn-tambah-laporan');
+            if (btnAdd) btnAdd.classList.toggle('hidden', !(isAdm || isAcc));
+
+            // Hub Select in Laporan (Admin only)
+            const hubSelect = document.getElementById('lap-filter-hub');
+            if (hubSelect) hubSelect.classList.toggle('hidden', !isAdm);
+
+            // Hub Select in Absensi
+            window.renderAbsensiHubSelect();
+
+            // Manager Summary Visibility
+            const sumSec = document.getElementById('manager-summary-section');
+            if (sumSec) sumSec.classList.toggle('hidden', !isAdm);
+
+            // Navbar visibility
+            document.getElementById('app-navbar').classList.remove('hidden');
+            document.getElementById('app-navbar').classList.add('md:flex');
+            document.getElementById('mobile-topbar').classList.remove('hidden');
+            document.getElementById('mobile-bottom-nav').classList.remove('hidden');
+            document.getElementById('mobile-bottom-nav').classList.add('flex');
+
+            // Load Initial Data
+            window.navigate('dashboard');
+        }
+
+        // Login Submit Handlers
+        document.getElementById('form-login-user').onsubmit = (e) => {
+            e.preventDefault();
+            const id = document.getElementById('login-id').value.trim();
+            const isPic = document.getElementById('is-pic-checkbox').checked;
+            const pass = document.getElementById('login-pass-user').value;
+
+            if(!id) return window.notify('Masukkan ID', 'error');
+
+            const user = appData.users.find(u => u.id === id);
+            
+            if (!user) return window.notify('User tidak ditemukan', 'error');
+            if (user.is_resign) return window.notify('User Non-Aktif (Resign)', 'error');
+
+            if (isPic) {
+                // Login as Leader/PIC
+                if (user.posisi !== 'LEADER' && user.posisi !== 'Admin') return window.notify('Bukan akun Leader', 'error');
+                if (user.sandi !== pass) return window.notify('Password Salah', 'error');
+                currentUser = { ...user, role: 'pic' };
+            } else {
+                // Login as User
+                currentUser = { ...user, role: 'user' };
+            }
+            proceedLogin();
+        };
+
+        document.getElementById('form-login-admin').onsubmit = (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('login-pass-admin').value;
+            if (pass === appData.adminPass) {
+                currentUser = { nama: 'Administrator', role: 'admin', kode_hub: 'HO' };
+                proceedLogin();
+            } else {
+                window.notify('Password Admin Salah', 'error');
+            }
+        };
+
+        // ==========================================================
+        // END LOGIN FUNCTIONS
+        // ==========================================================
 
         // ==========================================================
         // MISSING FUNCTIONS DEFINITIONS (Fixed)

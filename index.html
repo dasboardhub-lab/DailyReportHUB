@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v3.2</title>
+    <title>DailyReport v3.3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -373,28 +373,37 @@
                             <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
                         </div>
                         
-                        <div class="flex flex-col sm:flex-row gap-3 w-full bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 overflow-hidden">
+                        <div class="flex flex-col sm:flex-row items-end gap-3 w-full bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 overflow-hidden">
                             <!-- SPACER: Mendorong elemen berikutnya ke kanan -->
                             <div class="hidden sm:block flex-1"></div>
 
                             <!-- Date Range Group -->
-                            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition hover:border-primary/30 group shrink-0 w-fit">
-                                <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
-                                <input type="date" id="dash-start-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadDashboardData()">
-                                <span class="text-slate-300 text-[10px] font-bold mx-0.5">SD</span>
-                                <input type="date" id="dash-end-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadDashboardData()">
+                            <div class="flex flex-col gap-1 shrink-0">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Rentang Waktu</span>
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition hover:border-primary/30 group w-fit h-[38px]">
+                                    <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
+                                    <input type="date" id="dash-start-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadDashboardData()">
+                                    <span class="text-slate-300 text-[10px] font-bold mx-0.5">SD</span>
+                                    <input type="date" id="dash-end-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadDashboardData()">
+                                </div>
                             </div>
 
-                            <!-- Hub Filter Buttons Container -->
-                            <!-- REMOVED flex-1, ADDED shrink max-w -->
-                            <div id="hub-filter-container" class="flex items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear shrink max-w-[600px]">
-                                <!-- Buttons injected by JS -->
-                            </div>
+                            <!-- Separator -->
+                            <div class="hidden sm:block w-px h-8 bg-slate-200 mx-1 self-end mb-1"></div>
 
-                            <!-- Reset Button -->
-                            <button onclick="window.resetDashboardFilters()" class="bg-white text-slate-400 hover:text-primary border border-slate-200 hover:border-primary/30 p-2 rounded-xl shadow-sm transition h-full w-10 flex items-center justify-center shrink-0" title="Reset Filter">
-                                <i class="fas fa-undo-alt text-xs"></i>
-                            </button>
+                            <!-- Hub Filter Group -->
+                            <div class="flex flex-col gap-1 overflow-hidden shrink max-w-[600px]">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
+                                <div class="flex items-center gap-2 h-[38px]">
+                                    <div id="hub-filter-container" class="flex items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear h-full">
+                                        <!-- Buttons injected by JS -->
+                                    </div>
+                                    <!-- Reset Button -->
+                                    <button onclick="window.resetDashboardFilters()" class="bg-white text-slate-400 hover:text-primary border border-slate-200 hover:border-primary/30 p-2 rounded-xl shadow-sm transition h-full w-9 flex items-center justify-center shrink-0" title="Reset Filter">
+                                        <i class="fas fa-undo-alt text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -554,24 +563,33 @@
                             <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row gap-3 w-full bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 overflow-hidden">
+                        <div class="flex flex-col sm:flex-row items-end gap-3 w-full bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 overflow-hidden">
                             <!-- SPACER: Mendorong elemen berikutnya ke kanan -->
                             <div class="hidden sm:block flex-1"></div>
 
                             <!-- Date Filter -->
-                            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition hover:border-primary/30 group shrink-0 w-fit">
-                                <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
-                                <input type="date" id="lap-start-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.renderLaporanList()">
-                                <span class="text-slate-300 font-bold mx-0.5 text-[10px]">SD</span>
-                                <input type="date" id="lap-end-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.renderLaporanList()">
+                            <div class="flex flex-col gap-1 shrink-0">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Rentang Waktu</span>
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition hover:border-primary/30 group w-fit h-[38px]">
+                                    <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
+                                    <input type="date" id="lap-start-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.renderLaporanList()">
+                                    <span class="text-slate-300 font-bold mx-0.5 text-[10px]">SD</span>
+                                    <input type="date" id="lap-end-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.renderLaporanList()">
+                                </div>
                             </div>
 
-                            <!-- Hub Filter (UPDATED: BUTTON STYLE) -->
-                            <div id="lap-hub-filter-container" class="hidden items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear shrink max-w-[400px]">
-                                <!-- Buttons injected by JS -->
+                            <!-- Separator -->
+                            <div class="hidden sm:block w-px h-8 bg-slate-200 mx-1 self-end mb-1"></div>
+
+                            <!-- Hub Filter -->
+                            <div class="flex flex-col gap-1 overflow-hidden shrink max-w-[400px]">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
+                                <div id="lap-hub-filter-container" class="hidden items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear h-[38px]">
+                                    <!-- Buttons injected by JS -->
+                                </div>
                             </div>
 
-                            <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-5 py-2 rounded-xl font-bold text-xs transition hidden flex items-center justify-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30 shrink-0 h-full" id="btn-tambah-laporan">
+                            <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-5 py-2 rounded-xl font-bold text-xs transition hidden flex items-center justify-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30 shrink-0 h-[38px]" id="btn-tambah-laporan">
                                 <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT BARU</span>
                             </button>
                         </div>
@@ -609,27 +627,37 @@
                             <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Absensi</h2>
                             <p class="text-xs text-slate-500 font-medium mt-1">Monitoring kehadiran tim</p>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-3 w-full bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 overflow-hidden">
+                        <div class="flex flex-col sm:flex-row items-end gap-3 w-full bg-slate-50/50 p-2 rounded-2xl border border-slate-100/50 overflow-hidden">
                              <!-- SPACER -->
                              <div class="hidden sm:block flex-1"></div>
 
                              <!-- Date Range -->
-                             <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition hover:border-primary/30 group shrink-0 w-fit">
-                                <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
-                                <input type="date" id="abs-start-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadAbsensiData()">
-                                <span class="text-slate-300 font-bold mx-0.5 text-[10px]">SD</span>
-                                <input type="date" id="abs-end-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadAbsensiData()">
+                             <div class="flex flex-col gap-1 shrink-0">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Rentang Waktu</span>
+                                <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition hover:border-primary/30 group w-fit h-[38px]">
+                                    <i class="far fa-calendar text-slate-400 group-hover:text-primary transition-colors text-xs"></i>
+                                    <input type="date" id="abs-start-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadAbsensiData()">
+                                    <span class="text-slate-300 font-bold mx-0.5 text-[10px]">SD</span>
+                                    <input type="date" id="abs-end-date" class="filter-input-date w-[85px] text-center cursor-pointer" onchange="window.loadAbsensiData()">
+                                </div>
                             </div>
                             
-                            <!-- Hub Selector (UPDATED: BUTTON STYLE) -->
-                            <div id="abs-hub-filter-container" class="flex items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear shrink max-w-[400px]">
-                                 <!-- Buttons injected by JS -->
+                            <!-- Separator -->
+                            <div class="hidden sm:block w-px h-8 bg-slate-200 mx-1 self-end mb-1"></div>
+
+                            <!-- Hub Selector -->
+                            <div class="flex flex-col gap-1 overflow-hidden shrink max-w-[400px]">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
+                                <div class="flex items-center gap-2 h-[38px]">
+                                    <div id="abs-hub-filter-container" class="flex items-center gap-2 overflow-x-auto px-1 scrollbar-hide mask-linear h-full">
+                                         <!-- Buttons injected by JS -->
+                                    </div>
+                                    <!-- Refresh -->
+                                    <button onclick="window.initAbsensiFilters()" class="bg-white text-slate-400 hover:text-primary border border-slate-200 hover:border-primary/30 p-2 rounded-xl shadow-sm transition h-full w-9 flex items-center justify-center shrink-0">
+                                        <i class="fas fa-sync-alt text-[10px]"></i>
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <!-- Refresh -->
-                            <button onclick="window.initAbsensiFilters()" class="bg-white text-slate-400 hover:text-primary border border-slate-200 hover:border-primary/30 p-2 rounded-xl shadow-sm transition h-full w-10 flex items-center justify-center shrink-0">
-                                <i class="fas fa-sync-alt text-xs"></i>
-                            </button>
                          </div>
                     </div>
                 </div>
@@ -2505,7 +2533,6 @@
             if (sumSec) sumSec.classList.toggle('hidden', !isAdm);
 
             // Navbar visibility
-            //document.getElementById('app-navbar').classList.remove('hidden');
             document.getElementById('app-navbar').classList.add('md:flex');
             document.getElementById('mobile-topbar').classList.remove('hidden');
             document.getElementById('mobile-bottom-nav').classList.remove('hidden');

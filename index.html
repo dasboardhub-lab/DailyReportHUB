@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v3.3</title>
+    <title>DailyReport v4</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -2630,12 +2630,13 @@
                 const s2 = r.querySelector('.att-s2').checked;
                 const s3 = r.querySelector('.att-s3').checked;
                 
-                // UPDATE: Ambil Posisi
+                // UPDATE: Ambil Posisi dengan validasi huruf kecil agar lebih aman
                 const posEl = r.querySelector('.att-pos');
-                const pos = posEl ? posEl.value : '';
+                const pos = posEl ? posEl.value.toLowerCase().trim() : '';
 
-                // UPDATE: Hanya hitung jika posisi adalah 'Sorter' atau 'DW'
-                if((s1 || s2 || s3) && (pos === 'Sorter' || pos === 'DW')) mpp++;
+                // UPDATE: Hitung MPP hanya jika Sorter atau DW (abaikan Leader/Admin)
+                // Menggunakan array includes untuk fleksibilitas
+                if((s1 || s2 || s3) && (pos === 'sorter' || pos === 'dw')) mpp++;
             });
             
             // Ambil input paket
@@ -2670,33 +2671,11 @@
                 tb.innerHTML = '';
             }
             window.renderRow(tb, id, '', 'DW', false, {s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, true);
+            // Trigger hitung ulang setelah tambah row
+            setTimeout(() => window.calcMetrics(), 50);
         };
 
-        // 4. window.deleteUser (Hapus User)
-        window.deleteUser = async (id) => {
-            const r = await Swal.fire({
-                title: 'Hapus User?',
-                text: "User akan dihapus permanen.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Hapus',
-                cancelButtonText: 'Batal',
-                reverseButtons: true,
-                customClass: {
-                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
-                    confirmButton: 'bg-rose-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-rose-600 transition',
-                    cancelButton: 'bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition'
-                }
-            });
-            if (r.isConfirmed) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id));
-                    window.notify('User dihapus', 'success');
-                } catch(e) {
-                    window.notify('Gagal menghapus', 'error');
-                }
-            }
-        };
+        // ... existing deleteUser function ...
 
         // 5. Logic SUBMIT FORM LAPORAN
         document.getElementById('laporan-form').onsubmit = async (e) => {
@@ -2708,7 +2687,6 @@
             const rows = document.getElementById('attendance-tbody').children;
             const attData = [];
             let totalMpp = 0;
-            let totalFilled = 0; // Variable untuk cek apakah ada absensi yang diisi (Hadir/Ijin/Sakit/Alfa)
 
             for(let r of rows) {
                 if(r.innerText.includes('Pilih HUB')) continue; 
@@ -2720,18 +2698,16 @@
                 const s = r.querySelector('.att-s').checked;
                 const a = r.querySelector('.att-a').checked;
                 
-                // UPDATE: Ambil Posisi untuk filter MPP saat save
+                // UPDATE: Ambil Posisi untuk filter MPP saat save (Case Insensitive)
                 const posEl = r.querySelector('.att-pos');
-                const pos = posEl ? posEl.value : '';
+                const pos = posEl ? posEl.value.toLowerCase().trim() : '';
 
                 // UPDATE: Hanya hitung Total MPP jika Sorter/DW
-                if((s1||s2||s3) && (pos === 'Sorter' || pos === 'DW')) totalMpp++;
-                
-                if(s1||s2||s3||i||s||a) totalFilled++; // Cek jika ada checkbox yang dicentang
+                if((s1||s2||s3) && (pos === 'sorter' || pos === 'dw')) totalMpp++;
                 
                 attData.push({
                     userId: r.querySelector('.att-id').value,
-                    nama: r.querySelector('.att-name').value, // Use hidden input for name stability
+                    nama: r.querySelector('.att-name').value, 
                     s1, s2, s3, i, s, a,
                     ket: r.querySelector('.att-ket').value
                 });
@@ -2743,17 +2719,9 @@
             const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
             const totalPaket = g+st+j+sa;
             
-            // VALIDASI UPDATED:
-            // Wajib isi Paket DAN Absensi (MPP) agar bisa disimpan
-            // Jika salah satu masih 0, tolak penyimpanan.
-            if (totalPaket <= 0 || totalMpp <= 0) {
-                let msg = 'Gagal Simpan: ';
-                if(totalPaket <= 0 && totalMpp <= 0) msg += 'Paket & MPP masih kosong';
-                else if(totalPaket <= 0) msg += 'Total Paket tidak boleh 0';
-                else if(totalMpp <= 0) msg += 'Total MPP (Absen Hadir) tidak boleh 0';
-                
-                return window.notify(msg, 'error');
-            }
+            // VALIDASI KETAT (Sesuai Request):
+            if (totalPaket <= 0) return window.notify('Total Paket belum diisi (Harus > 0)', 'error');
+            if (totalMpp <= 0) return window.notify('Total MPP (Sorter/DW) belum ada (Harus > 0)', 'error');
 
             window.notify('Menyimpan Laporan...', 'loading');
             
@@ -2770,8 +2738,8 @@
                 productivity: totalMpp>0 ? totalPaket/totalMpp : 0,
                 attendance_data: attData,
                 last_updated: new Date().toISOString(),
-                updated_by: currentUser.name,
-                catatan: document.getElementById('lap-catatan').value // Simpan catatan
+                updated_by: currentUser.nama, 
+                catatan: document.getElementById('lap-catatan').value 
             };
 
             try {

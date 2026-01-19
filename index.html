@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4</title>
+    <title>DailyReport v4.1</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -287,7 +287,7 @@
                         <p class="text-[10px] text-slate-400 font-medium ml-1">Team Dashboard</p>
                     </div>
                     <div class="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
-                        <p class="text-[9px] text-slate-500 font-mono">v4 Stable Build</p>
+                        <p class="text-[9px] text-slate-500 font-mono">v4.1 Stable Build</p>
                         <i class="fas fa-shield-alt text-slate-600 text-xs"></i>
                     </div>
                 </div>
@@ -392,22 +392,34 @@
                         <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
                     </div>
-                    <!-- UPDATE: Filter Container (Right Aligned & Responsive) -->
-                    <div class="flex flex-wrap items-center justify-end gap-2 w-full md:flex-1 md:w-auto">
-                        <div class="flex items-center gap-3 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 flex-1 md:flex-none hover:shadow-sm transition cursor-pointer group w-full md:w-auto">
-                            <i class="far fa-calendar text-slate-400 text-xs group-hover:text-primary transition-colors"></i>
-                            <input type="date" id="dash-start-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
-                            <span class="text-slate-300 font-light">to</span>
-                            <input type="date" id="dash-end-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
+                    <!-- UPDATE: Filter Container (Label + Separator) -->
+                    <div class="flex flex-wrap items-end justify-end gap-3 w-full md:flex-1 md:w-auto">
+                        <!-- Date Filter Group -->
+                        <div class="flex flex-col gap-1 w-full md:w-auto">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Rentang Waktu</span>
+                            <div class="flex items-center gap-2 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 hover:shadow-sm transition cursor-pointer group h-[42px] w-full md:w-auto">
+                                <i class="far fa-calendar text-slate-400 text-xs group-hover:text-primary transition-colors"></i>
+                                <input type="date" id="dash-start-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold cursor-pointer" onchange="window.loadDashboardData()">
+                                <span class="text-slate-300 font-light text-[10px]">SD</span>
+                                <input type="date" id="dash-end-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold cursor-pointer" onchange="window.loadDashboardData()">
+                            </div>
                         </div>
-                        <div class="relative flex-1 md:flex-none w-full md:w-48">
-                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200/60 text-slate-600 text-xs rounded-xl px-4 py-3 flex justify-between items-center hover:border-primary/50 hover:shadow-sm transition" onclick="window.toggleHubDropdown(event)">
+
+                        <!-- Separator -->
+                        <div class="hidden md:block w-px h-8 bg-slate-200 mb-1 mx-1"></div>
+
+                        <!-- Hub Filter Group -->
+                        <div class="flex flex-col gap-1 w-full md:w-48 relative">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
+                            <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200/60 text-slate-600 text-xs rounded-xl px-4 py-2.5 flex justify-between items-center hover:border-primary/50 hover:shadow-sm transition h-[42px]" onclick="window.toggleHubDropdown(event)">
                                 <span id="hub-filter-label" class="truncate font-bold">Semua HUB</span>
                                 <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
                             </button>
-                            <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto"></div>
+                            <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-1 p-2 z-50 max-h-60 overflow-y-auto top-full left-0"></div>
                         </div>
-                        <button onclick="window.resetDashboardFilters()" class="p-3 rounded-xl text-slate-400 border border-slate-200/60 bg-white hover:text-primary hover:border-primary/30 shadow-sm transition shrink-0" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
+
+                        <!-- Reset Button -->
+                        <button onclick="window.resetDashboardFilters()" class="p-2.5 rounded-xl text-slate-400 border border-slate-200/60 bg-white hover:text-primary hover:border-primary/30 shadow-sm transition shrink-0 h-[42px] w-[42px] flex items-center justify-center" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
                     </div>
                 </div>
 
@@ -667,21 +679,31 @@
                         <p class="text-xs text-slate-500 font-medium mt-1">Rekapitulasi data operasional & absensi</p>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3 justify-end w-full md:w-auto">
+                    <!-- UPDATE: Filter Container Laporan (Label + Separator) -->
+                    <div class="flex flex-wrap items-end gap-3 justify-end w-full md:w-auto">
                         <!-- Date Filter -->
-                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 hover:bg-white hover:shadow-sm transition">
-                            <i class="far fa-calendar text-slate-400 text-xs"></i>
-                            <input type="date" id="lap-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.renderLaporanList()">
-                            <span class="text-slate-300 font-light text-xs">to</span>
-                            <input type="date" id="lap-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.renderLaporanList()">
+                        <div class="flex flex-col gap-1 w-full md:w-auto">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Rentang Waktu</span>
+                            <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 hover:bg-white hover:shadow-sm transition h-[42px] w-full md:w-auto">
+                                <i class="far fa-calendar text-slate-400 text-xs"></i>
+                                <input type="date" id="lap-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24 cursor-pointer" onchange="window.renderLaporanList()">
+                                <span class="text-slate-300 font-light text-[10px]">SD</span>
+                                <input type="date" id="lap-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24 cursor-pointer" onchange="window.renderLaporanList()">
+                            </div>
                         </div>
 
-                        <!-- Hub Filter -->
-                        <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition hover:bg-white shadow-sm hidden">
-                            <option value="ALL">Semua HUB</option>
-                        </select>
+                        <!-- Separator -->
+                        <div class="hidden md:block w-px h-8 bg-slate-200 mb-1 mx-1"></div>
 
-                        <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-5 py-2.5 rounded-xl font-bold text-xs transition hidden flex items-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30" id="btn-tambah-laporan">
+                        <!-- Hub Filter (Wrapped for label) -->
+                        <div id="lap-filter-wrapper" class="flex flex-col gap-1 hidden w-full md:w-auto">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
+                            <select id="lap-filter-hub" onchange="window.renderLaporanList()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary outline-none cursor-pointer transition hover:bg-white shadow-sm h-[42px]">
+                                <option value="ALL">Semua HUB</option>
+                            </select>
+                        </div>
+
+                        <button onclick="window.openLaporanModal()" class="bg-primary hover:shadow-float text-white px-5 py-2.5 rounded-xl font-bold text-xs transition hidden flex items-center gap-2 active:scale-95 group shadow-lg shadow-blue-500/30 h-[42px]" id="btn-tambah-laporan">
                             <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition"><i class="fas fa-plus text-[9px]"></i></div> <span class="hidden sm:inline tracking-wide">BUAT BARU</span>
                         </button>
                     </div>
@@ -711,18 +733,31 @@
             <!-- VIEW: ABSENSI -->
              <div id="view-absensi" class="view-content hidden fade-in space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <div class="flex flex-wrap gap-4 items-center justify-between">
-                         <div class="flex items-center gap-3 flex-1 min-w-[280px]">
-                            <div class="flex items-center bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 gap-2 hover:bg-white hover:shadow-sm transition">
-                                <i class="far fa-calendar text-slate-400 text-xs"></i>
-                                <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
-                                <span class="text-slate-300 font-light">to</span>
-                                <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24" onchange="window.loadAbsensiData()">
+                    <!-- UPDATE: Filter Container Absensi (Label + Separator) -->
+                    <div class="flex flex-wrap gap-3 items-end justify-between">
+                         <div class="flex flex-wrap items-end gap-3 flex-1 min-w-[280px]">
+                            <!-- Date Filter -->
+                            <div class="flex flex-col gap-1 w-full md:w-auto">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Rentang Waktu</span>
+                                <div class="flex items-center bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 gap-2 hover:bg-white hover:shadow-sm transition h-[42px] w-full md:w-auto">
+                                    <i class="far fa-calendar text-slate-400 text-xs"></i>
+                                    <input type="date" id="abs-start-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24 cursor-pointer" onchange="window.loadAbsensiData()">
+                                    <span class="text-slate-300 font-light text-[10px]">SD</span>
+                                    <input type="date" id="abs-end-date" class="bg-transparent border-none p-0 text-xs text-slate-700 font-bold focus:ring-0 w-24 cursor-pointer" onchange="window.loadAbsensiData()">
+                                </div>
                             </div>
-                            <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
+
+                            <!-- Separator -->
+                            <div class="hidden md:block w-px h-8 bg-slate-200 mb-1 mx-1"></div>
+
+                            <!-- Hub Filter -->
+                            <div class="flex flex-col gap-1 w-full md:w-auto">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
+                                <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition h-[42px]" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
+                            </div>
                          </div>
                          <div class="flex gap-2">
-                             <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl"><i class="fas fa-sync-alt"></i></button>
+                             <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl h-[42px]"><i class="fas fa-sync-alt"></i></button>
                          </div>
                     </div>
                 </div>
@@ -1326,14 +1361,16 @@
                     document.getElementById('lap-start-date').valueAsDate = past;
                 }
                 const s = document.getElementById('lap-filter-hub');
+                const sWrapper = document.getElementById('lap-filter-wrapper');
+                
                 if(currentUser.role === 'admin') {
-                    s.classList.remove('hidden');
+                    sWrapper.classList.remove('hidden'); // Show Wrapper
                     const curr = s.value;
                     s.innerHTML = '<option value="ALL">Semua HUB</option>';
                     appData.costs.forEach(c => s.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
                     if(curr) s.value = curr;
                 } else {
-                    s.classList.add('hidden');
+                    sWrapper.classList.add('hidden'); // Hide Wrapper
                 }
                 window.renderLaporanList();
             }

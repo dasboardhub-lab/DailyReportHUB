@@ -161,8 +161,7 @@
         <div class="w-full px-6 md:px-12 mx-auto">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-3 flex-shrink-0">
-                    <!-- LOGO UPDATED: Menggunakan fa-boxes-stacked agar sesuai konteks Operasional -->
-                    <!-- Jika ingin menggunakan gambar sendiri, ganti div ini dengan: <img src="URL_GAMBAR_ANDA" class="w-10 h-10 rounded-xl shadow-lg"> -->
+                    <!-- LOGO UPDATED -->
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white transform hover:scale-105 transition-transform duration-300 border border-white/20">
                         <i class="fas fa-boxes-stacked text-lg"></i>
                     </div>
@@ -173,18 +172,19 @@
                 </div>
 
                 <div class="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-                    <div class="flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
-                        <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active">
-                            <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
+                    <!-- UPDATE: MENU BAR ICON ONLY -->
+                    <div class="flex items-center gap-2 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
+                        <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active px-4 py-3" title="Dashboard">
+                            <i class="fas fa-chart-pie text-xl"></i>
                         </a>
-                        <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link">
-                            <i class="fas fa-file-contract"></i> <span>Laporan</span>
+                        <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link px-4 py-3" title="Laporan">
+                            <i class="fas fa-file-contract text-xl"></i>
                         </a>
-                        <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link">
-                            <i class="fas fa-user-check"></i> <span>Absensi</span>
+                        <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link px-4 py-3" title="Absensi">
+                            <i class="fas fa-user-check text-xl"></i>
                         </a>
-                        <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden">
-                            <i class="fas fa-cog"></i> <span>Pengaturan</span>
+                        <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden px-4 py-3" title="Pengaturan">
+                            <i class="fas fa-cog text-xl"></i>
                         </a>
                     </div>
                 </div>
@@ -205,7 +205,6 @@
     <!-- Mobile Topbar -->
     <div id="mobile-topbar" class="md:hidden glass-nav px-6 py-4 flex justify-between items-center shadow-md z-40 hidden sticky top-0 bg-white/90 backdrop-blur-lg">
         <div class="flex items-center gap-3">
-            <!-- LOGO MOBILE UPDATED: Disamakan dengan Desktop -->
             <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 border border-white/20">
                 <i class="fas fa-boxes-stacked text-sm"></i>
             </div>
@@ -226,22 +225,20 @@
     </div>
 
     <!-- Mobile Bottom Nav -->
-    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-3 rounded-t-3xl safe-area-bottom">
-        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 flex flex-col items-center gap-1.5">
-            <i class="fas fa-chart-pie text-lg"></i>
-            <span class="text-[10px] font-bold tracking-wide">Dash</span>
+    <!-- UPDATE: MENU BAR ICON ONLY (MOBILE) -->
+    <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-4 rounded-t-3xl safe-area-bottom">
+        <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 flex flex-col items-center justify-center py-2">
+            <i class="fas fa-chart-pie text-2xl mb-1"></i>
+            <!-- <span class="text-[10px] font-bold tracking-wide">Dash</span> (Removed) -->
         </button>
-        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 flex flex-col items-center gap-1.5">
-            <i class="fas fa-file-contract text-lg"></i>
-            <span class="text-[10px] font-bold tracking-wide">Lapor</span>
+        <button onclick="window.navigate('laporan')" id="mob-nav-laporan" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2">
+            <i class="fas fa-file-contract text-2xl mb-1"></i>
         </button>
-        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 flex flex-col items-center gap-1.5">
-            <i class="fas fa-user-check text-lg"></i>
-            <span class="text-[10px] font-bold tracking-wide">Absen</span>
+        <button onclick="window.navigate('absensi')" id="mob-nav-absensi" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2">
+            <i class="fas fa-user-check text-2xl mb-1"></i>
         </button>
-        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 flex flex-col items-center gap-1.5 hidden">
-            <i class="fas fa-cog text-lg"></i>
-            <span class="text-[10px] font-bold tracking-wide">Atur</span>
+        <button onclick="window.navigate('pengaturan')" id="mob-nav-pengaturan" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 hidden">
+            <i class="fas fa-cog text-2xl mb-1"></i>
         </button>
     </div>
 
@@ -384,76 +381,171 @@
             
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
-                <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-30">
-                    <div>
+                <!-- UPDATE: Layout Header Dashboard -->
+                <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row items-start md:items-center gap-4 relative z-30">
+                    <div class="shrink-0">
                         <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">Ringkasan Kinerja & Analisis Operasional</p>
                     </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                        <div class="flex items-center gap-3 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 flex-1 md:flex-none hover:shadow-sm transition cursor-pointer group">
+                    <!-- UPDATE: Filter Container (Right Aligned & Responsive) -->
+                    <div class="flex flex-wrap items-center justify-end gap-2 w-full md:flex-1 md:w-auto">
+                        <div class="flex items-center gap-3 bg-white border border-slate-200/60 rounded-xl px-4 py-2.5 flex-1 md:flex-none hover:shadow-sm transition cursor-pointer group w-full md:w-auto">
                             <i class="far fa-calendar text-slate-400 text-xs group-hover:text-primary transition-colors"></i>
                             <input type="date" id="dash-start-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
                             <span class="text-slate-300 font-light">to</span>
                             <input type="date" id="dash-end-date" class="bg-transparent text-xs border-none p-0 w-24 focus:ring-0 text-slate-600 font-bold" onchange="window.loadDashboardData()">
                         </div>
-                        <div class="relative flex-1 md:flex-none md:w-48">
+                        <div class="relative flex-1 md:flex-none w-full md:w-48">
                             <button id="hub-filter-btn" type="button" class="w-full bg-white border border-slate-200/60 text-slate-600 text-xs rounded-xl px-4 py-3 flex justify-between items-center hover:border-primary/50 hover:shadow-sm transition" onclick="window.toggleHubDropdown(event)">
                                 <span id="hub-filter-label" class="truncate font-bold">Semua HUB</span>
                                 <i class="fas fa-chevron-down text-[10px] text-slate-400"></i>
                             </button>
                             <div id="hub-filter-dropdown" class="dropdown-content absolute hidden w-full bg-white border border-slate-100 rounded-xl shadow-xl mt-2 p-2 z-50 max-h-60 overflow-y-auto"></div>
                         </div>
-                        <button onclick="window.resetDashboardFilters()" class="p-3 rounded-xl text-slate-400 border border-slate-200/60 bg-white hover:text-primary hover:border-primary/30 shadow-sm transition" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
+                        <button onclick="window.resetDashboardFilters()" class="p-3 rounded-xl text-slate-400 border border-slate-200/60 bg-white hover:text-primary hover:border-primary/30 shadow-sm transition shrink-0" title="Reset Filter"><i class="fas fa-undo-alt"></i></button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
-                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 rounded-bl-3xl -mr-2 -mt-2"></div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Total MPP</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mt-1 relative z-10 tracking-tight truncate" id="kpi-total-mpp">0</h3>
-                        <div id="diff-total-mpp" class="relative z-10"></div>
+                    
+                    <!-- KPI 1: Total MPP -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-float">
+                        <!-- Icon Besar (Background) -->
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-users text-7xl text-blue-600"></i>
+                        </div>
+                        <!-- Content -->
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-users text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total MPP</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-total-mpp">0</h3>
+                            <div id="diff-total-mpp" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Staging</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-staging">0</h3>
-                        <div id="diff-staging" class="relative z-10"></div>
+
+                    <!-- KPI 2: Staging -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-dolly text-7xl text-indigo-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-dolly text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Staging</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-staging">0</h3>
+                            <div id="diff-staging" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Gateway</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-gateway">0</h3>
-                        <div id="diff-gateway" class="relative z-10"></div>
+
+                    <!-- KPI 3: Gateway -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-plane-departure text-7xl text-violet-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center text-violet-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-plane-departure text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Gateway</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-gateway">0</h3>
+                            <div id="diff-gateway" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
-                         <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">JNE</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-jne">0</h3>
-                        <div id="diff-jne" class="relative z-10"></div>
+
+                    <!-- KPI 4: JNE -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-truck text-7xl text-slate-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-truck text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">JNE</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-jne">0</h3>
+                            <div id="diff-jne" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden">
-                         <div class="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-3xl -mr-2 -mt-2"></div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest relative z-10">SAP</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-700 mt-1 relative z-10 tracking-tight truncate" id="kpi-sap">0</h3>
-                        <div id="diff-sap" class="relative z-10"></div>
+
+                    <!-- KPI 5: SAP -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-shipping-fast text-7xl text-orange-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-shipping-fast text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">SAP</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-sap">0</h3>
+                            <div id="diff-sap" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card kpi-card group relative overflow-hidden border-b-4 border-primary">
-                        <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 rounded-bl-3xl -mr-2 -mt-2"></div>
-                        <p class="text-[9px] font-bold text-primary uppercase tracking-widest relative z-10">Total Paket</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mt-1 tracking-tight truncate relative z-10" id="kpi-total-paket">0</h3>
-                        <div id="diff-total-paket" class="mt-1 relative z-10"></div>
+
+                    <!-- KPI 6: Total Paket (Highlighted) -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border-b-4 border-blue-600 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-cubes text-7xl text-blue-600"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-cubes text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Paket</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-total-paket">0</h3>
+                            <div id="diff-total-paket" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-success kpi-card group">
-                        <p class="text-[9px] font-bold text-success uppercase tracking-widest">Prod.</p>
-                        <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 mt-1 tracking-tight truncate" id="kpi-avg-prod">0</h3>
-                        <div id="diff-avg-prod"></div>
+
+                    <!-- KPI 7: Productivity -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border-b-4 border-emerald-500 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-bolt text-7xl text-emerald-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-bolt text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Prod.</p>
+                            </div>
+                            <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight truncate" id="kpi-avg-prod">0</h3>
+                            <div id="diff-avg-prod" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-card border-b-4 border-danger kpi-card group">
-                        <p class="text-[9px] font-bold text-danger uppercase tracking-widest">Cost</p>
-                        <h3 class="text-lg md:text-xl font-extrabold text-slate-800 mt-2 truncate tracking-tight" id="kpi-total-cost">Rp 0</h3>
-                        <div id="diff-total-cost"></div>
+
+                    <!-- KPI 8: Cost -->
+                    <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border-b-4 border-rose-500 transition-all duration-300 hover:shadow-float">
+                        <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none">
+                            <i class="fas fa-coins text-7xl text-rose-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-coins text-[11px]"></i>
+                                </div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Cost</p>
+                            </div>
+                            <h3 class="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight truncate mt-1" id="kpi-total-cost">Rp 0</h3>
+                            <div id="diff-total-cost" class="h-6 mt-1 flex items-center"></div>
+                        </div>
                     </div>
+
                 </div>
 
                 <div class="space-y-6">
@@ -2009,10 +2101,9 @@
             let totalActive = 0;
             let totalResign = 0;
 
-            // Sort by HUB then Name
+            // UPDATED: Sort by ID (NIK) instead of HUB/Name
             appData.users.sort((a,b) => {
-                if(a.kode_hub !== b.kode_hub) return a.kode_hub.localeCompare(b.kode_hub);
-                return a.nama.localeCompare(b.nama);
+                return a.id.localeCompare(b.id, 'id', { numeric: true });
             });
 
             appData.users.forEach(u => {

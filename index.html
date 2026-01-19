@@ -93,6 +93,7 @@
         .island-error .island-icon-bg { background: #ef476f; }
         .island-success .island-icon-bg { background: #06d6a0; }
 
+        /* NAV LINK UPDATED: Responsive Text */
         .nav-link { 
             position: relative; color: #64748b; transition: all 0.3s ease;
             cursor: pointer; padding: 0.75rem 1.25rem; border-radius: 1rem; font-weight: 600; font-size: 0.9rem;
@@ -172,19 +173,23 @@
                 </div>
 
                 <div class="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-                    <!-- UPDATE: MENU BAR ICON ONLY -->
+                    <!-- UPDATE: MENU BAR (Icon + Text on Desktop, Icon Only on Tablet) -->
                     <div class="flex items-center gap-2 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
                         <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active px-4 py-3" title="Dashboard">
                             <i class="fas fa-chart-pie text-xl"></i>
+                            <span class="hidden lg:block">Dashboard</span>
                         </a>
                         <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link px-4 py-3" title="Laporan">
                             <i class="fas fa-file-contract text-xl"></i>
+                            <span class="hidden lg:block">Laporan</span>
                         </a>
                         <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link px-4 py-3" title="Absensi">
                             <i class="fas fa-user-check text-xl"></i>
+                            <span class="hidden lg:block">Absensi</span>
                         </a>
                         <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden px-4 py-3" title="Pengaturan">
                             <i class="fas fa-cog text-xl"></i>
+                            <span class="hidden lg:block">Pengaturan</span>
                         </a>
                     </div>
                 </div>
@@ -1044,14 +1049,15 @@
         const storageId = 'hub-data-v1';
         let app, auth, db;
         
+        // UPDATE: COMPACT THEME FOR ALL POPUPS
          const SwalTheme = Swal.mixin({
             customClass: {
-                popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
-                title: 'text-xl font-bold text-slate-800',
-                htmlContainer: 'text-sm text-slate-500',
-                confirmButton: 'bg-primary text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/30 hover:shadow-glow hover:bg-blue-600 transition transform active:scale-95 uppercase tracking-wide mx-2',
-                cancelButton: 'bg-slate-100 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide mx-2',
-                input: 'w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-bold shadow-sm'
+                popup: 'rounded-2xl border border-slate-100 shadow-2xl p-5 font-sans', // Reduced padding & radius
+                title: 'text-lg font-bold text-slate-800', // Smaller title
+                htmlContainer: 'text-xs text-slate-500 mt-1', // Smaller text
+                confirmButton: 'bg-primary text-white px-5 py-2 rounded-xl font-bold text-[11px] shadow-md hover:bg-blue-600 transition transform active:scale-95 uppercase tracking-wide mx-1', // Compact button
+                cancelButton: 'bg-slate-100 text-slate-500 px-5 py-2 rounded-xl font-bold text-[11px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide mx-1', // Compact button
+                input: 'w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-bold shadow-sm'
             },
             buttonsStyling: false
         });
@@ -1234,6 +1240,33 @@
         };
         
         window.doLogout = async () => {
+            // UPDATE: ANIMATED ICON LOGOUT POPUP
+            const result = await Swal.fire({
+                title: '',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-3 text-rose-500 shadow-sm border border-rose-100">
+                            <i class="fas fa-sign-out-alt text-2xl animate-bounce"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-slate-800">Keluar Aplikasi?</h3>
+                        <p class="text-xs text-slate-500 mt-2 text-center">Anda harus login kembali untuk masuk.</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Keluar',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                width: '18rem', // Compact width
+                customClass: {
+                    popup: 'rounded-2xl border border-slate-100 shadow-xl p-5 font-sans',
+                    confirmButton: 'bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                    cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                    actions: 'flex gap-2 w-full justify-center mt-4'
+                }
+            });
+
+            if (!result.isConfirmed) return;
+
             isLoggingOut = true;
             try {
                 document.getElementById('app-navbar').classList.add('hidden');
@@ -2462,36 +2495,33 @@
             if (currentUser.role === 'admin') {
                 processEdit();
             } else {
+            // UPDATE: ANIMATED ICON VERIFICATION POPUP
             const { value: code } = await Swal.fire({
                 title: '',
                 html: `
                     <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
-                            <i class="fas fa-lock-open text-xl"></i>
+                        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
+                            <i class="fas fa-lock-open text-xl animate-bounce"></i>
                         </div>
-                        <h3 class="text-base font-extrabold text-slate-800">
-                            Verifikasi Leader
-                        </h3>
-                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">
-                            Masukkan kode akses untuk membuka hak edit
-                        </p>
+                        <h3 class="text-sm font-extrabold text-slate-800">Verifikasi</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5 font-medium text-center">Masukkan kode akses</p>
                     </div>
                 `,
                 input: 'password',
                 inputPlaceholder: '••••••',
                 inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric' },
-                width: '22rem',
+                width: '18rem',
                 showCancelButton: true,
                 reverseButtons: true,
                 buttonsStyling: false,
-                confirmButtonText: 'Buka Akses',
+                confirmButtonText: 'Buka',
                 cancelButtonText: 'Batal',
                 customClass: {
-                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    input: `w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm mt-4`,
-                    confirmButton: `bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-[11px] shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[11px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    actions: 'flex gap-2 w-full justify-center mt-4'
+                    popup: 'rounded-2xl border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
+                    input: `w-32 mx-auto bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm mt-3`,
+                    confirmButton: `bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    cancelButton: `bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    actions: 'flex gap-2 w-full justify-center mt-3'
                 }
             });
 
@@ -2552,9 +2582,8 @@
                     title: '',
                     html: `
                         <div class="flex flex-col items-center">
-                            <div class="w-16 h-16 rounded-full border-4 border-orange-300
-                                        flex items-center justify-center text-orange-400 mb-4">
-                                <i class="fas fa-exclamation text-2xl"></i>
+                            <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4 text-orange-500 shadow-sm border border-orange-100">
+                                <i class="fas fa-exclamation text-3xl animate-pulse"></i>
                             </div>
                             <h3 class="text-lg font-extrabold text-slate-800">
                                 Hapus Laporan?
@@ -2564,17 +2593,17 @@
                             </p>
                         </div>
                     `,
-                    width: '22rem',
+                    width: '20rem', // Compact width
                     showCancelButton: true,
                     reverseButtons: true,
                     buttonsStyling: false,
                     confirmButtonText: 'YA, HAPUS',
-                    cancelButtonText: 'CANCEL',
+                    cancelButtonText: 'BATAL',
                     customClass: {
                         popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                        confirmButton: `bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
-                        cancelButton: `bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
-                        actions: 'flex gap-3 w-full justify-center mt-6'
+                        confirmButton: `bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold text-[10px] shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1 mx-1`,
+                        cancelButton: `bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1`,
+                        actions: 'flex gap-2 w-full justify-center mt-4'
                     }
                 });
 
@@ -2589,17 +2618,17 @@
                 title: '',
                 html: `
                     <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mb-3 text-danger shadow-sm border border-rose-100">
-                            <i class="fas fa-user-shield text-xl"></i>
+                        <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-3 text-indigo-500 shadow-sm border border-indigo-100">
+                            <i class="fas fa-user-shield text-xl animate-bounce"></i>
                         </div>
                         <h3 class="text-base font-extrabold text-slate-800">Verifikasi Leader</h3>
-                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">Masukkan kode akses untuk menghapus laporan</p>
+                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">Masukkan kode akses untuk menghapus</p>
                     </div>
                 `,
                 input: 'password',
                 inputPlaceholder: '••••••',
                 inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric', pattern: '[0-9A-Za-z]{6,10}' },
-                width: '22rem',
+                width: '18rem',
                 showCancelButton: true,
                 confirmButtonText: 'Verifikasi',
                 cancelButtonText: 'Batal',
@@ -2607,9 +2636,9 @@
                 buttonsStyling: false,
                 customClass: {
                     popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    input: `w-44 mx-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-danger outline-none transition shadow-sm mt-4`,
-                    confirmButton: `bg-danger text-white px-5 py-2.5 rounded-xl font-bold text-[11px] shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[11px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    input: `w-40 mx-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition shadow-sm mt-4`,
+                    confirmButton: `bg-indigo-600 text-white px-5 py-2 rounded-xl font-bold text-[10px] shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition active:scale-95 uppercase tracking-wide flex-1`,
+                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
                     actions: 'flex gap-2 w-full justify-center mt-4'
                 }
             });
@@ -2715,18 +2744,28 @@
 
         // 4. window.deleteUser (Hapus User)
         window.deleteUser = async (id) => {
+            // UPDATE: ANIMATED ICON DELETE USER POPUP
             const r = await Swal.fire({
-                title: 'Hapus User?',
-                text: "User akan dihapus permanen.",
-                icon: 'warning',
+                title: '',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-3 text-amber-500 shadow-sm border border-amber-100">
+                            <i class="fas fa-exclamation-triangle text-2xl animate-pulse"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-slate-800">Hapus User?</h3>
+                        <p class="text-xs text-slate-500 mt-2 text-center">Data akan dihapus permanen.</p>
+                    </div>
+                `,
+                width: '18rem',
                 showCancelButton: true,
                 confirmButtonText: 'Hapus',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
                 customClass: {
-                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
-                    confirmButton: 'bg-rose-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-rose-600 transition',
-                    cancelButton: 'bg-slate-100 text-slate-500 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition'
+                    popup: 'rounded-2xl border border-slate-100 shadow-xl p-5 font-sans',
+                    confirmButton: 'bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-rose-600 transition flex-1 mx-1',
+                    cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition flex-1 mx-1',
+                    actions: 'flex gap-2 w-full justify-center mt-3'
                 }
             });
             if (r.isConfirmed) {
@@ -2824,22 +2863,28 @@
                 // agar tidak stuck loading saat popup muncul
                 window.notify('Data Tersimpan', 'success'); 
                 
-                // POPUP SUCCESS DENGAN PILIHAN AKSI
+                // UPDATE: ANIMATED ICON SUCCESS POPUP
                 const r = await Swal.fire({
-                    title: 'Laporan Tersimpan!',
-                    text: 'Data berhasil diperbarui ke database.',
-                    icon: 'success',
+                    title: '',
+                    html: `
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-3 text-emerald-500 shadow-sm border border-emerald-100">
+                                <i class="fas fa-check-circle text-3xl animate-bounce"></i>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-slate-800">Berhasil!</h3>
+                            <p class="text-xs text-slate-500 mt-2 text-center">Laporan tersimpan di database.</p>
+                        </div>
+                    `,
+                    width: '18rem', // Compact
                     showCancelButton: true,
-                    confirmButtonText: '<i class="fab fa-whatsapp"></i> Salin Laporan',
+                    confirmButtonText: '<i class="fab fa-whatsapp mr-1"></i> Salin',
                     cancelButtonText: 'Tutup',
                     reverseButtons: true,
                     buttonsStyling: false,
                     customClass: {
-                        popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans',
-                        title: 'text-xl font-bold text-slate-800',
-                        htmlContainer: 'text-sm text-slate-500',
-                        confirmButton: 'bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-green-500/30 hover:bg-green-600 transition transform active:scale-95 uppercase tracking-wide flex-1 mx-1',
-                        cancelButton: 'bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        popup: 'rounded-2xl border border-slate-100 shadow-2xl p-5 font-sans',
+                        confirmButton: 'bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-green-600 transition transform active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
                         actions: 'flex gap-2 w-full justify-center mt-4'
                     }
                 });

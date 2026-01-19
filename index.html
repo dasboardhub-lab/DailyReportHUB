@@ -285,7 +285,7 @@
                         <p class="text-[10px] text-slate-400 font-medium ml-1">Team Dashboard</p>
                     </div>
                     <div class="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
-                        <p class="text-[9px] text-slate-500 font-mono">v3.4 </p>
+                        <p class="text-[9px] text-slate-500 font-mono">v4 Stable Build</p>
                         <i class="fas fa-shield-alt text-slate-600 text-xs"></i>
                     </div>
                 </div>
@@ -1405,46 +1405,26 @@
             const curr = calcStats(currData);
             const prev = calcStats(prevData);
 
-            // Determine Best Hub (Productivity) & Top Hub (Load)
-            let bestHubName = '-'; let bestHubProd = 0;
+            // Determine Top Hub (UI Only)
             let topLoadHubName = '-'; let topLoadHubVal = 0;
-
             Object.keys(curr.hubMap).forEach(h => {
-                const d = curr.hubMap[h];
-                // Prod
-                const p = d.mpp > 0 ? Math.round(d.pkt / d.mpp) : 0;
-                if (p > bestHubProd) { bestHubProd = p; bestHubName = h; }
-                // Load
-                if (d.pkt > topLoadHubVal) { topLoadHubVal = d.pkt; topLoadHubName = h; }
+                if (curr.hubMap[h].pkt > topLoadHubVal) { topLoadHubVal = curr.hubMap[h].pkt; topLoadHubName = h; }
             });
 
-            // Helper for formatted comparison string: "Val (↑ Diff | %)"
-            const getCompStr = (valNow, valPrev, isRp = false, isUnit = false) => {
-                const diff = valNow - valPrev;
-                const pct = valPrev === 0 ? (valNow === 0 ? 0 : 100) : Math.round((diff / valPrev) * 100);
-                const icon = diff > 0 ? '+' : (diff < 0 ? '-' : '');
-                const displayVal = isRp ? window.formatRupiah(valNow) : window.formatNumber(valNow);
-                const displayDiff = isRp ? window.formatRupiah(Math.abs(diff)) : window.formatNumber(Math.abs(diff));
-                
-                // Format: "1.000 (+ 100 | 10%)"
-                return `${displayVal}${isUnit?isUnit:''} (${icon}${displayDiff} | ${icon}${Math.abs(pct)}%)`;
-            };
-
-            // Collect Issues (Unique strings) with DATE
+            // PERBAIKAN: Definisikan kembali variabel issues
             const issues = [];
-            // Sort chronological for report text (Oldest -> Newest)
             const sortedLogs = [...currData].sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
             
             sortedLogs.forEach(r => {
                 if (r.catatan && r.catatan.trim().length > 0) {
                      const dObj = new Date(r.tanggal);
-                     const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; // Format DD/M
+                     const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
                      const issueStr = `[${dStr}] [${r.hub}] ${r.catatan}`;
                      if (!issues.includes(issueStr)) issues.push(issueStr);
                 }
             });
 
-            // --- 1. RENDER VISUAL CARDS IN SUMMARY SECTION (UI ONLY) ---
+            // --- 1. RENDER VISUAL CARDS (UI ONLY - Tetap Tampil Cantik di Layar) ---
             container.innerHTML = `
                 <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
                     <p class="text-[10px] uppercase font-bold text-blue-200 tracking-wider mb-1">Total Load</p>
@@ -1467,33 +1447,157 @@
                 </div>
             `;
             
-            // --- 2. GENERATE TEXT FOR CLIPBOARD ---
+            // --- 2. GENERATE TEXT FOR CLIPBOARD (ALL TABLES) ---
             const sDate = document.getElementById('dash-start-date').value;
             const eDate = document.getElementById('dash-end-date').value;
             const dateDisplay = (sDate === eDate) ? sDate : `${sDate} s/d ${eDate}`;
             
+            // Helper Formatter
+            const fmt = (n) => window.formatNumber(n);
+            const padEnd = (s, l) => s.toString().padEnd(l);
+            const padStart = (s, l) => s.toString().padStart(l);
+            
+            // 1. HEADER
             let txt = `*SUMMARY REPORT HUB KALSULAMP*\n`;
             txt += `Periode: ${dateDisplay}\n\n`;
             
-            txt += `*Global Performance:*\n`;
-            txt += `📦 Load: ${getCompStr(curr.pkt, prev.pkt, false, ' Pkt')}\n`;
-            txt += `👥 Manpower: ${getCompStr(curr.mpp, prev.mpp, false, ' Org')}\n`;
-            txt += `⚡ Avg Prod: ${getCompStr(curr.prod, prev.prod, false, ' Pkt/Org')}\n`;
-            txt += `💰 Total Cost: ${getCompStr(curr.cost, prev.cost, true)}\n\n`;
+            // ==========================================
+            // SECTION 1: GLOBAL PERFORMANCE & RINCIAN HUB
+            // ==========================================
+            txt += `*1. Global Performance:*\n`;
+            txt += "```\n";
+            txt += padEnd("METRIC", 10) + "|" + padStart("CURR", 9) + "|" + padStart("PREV", 9) + "|" + padStart("DIFF", 6) + "\n";
+            txt += "-".repeat(10) + "+" + "-".repeat(9) + "+" + "-".repeat(9) + "+" + "-".repeat(6) + "\n";
             
-            txt += `*Volume Breakdown:*\n`;
-            txt += `• Staging: ${getCompStr(curr.stg, prev.stg)}\n`;
-            txt += `• Gateway: ${getCompStr(curr.gtw, prev.gtw)}\n`;
-            txt += `• JNE & SAP: ${getCompStr(curr.lastMile, prev.lastMile)}\n\n`;
+            const addRow = (label, vCurr, vPrev, isRp=false) => {
+                const diff = vCurr - vPrev;
+                const pct = vPrev === 0 ? (vCurr === 0 ? 0 : 100) : Math.round((diff / vPrev) * 100);
+                const icon = diff > 0 ? '+' : ''; // Minus is auto
+                
+                let sCurr = isRp ? (vCurr/1000000).toFixed(1)+'M' : fmt(vCurr);
+                let sPrev = isRp ? (vPrev/1000000).toFixed(1)+'M' : fmt(vPrev);
+                let sPct = `${icon}${pct}%`;
+                
+                txt += padEnd(label, 10) + "|" + padStart(sCurr, 9) + "|" + padStart(sPrev, 9) + "|" + padStart(sPct, 6) + "\n";
+            };
+            
+            addRow("Load", curr.pkt, prev.pkt);
+            addRow("Manpower", curr.mpp, prev.mpp);
+            addRow("Avg Prod", curr.prod, prev.prod);
+            addRow("Cost", curr.cost, prev.cost, true);
+            txt += "```\n";
 
-            txt += `*Top HUB Load:* ${topLoadHubName} (${window.formatNumber(topLoadHubVal)} Pkt)\n`;
-            txt += `*Top Hub Performance:* ${bestHubName} (${window.formatNumber(bestHubProd)} Pkt/Org)\n\n`;
+            // RINCIAN PERFORMA PER HUB TABLE (Moved Here)
+            txt += `*Rincian Performa per HUB:*\n`;
+            txt += "```\n";
+            txt += padEnd("HUB", 6) + "|" + padStart("LOAD", 8) + "|" + padStart("MPP", 4) + "|" + padStart("PROD", 5) + "\n";
+            txt += "-".repeat(6) + "+" + "-".repeat(8) + "+" + "-".repeat(4) + "+" + "-".repeat(5) + "\n";
             
+            const hubKeys = Object.keys(curr.hubMap).sort((a,b) => curr.hubMap[b].pkt - curr.hubMap[a].pkt);
+            hubKeys.forEach(h => {
+                 const d = curr.hubMap[h];
+                 const p = d.mpp > 0 ? Math.round(d.pkt / d.mpp) : 0;
+                 txt += padEnd(h.substring(0,6), 6) + "|" + padStart(fmt(d.pkt), 8) + "|" + padStart(d.mpp.toString(), 4) + "|" + padStart(fmt(p), 5) + "\n";
+            });
+            txt += "```\n\n";
+
+            // ==========================================
+            // SECTION 2: ANALISIS TREN (GLOBAL & PER HUB)
+            // ==========================================
+            txt += `*2. Analisis Tren Load (Global):*\n`;
+            
+            const dailyLoad = {};
+            currData.forEach(r => { if(!dailyLoad[r.tanggal]) dailyLoad[r.tanggal]=0; dailyLoad[r.tanggal]+=r.total_paket; });
+            const dates = Object.keys(dailyLoad).sort();
+            const fmtD = (dStr) => { const _d = new Date(dStr); return `${_d.getDate()}/${_d.getMonth()+1}`; };
+
+            if(dates.length > 0) {
+                 let maxVal = -1, maxDate = ''; let minVal = Infinity, minDate = '';
+                 dates.forEach(d => { const val = dailyLoad[d]; if(val > maxVal) { maxVal=val; maxDate=d; } if(val < minVal) { minVal=val; minDate=d; } });
+                 
+                 const mid = Math.floor(dates.length / 2);
+                 const firstHalf = dates.slice(0, mid);
+                 const secondHalf = dates.slice(mid);
+                 const avg1 = firstHalf.length ? (firstHalf.reduce((a,b)=>a+dailyLoad[b],0)/firstHalf.length) : 0;
+                 const avg2 = secondHalf.length ? (secondHalf.reduce((a,b)=>a+dailyLoad[b],0)/secondHalf.length) : (dates.length ? dailyLoad[dates[0]] : 0);
+                 
+                 let trendStr = 'Stabil';
+                 const diffPct = avg1 > 0 ? ((avg2 - avg1)/avg1)*100 : 0;
+                 if(diffPct > 5) trendStr = 'Naik'; else if(diffPct < -5) trendStr = 'Turun';
+
+                 txt += "```\n";
+                 txt += padEnd("METRIC", 10) + "|" + padStart("VALUE", 24) + "\n";
+                 txt += "-".repeat(10) + "+" + "-".repeat(24) + "\n";
+                 txt += padEnd("Tren", 10) + "|" + padStart(trendStr, 24) + "\n";
+                 txt += padEnd("Tertinggi", 10) + "|" + padStart(`${fmtD(maxDate)} (${fmt(maxVal)})`, 24) + "\n";
+                 txt += padEnd("Terendah", 10) + "|" + padStart(`${fmtD(minDate)} (${fmt(minVal)})`, 24) + "\n";
+                 txt += "```\n";
+            } else {
+                txt += "Data tidak cukup untuk analisis tren.\n";
+            }
+
+            // ANALISIS TREN PER HUB TABLE
+            txt += `*Analisis Tren Per HUB:*\n`;
+            txt += "```\n";
+            // Expanded width for PEAK and LOW columns to fit "(value)"
+            txt += padEnd("HUB", 5) + "|" + padEnd("TREN", 6) + "|" + padStart("PEAK", 13) + "|" + padStart("LOW", 13) + "\n";
+            txt += "-".repeat(5) + "+" + "-".repeat(6) + "+" + "-".repeat(13) + "+" + "-".repeat(13) + "\n";
+            
+            hubKeys.forEach(hub => {
+                const hubDaily = {};
+                currData.filter(r => r.hub === hub).forEach(r => { if(!hubDaily[r.tanggal]) hubDaily[r.tanggal]=0; hubDaily[r.tanggal]+=r.total_paket; });
+                const hDates = Object.keys(hubDaily).sort();
+                
+                if(hDates.length > 0) {
+                     let hMax = -1, hMaxD = ''; let hMin = Infinity, hMinD = '';
+                     hDates.forEach(d => { const val = hubDaily[d]; if(val > hMax) { hMax=val; hMaxD=d; } if(val < hMin) { hMin=val; hMinD=d; } });
+
+                     const mid = Math.floor(hDates.length / 2);
+                     const fh = hDates.slice(0, mid); const sh = hDates.slice(mid);
+                     const hAvg1 = fh.length ? (fh.reduce((a,b)=>a+hubDaily[b],0)/fh.length) : 0;
+                     const hAvg2 = sh.length ? (sh.reduce((a,b)=>a+hubDaily[b],0)/sh.length) : (hDates.length ? hubDaily[hDates[0]] : 0);
+                     
+                     let hTrend = 'Stabl';
+                     const hDiff = hAvg1 > 0 ? ((hAvg2 - hAvg1)/hAvg1)*100 : 0;
+                     if(hDiff > 5) hTrend = 'Naik'; else if(hDiff < -5) hTrend = 'Turun';
+
+                     // FIX: Low Value now includes the number
+                     const sPeak = `${fmtD(hMaxD)}(${fmt(hMax)})`;
+                     const sLow = `${fmtD(hMinD)}(${fmt(hMin)})`; 
+
+                     txt += padEnd(hub.substring(0,5), 5) + "|" + padEnd(hTrend, 6) + "|" + padStart(sPeak, 13) + "|" + padStart(sLow, 13) + "\n";
+                }
+            });
+            txt += "```\n\n";
+
+            // ==========================================
+            // SECTION 3: VOLUME BREAKDOWN
+            // ==========================================
+            txt += `*3. Volume Breakdown:*\n`;
+            txt += "```\n";
+            txt += padEnd("TYPE", 9) + "|" + padStart("CURR", 8) + "|" + padStart("PREV", 8) + "|" + padStart("DIFF", 6) + "\n";
+            txt += "-".repeat(9) + "+" + "-".repeat(8) + "+" + "-".repeat(8) + "+" + "-".repeat(6) + "\n";
+            
+            const addVolRow = (label, vCurr, vPrev) => {
+                const diff = vCurr - vPrev;
+                const pct = vPrev === 0 ? (vCurr === 0 ? 0 : 100) : Math.round((diff / vPrev) * 100);
+                const icon = diff > 0 ? '+' : ''; 
+                let sPct = `${icon}${pct}%`;
+                txt += padEnd(label, 9) + "|" + padStart(fmt(vCurr), 8) + "|" + padStart(fmt(vPrev), 8) + "|" + padStart(sPct, 6) + "\n";
+            };
+            addVolRow("Staging", curr.stg, prev.stg);
+            addVolRow("Gateway", curr.gtw, prev.gtw);
+            addVolRow("LastMile", curr.lastMile, prev.lastMile);
+            txt += "```\n\n";
+
+            // ==========================================
+            // SECTION 4: LOG KENDALA
+            // ==========================================
             if (issues.length > 0) {
-                txt += `*Log Kendala / Isu:*\n`;
+                txt += `*4. Log Kendala / Isu:*\n`;
                 issues.forEach(i => txt += `- ${i}\n`);
             } else {
-                 txt += `*Log Kendala:* Nihil\n`;
+                 txt += `*4. Log Kendala:* Nihil\n`;
             }
             
             txt += `\n_Generated by DailyReport System_`;

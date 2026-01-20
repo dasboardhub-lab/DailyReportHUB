@@ -790,9 +790,9 @@
                                 <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
                                         <th class="px-4 py-4 text-left">HUB</th>
-                                        <th class="px-3 py-4 text-primary">H</th>
-                                        <th class="px-3 py-4 text-amber-500">I</th>
-                                        <th class="px-3 py-4 text-purple-500">S</th>
+                                        <th class="px-3 py-4 text-blue-600">H</th>
+                                        <th class="px-3 py-4 text-orange-500">I</th>
+                                        <th class="px-3 py-4 text-yellow-500">S</th>
                                         <th class="px-3 py-4 text-red-500">A</th>
                                     </tr>
                                 </thead>
@@ -811,9 +811,9 @@
                                 <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
                                         <th class="px-6 py-4">Nama Personil</th>
-                                        <th class="px-2 py-4 text-center text-primary" title="Hadir">H</th>
-                                        <th class="px-2 py-4 text-center text-amber-500" title="Ijin">I</th>
-                                        <th class="px-2 py-4 text-center text-purple-500" title="Sakit">S</th>
+                                        <th class="px-2 py-4 text-center text-blue-600" title="Hadir">H</th>
+                                        <th class="px-2 py-4 text-center text-orange-500" title="Ijin">I</th>
+                                        <th class="px-2 py-4 text-center text-yellow-500" title="Sakit">S</th>
                                         <th class="px-2 py-4 text-center text-red-500" title="Alfa">A</th>
                                         <th class="px-6 py-4 w-1/2">Keterangan</th>
                                     </tr>
@@ -1050,7 +1050,7 @@
                         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                             <table class="w-full text-xs text-center">
                                 <thead class="bg-slate-50 font-bold text-slate-500 uppercase border-b border-slate-200 tracking-wide">
-                                    <tr><th class="p-4 text-left w-1/3 pl-6">Nama Personil</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">1</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600">2</th><th class="p-3 w-10 bg-blue-50/50 text-blue-600 border-r border-slate-200">3</th><th class="p-3 w-10 text-amber-500">I</th><th class="p-3 w-10 text-purple-500">S</th><th class="p-3 w-10 text-red-600">A</th><th class="p-3 text-left">Ket</th><th class="p-3 w-8"></th></tr>
+                                    <tr><th class="p-4 text-left w-1/3 pl-6">Nama Personil</th><th class="p-3 w-10 bg-sky-50 text-sky-600">1</th><th class="p-3 w-10 bg-indigo-50 text-indigo-600">2</th><th class="p-3 w-10 bg-teal-50 text-teal-600 border-r border-slate-200">3</th><th class="p-3 w-10 text-orange-500">I</th><th class="p-3 w-10 text-yellow-500">S</th><th class="p-3 w-10 text-red-600">A</th><th class="p-3 text-left">Ket</th><th class="p-3 w-8"></th></tr>
                                 </thead>
                                 <tbody id="attendance-tbody" class="divide-y divide-slate-100"></tbody>
                             </table>
@@ -2708,6 +2708,8 @@
             }
 
             // UPDATE: Menambahkan hidden input 'att-pos' untuk menyimpan posisi (Sorter/DW/Leader)
+            // UPDATE LOGIC: onchange diganti ke window.handleCheck(this)
+            // UPDATE COLORS: Checkbox color sesuai tema baru (S1: Sky, S2: Indigo, S3: Teal, I: Orange/Krem, S: Yellow, A: Red)
             r.innerHTML = `
                 <td class="p-3 pl-6 text-left">
                     ${nameContent}
@@ -2716,55 +2718,99 @@
                     <input type="hidden" class="att-name" value="${name}">
                     <input type="hidden" class="att-pos" value="${isManual ? 'DW' : pos}">
                 </td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-s1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition cursor-pointer" ${d.s1?'checked':''} onchange="window.calcMetrics()"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-s2 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition cursor-pointer" ${d.s2?'checked':''} onchange="window.calcMetrics()"></td>
-                <td class="p-2 text-center border-r border-slate-100"><input type="checkbox" class="att-s3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition cursor-pointer" ${d.s3?'checked':''} onchange="window.calcMetrics()"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-i w-4 h-4 text-amber-500 rounded focus:ring-amber-500 border-gray-300 transition cursor-pointer" ${d.i?'checked':''} onchange="window.calcMetrics()"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-s w-4 h-4 text-purple-500 rounded focus:ring-purple-500 border-gray-300 transition cursor-pointer" ${d.s?'checked':''} onchange="window.calcMetrics()"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-a w-4 h-4 text-red-500 rounded focus:ring-red-500 border-gray-300 transition cursor-pointer" ${d.a?'checked':''} onchange="window.calcMetrics()"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-s1 w-4 h-4 text-sky-600 rounded focus:ring-sky-500 border-gray-300 transition cursor-pointer" ${d.s1?'checked':''} onchange="window.handleCheck(this)"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-s2 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 transition cursor-pointer" ${d.s2?'checked':''} onchange="window.handleCheck(this)"></td>
+                <td class="p-2 text-center border-r border-slate-100"><input type="checkbox" class="att-s3 w-4 h-4 text-teal-600 rounded focus:ring-teal-500 border-gray-300 transition cursor-pointer" ${d.s3?'checked':''} onchange="window.handleCheck(this)"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-i w-4 h-4 text-orange-500 rounded focus:ring-orange-500 border-gray-300 transition cursor-pointer" ${d.i?'checked':''} onchange="window.handleCheck(this)"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-s w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 border-gray-300 transition cursor-pointer" ${d.s?'checked':''} onchange="window.handleCheck(this)"></td>
+                <td class="p-2 text-center"><input type="checkbox" class="att-a w-4 h-4 text-red-500 rounded focus:ring-red-500 border-gray-300 transition cursor-pointer" ${d.a?'checked':''} onchange="window.handleCheck(this)"></td>
                 <td class="p-2"><input type="text" class="att-ket w-full bg-slate-50 border-none rounded-lg text-xs px-2 py-1.5 focus:ring-1 focus:ring-slate-300 placeholder-slate-300" placeholder="..." value="${d.ket||''}"></td>
                 <td class="p-2 text-center">${isManual ? `<button type="button" onclick="this.closest('tr').remove(); window.calcMetrics()" class="text-rose-400 hover:text-rose-600 transition"><i class="fas fa-times"></i></button>` : ''}</td>
             `;
             tb.appendChild(r);
         };
+                         html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
+                         
+                         dateRange.forEach(d => {
+                             const y = d.getFullYear();
+                             const m = String(d.getMonth() + 1).padStart(2, '0');
+                             const da = String(d.getDate()).padStart(2, '0');
+                             const dateKey = `${y}-${m}-${da}`;
+                             
+                             let status = '';
+                             if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
+                                 status = attMap[h][u.id][dateKey];
+                             }
+                             
+                             // UPDATE: Warna Tabel Absensi (View)
+                             // Kosong: bg-slate-50 (Abu tipis)
+                             // S1: Sky, S2: Indigo, S3: Teal, I: Krem/Orange, S: Kuning, A: Merah
+                             let cellClass = 'bg-slate-50/50'; 
+                             
+                             if(status==='1') cellClass='bg-sky-100 text-sky-700 font-bold border-l border-sky-200';
+                             else if(status==='2') cellClass='bg-indigo-100 text-indigo-700 font-bold border-l border-indigo-200';
+                             else if(status==='3') cellClass='bg-teal-100 text-teal-700 font-bold border-l border-teal-200';
+                             else if(status==='I') cellClass='bg-orange-50 text-orange-600 font-bold border-l border-orange-200'; // Krem
+                             else if(status==='S') cellClass='bg-yellow-100 text-yellow-600 font-bold border-l border-yellow-200'; // Kuning
+                             else if(status==='A') cellClass='bg-red-100 text-red-600 font-bold border-l border-red-200'; // Merah
 
-        // 2. window.calcMetrics (Menghitung Total MPP & Productivity Real-time)
-        window.calcMetrics = () => {
-            let mpp = 0;
-            // Hitung checkbox yang dicentang (Shift 1/2/3)
-            document.querySelectorAll('#attendance-tbody tr').forEach(r => {
-                const s1 = r.querySelector('.att-s1').checked;
-                const s2 = r.querySelector('.att-s2').checked;
-                const s3 = r.querySelector('.att-s3').checked;
-                
-                // UPDATE: Ambil Posisi
-                const posEl = r.querySelector('.att-pos');
-                const pos = posEl ? posEl.value : '';
-
-                // UPDATE: Hanya hitung jika posisi adalah 'Sorter' atau 'DW'
-                if((s1 || s2 || s3) && (pos === 'Sorter' || pos === 'DW')) mpp++;
+                             html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
+                         });
+                         html += `</tr>`;
+                    });
+                }
             });
             
-            // Ambil input paket
-            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
-            const s = window.parseFormattedNumber(document.getElementById('lap-staging').value);
-            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
-            const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
-            const total = g + s + j + sa;
+            html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-3 border-t text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
+            dateRange.forEach(d => {
+                 const y = d.getFullYear();
+                 const m = String(d.getMonth() + 1).padStart(2, '0');
+                 const da = String(d.getDate()).padStart(2, '0');
+                 const dateKey = `${y}-${m}-${da}`;
+                 const tot = colTotals[dateKey] || 0;
+                 html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold">${tot}</td>`;
+            });
+            html += `</tr>`;
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+            hubRecapBody.innerHTML = '';
+            Object.keys(hubStats).sort().forEach(h => {
+                const s = hubStats[h];
+                hubRecapBody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                        <td class="px-4 py-3 font-bold text-slate-700 text-left">${h}</td>
+                        <td class="px-3 py-3 font-bold text-blue-600">${s.h}</td>
+                        <td class="px-3 py-3 font-bold text-orange-500">${s.i}</td>
+                        <td class="px-3 py-3 font-bold text-yellow-500">${s.s}</td>
+                        <td class="px-3 py-3 font-bold text-red-500">${s.a}</td>
+                    </tr>
+                `;
+            });
+
+            summaryBody.innerHTML = '';
+            const sortedUserIds = Object.keys(userSummary).sort((a,b) => userSummary[a].name.localeCompare(userSummary[b].name));
             
-            // Update UI
-            document.getElementById('disp-total-paket').innerText = window.formatNumber(total);
-            document.getElementById('val-total-paket').value = total;
-            document.getElementById('disp-total-mpp').innerText = mpp;
-            
-            const prod = mpp > 0 ? Math.round(total / mpp) : 0;
-            const prodEl = document.getElementById('disp-productivity');
-            prodEl.innerText = window.formatNumber(prod);
-            // Dynamic Color Class for Productivity
-            if (prod < 600) {
-                prodEl.className = 'text-3xl font-extrabold mt-2 text-rose-500';
+            if (sortedUserIds.length === 0) {
+                 summaryBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`;
             } else {
-                prodEl.className = 'text-3xl font-extrabold mt-2 text-emerald-600';
+                sortedUserIds.forEach(uid => {
+                    const u = userSummary[uid];
+                    if (u.h === 0 && u.i === 0 && u.s === 0 && u.a === 0 && u.details.length === 0) return; 
+                    
+                    const detailsHtml = u.details.length > 0 ? u.details.join('') : '<span class="text-slate-300">-</span>';
+                    
+                    summaryBody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                            <td class="px-6 py-4 font-bold text-slate-700 text-[11px]">${u.name}</td>
+                            <td class="px-2 py-4 text-center font-bold text-blue-600">${u.h}</td>
+                            <td class="px-2 py-4 text-center font-bold text-orange-500">${u.i}</td>
+                            <td class="px-2 py-4 text-center font-bold text-yellow-500">${u.s}</td>
+                            <td class="px-2 py-4 text-center font-bold text-red-500">${u.a}</td>
+                            <td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td>
+                        </tr>
+                    `;
+                });
             }
         };
 

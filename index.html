@@ -1957,6 +1957,7 @@
             const userSummary = {};
             const hubStats = {};
 
+            // --- PROSES DATA LAPORAN ---
             reports.forEach(r => {
                 if(!attMap[r.hub]) attMap[r.hub] = {};
                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
@@ -2005,41 +2006,29 @@
                 }
             });
 
+            // --- PERSIAPAN STRUKTUR DATA GROUPING ---
+            // Kita akan mengelompokkan user berdasarkan HUB mereka
             let hubsToShow = (hubFilter === 'ALL') ? appData.costs.map(c=>c.hub) : [hubFilter];
-            let html = `<table class="w-full text-xs border-collapse">`;
-            
-            html += `<thead class="abs-header sticky top-0 bg-slate-50 z-20 shadow-sm"><tr>
-                        <th class="p-3 border-b bg-white text-left min-w-[180px] abs-name-col sticky left-0 z-30 font-bold text-slate-600">Nama / HUB</th>`;
-            dateRange.forEach(d => {
-                const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
-                html += `<th class="p-2 border-b bg-white abs-cell font-bold text-slate-500">${dStr}</th>`;
-            });
-            html += `</tr></thead><tbody>`;
+            const groupedUsers = {}; // { 'HUB_A': [User1, User2], 'HUB_B': ... }
 
             hubsToShow.forEach(h => {
-                // UPDATE: Filter hanya menampilkan User Aktif atau User Resign yang masih masuk periode filter
-                const visibleUsers = appData.users.filter(u => {
+                groupedUsers[h] = [];
+                
+                // 1. Ambil dari Master User
+                const hubUsers = appData.users.filter(u => {
                     if (u.kode_hub !== h) return false;
-                    
                     if (u.is_resign) {
-                        // Jika resign tapi tidak ada tanggalnya, sembunyikan (asumsi data lama)
                         if (!u.tanggal_resign) return false; 
-                        
-                        const rDate = new Date(u.tanggal_resign); 
-                        rDate.setHours(0,0,0,0);
-                        
-                        const fStart = new Date(sDate); 
-                        fStart.setHours(0,0,0,0);
-                        
-                        // HANYA TAMPILKAN jika tanggal resign >= tanggal awal filter
-                        // (Artinya: saat filter dimulai, dia belum resign, atau baru resign di tengah periode)
+                        const rDate = new Date(u.tanggal_resign); rDate.setHours(0,0,0,0);
+                        const fStart = new Date(sDate); fStart.setHours(0,0,0,0);
                         return rDate >= fStart; 
                     }
                     return true;
-                });
+                }).map(u => ({...u, source: 'master'}));
 
-                const registeredIds = new Set(visibleUsers.map(u => u.id));
+                const registeredIds = new Set(hubUsers.map(u => u.id));
 
+                // 2. Ambil dari History Laporan (misal DW manual atau user yg sudah dihapus/pindah)
                 reports.forEach(r => {
                     if(r.hub !== h) return;
                     if(r.attendance_data) {
@@ -2047,80 +2036,144 @@
                              if (!registeredIds.has(a.userId)) {
                                  let role = 'DW'; 
                                  if (!a.userId.startsWith('manual_')) role = 'History';
-                                 visibleUsers.push({ id: a.userId, nama: a.name || a.nama, posisi: role, kode_hub: h });
+                                 hubUsers.push({ id: a.userId, nama: a.name || a.nama, posisi: role, kode_hub: h, source: 'history' });
                                  registeredIds.add(a.userId);
                              }
                         });
                     }
                 });
 
-                visibleUsers.sort((a,b) => {
+                // Sort: Posisi (Leader first) -> Nama
+                hubUsers.sort((a,b) => {
                      const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
                      const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
-                     if(rA!==rB)return rA-rB; return a.id.localeCompare(b.id);
+                     if(rA!==rB) return rA-rB; 
+                     return a.nama.localeCompare(b.nama);
                 });
 
-                if (visibleUsers.length > 0) {
-                    html += `<tr class="bg-indigo-50"><td class="p-3 border-b font-extrabold text-indigo-700 abs-name-col sticky left-0 z-20 shadow-sm" colspan="1">${h}</td><td colspan="${dateRange.length}" class="bg-indigo-50 border-b"></td></tr>`;
-
-                    let currentRole = '';
-
-                    visibleUsers.forEach(u => {
-                         let roleType = (u.posisi==='LEADER'||u.posisi==='Admin') ? 'LEADER' : 'SORTER/DW';
-                         if(roleType !== currentRole) {
-                             currentRole = roleType;
-                             html += `<tr class="bg-slate-50/50"><td class="p-2 border-b text-[10px] font-bold text-slate-400 pl-6 abs-name-col sticky left-0 z-20" colspan="1">${currentRole}</td><td colspan="${dateRange.length}" class="border-b bg-slate-50/50"></td></tr>`;
-                         }
-
-                         html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
-                         
-                         dateRange.forEach(d => {
-                             const y = d.getFullYear();
-                             const m = String(d.getMonth() + 1).padStart(2, '0');
-                             const da = String(d.getDate()).padStart(2, '0');
-                             const dateKey = `${y}-${m}-${da}`;
-                             
-                             let status = '';
-                             if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
-                                 status = attMap[h][u.id][dateKey];
-                             }
-                             
-                             let cellClass = '';
-                             if(['1','2','3'].includes(status)) { cellClass='bg-blue-50 text-blue-600 font-bold'; }
-                             else if(status==='I') cellClass='bg-yellow-50 text-amber-500 font-bold';
-                             else if(status==='S') cellClass='bg-purple-50 text-purple-500 font-bold';
-                             else if(status==='A') cellClass='bg-red-50 text-red-500 font-bold';
-
-                             html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
-                         });
-                         html += `</tr>`;
-                    });
-                }
+                groupedUsers[h] = hubUsers;
             });
+
+            // --- RENDER TABEL ---
+            // UPDATE LAYOUT:
+            // Header Utama: [Nama (Sticky)] [Posisi (Sticky)] [Tanggal...]
+            // Body: Row HUB (Header Section) -> Row Users
             
-            html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-3 border-t text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
+            let html = `<table class="w-full text-xs border-separate border-spacing-0">`;
+            
+            // TABLE HEAD
+            html += `<thead class="abs-header sticky top-0 z-40 shadow-sm bg-slate-50"><tr>
+                        <th class="p-3 border-b border-r bg-slate-50 text-left w-[180px] min-w-[180px] max-w-[180px] sticky left-0 z-50 font-bold text-slate-600 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Nama Personil</th>
+                        <th class="p-3 border-b border-r bg-slate-50 text-center w-[80px] min-w-[80px] max-w-[80px] sticky left-[180px] z-50 font-bold text-slate-600 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)]">Posisi</th>`;
+            
+            dateRange.forEach(d => {
+                const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
+                html += `<th class="p-2 border-b bg-white font-bold text-slate-500 min-w-[40px] text-center">${dStr}</th>`;
+            });
+            html += `</tr></thead><tbody>`;
+
+            // TABLE BODY (LOOP PER HUB)
+            let hasData = false;
+            hubsToShow.forEach(h => {
+                const users = groupedUsers[h];
+                if (users.length === 0) return;
+                hasData = true;
+
+                // ROW HEADER HUB (Sticky left to ensure visibility, or just spanning)
+                // Agar "HUB" terlihat saat scroll horizontal, kita buat cell pertama sticky
+                // Tapi colspan sering bermasalah dengan sticky. Kita akali dengan sticky di cell pertama saja.
+                html += `
+                    <tr class="bg-slate-100/80 border-b border-slate-200">
+                        <td class="p-2.5 font-extrabold text-slate-700 sticky left-0 z-30 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-left pl-4" colspan="2">
+                            <span class="bg-slate-200/50 px-2 py-0.5 rounded border border-slate-300/50 mr-2"><i class="fas fa-building text-slate-500 text-[10px]"></i></span> ${h}
+                        </td>
+                        <td class="bg-slate-50" colspan="${dateRange.length}"></td>
+                    </tr>
+                `;
+
+                users.forEach(u => {
+                    // Style Posisi
+                    let posStyle = 'text-slate-400 font-medium';
+                    let posText = u.posisi;
+                    if(u.posisi === 'LEADER' || u.posisi === 'Admin') { posStyle = 'text-blue-600 font-bold bg-blue-50/50 rounded px-1'; posText = 'LEADER'; }
+                    else if(u.posisi === 'DW' || u.source === 'history') { posStyle = 'text-slate-400 italic'; }
+
+                    // UPDATE: Menambahkan class text-[10px] pada kolom Nama
+                    html += `<tr class="hover:bg-slate-50 transition group">
+                        <td class="p-2 border-b border-r bg-white font-medium text-slate-700 text-[10px] sticky left-0 z-30 truncate max-w-[180px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] pl-4" title="${u.nama}">${u.nama}</td>
+                        <td class="p-2 border-b border-r bg-white text-[9px] sticky left-[180px] z-30 text-center shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)]"><span class="${posStyle}">${posText}</span></td>`;
+                    
+                    dateRange.forEach(d => {
+                        const y = d.getFullYear();
+                        const m = String(d.getMonth() + 1).padStart(2, '0');
+                        const da = String(d.getDate()).padStart(2, '0');
+                        const dateKey = `${y}-${m}-${da}`;
+                        
+                        let status = '';
+                        if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
+                            status = attMap[h][u.id][dateKey];
+                        }
+                        
+                        // UPDATE: Warna Soft / Pastel
+                        // Shift 1: Emerald (Soft Green) - Pagi
+                        // Shift 2: Blue (Soft Blue) - Siang
+                        // Shift 3: Violet (Soft Purple) - Malam
+                        // I: Orange Soft, S: Yellow Soft, A: Red Soft
+                        
+                        let cellClass = 'bg-white'; // Default bersih
+                        let cellText = ''; 
+
+                        if(status) {
+                            cellText = status;
+                            // Tambahkan border-white agar terlihat seperti grid yang rapi
+                            if(status==='1') cellClass='bg-emerald-50 text-emerald-600 font-bold border border-white';
+                            else if(status==='2') cellClass='bg-blue-50 text-blue-600 font-bold border border-white';
+                            else if(status==='3') cellClass='bg-purple-50 text-purple-600 font-bold border border-white';
+                            else if(status==='I') cellClass='bg-orange-50 text-orange-500 font-bold border border-white'; 
+                            else if(status==='S') cellClass='bg-amber-50 text-amber-500 font-bold border border-white'; 
+                            else if(status==='A') cellClass='bg-rose-50 text-rose-500 font-bold border border-white'; 
+                        } else {
+                            // Sel kosong diberi sedikit warna abu sangat tipis agar beda dengan header
+                            cellClass = 'bg-slate-50/30';
+                        }
+
+                        html += `<td class="p-1 border-b text-center text-[10px] ${cellClass}">${cellText}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+            });
+
+            if (!hasData) {
+                html += `<tr><td colspan="${dateRange.length + 2}" class="p-8 text-center text-slate-400">Tidak ada data personil untuk filter ini.</td></tr>`;
+            }
+            
+            // --- TOTAL ROW ---
+            html += `<tr class="bg-slate-50 font-bold sticky bottom-0 z-50 shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.1)]">
+                        <td class="p-3 border-t text-right sticky left-0 z-50 bg-slate-100 text-slate-700 border-r" colspan="2">Total Hadir:</td>`;
             dateRange.forEach(d => {
                  const y = d.getFullYear();
                  const m = String(d.getMonth() + 1).padStart(2, '0');
                  const da = String(d.getDate()).padStart(2, '0');
                  const dateKey = `${y}-${m}-${da}`;
                  const tot = colTotals[dateKey] || 0;
-                 html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold">${tot}</td>`;
+                 // Total row styling
+                 html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold border-l border-slate-100">${tot > 0 ? tot : ''}</td>`;
             });
             html += `</tr>`;
             html += `</tbody></table>`;
             container.innerHTML = html;
 
+            // ... (Bagian bawah function tetap sama) ...
             hubRecapBody.innerHTML = '';
             Object.keys(hubStats).sort().forEach(h => {
                 const s = hubStats[h];
                 hubRecapBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-50">
                         <td class="px-4 py-3 font-bold text-slate-700 text-left">${h}</td>
-                        <td class="px-3 py-3 font-bold text-primary">${s.h}</td>
+                        <td class="px-3 py-3 font-bold text-emerald-600 bg-emerald-50/30 rounded">${s.h}</td>
                         <td class="px-3 py-3 font-bold text-amber-500">${s.i}</td>
                         <td class="px-3 py-3 font-bold text-purple-500">${s.s}</td>
-                        <td class="px-3 py-3 font-bold text-red-500">${s.a}</td>
+                        <td class="px-3 py-3 font-bold text-rose-500">${s.a}</td>
                     </tr>
                 `;
             });
@@ -2140,10 +2193,10 @@
                     summaryBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-50">
                             <td class="px-6 py-4 font-bold text-slate-700 text-[11px]">${u.name}</td>
-                            <td class="px-2 py-4 text-center font-bold text-primary">${u.h}</td>
+                            <td class="px-2 py-4 text-center font-bold text-emerald-600 bg-emerald-50/30 rounded">${u.h}</td>
                             <td class="px-2 py-4 text-center font-bold text-amber-500">${u.i}</td>
                             <td class="px-2 py-4 text-center font-bold text-purple-500">${u.s}</td>
-                            <td class="px-2 py-4 text-center font-bold text-red-500">${u.a}</td>
+                            <td class="px-2 py-4 text-center font-bold text-rose-500">${u.a}</td>
                             <td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td>
                         </tr>
                     `;
@@ -2729,89 +2782,64 @@
             `;
             tb.appendChild(r);
         };
-                         html += `<tr class="hover:bg-slate-50 transition"><td class="p-3 border-b font-medium text-slate-700 abs-name-col sticky left-0 bg-white z-20 text-[11px] truncate max-w-[180px] shadow-sm">${u.nama}</td>`;
-                         
-                         dateRange.forEach(d => {
-                             const y = d.getFullYear();
-                             const m = String(d.getMonth() + 1).padStart(2, '0');
-                             const da = String(d.getDate()).padStart(2, '0');
-                             const dateKey = `${y}-${m}-${da}`;
-                             
-                             let status = '';
-                             if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
-                                 status = attMap[h][u.id][dateKey];
-                             }
-                             
-                             // UPDATE: Warna Tabel Absensi (View)
-                             // Kosong: bg-slate-50 (Abu tipis)
-                             // S1: Sky, S2: Indigo, S3: Teal, I: Krem/Orange, S: Kuning, A: Merah
-                             let cellClass = 'bg-slate-50/50'; 
-                             
-                             if(status==='1') cellClass='bg-sky-100 text-sky-700 font-bold border-l border-sky-200';
-                             else if(status==='2') cellClass='bg-indigo-100 text-indigo-700 font-bold border-l border-indigo-200';
-                             else if(status==='3') cellClass='bg-teal-100 text-teal-700 font-bold border-l border-teal-200';
-                             else if(status==='I') cellClass='bg-orange-50 text-orange-600 font-bold border-l border-orange-200'; // Krem
-                             else if(status==='S') cellClass='bg-yellow-100 text-yellow-600 font-bold border-l border-yellow-200'; // Kuning
-                             else if(status==='A') cellClass='bg-red-100 text-red-600 font-bold border-l border-red-200'; // Merah
 
-                             html += `<td class="p-1 border-b abs-cell ${cellClass}">${status}</td>`;
-                         });
-                         html += `</tr>`;
-                    });
-                }
-            });
-            
-            html += `<tr class="bg-slate-100 font-bold sticky bottom-0 z-20 shadow-md"><td class="p-3 border-t text-right abs-name-col sticky left-0 bg-slate-100 z-30 text-slate-700 shadow-md">Total Hadir:</td>`;
-            dateRange.forEach(d => {
-                 const y = d.getFullYear();
-                 const m = String(d.getMonth() + 1).padStart(2, '0');
-                 const da = String(d.getDate()).padStart(2, '0');
-                 const dateKey = `${y}-${m}-${da}`;
-                 const tot = colTotals[dateKey] || 0;
-                 html += `<td class="p-2 border-t text-center text-primary bg-white font-extrabold">${tot}</td>`;
-            });
-            html += `</tr>`;
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-
-            hubRecapBody.innerHTML = '';
-            Object.keys(hubStats).sort().forEach(h => {
-                const s = hubStats[h];
-                hubRecapBody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                        <td class="px-4 py-3 font-bold text-slate-700 text-left">${h}</td>
-                        <td class="px-3 py-3 font-bold text-blue-600">${s.h}</td>
-                        <td class="px-3 py-3 font-bold text-orange-500">${s.i}</td>
-                        <td class="px-3 py-3 font-bold text-yellow-500">${s.s}</td>
-                        <td class="px-3 py-3 font-bold text-red-500">${s.a}</td>
-                    </tr>
-                `;
-            });
-
-            summaryBody.innerHTML = '';
-            const sortedUserIds = Object.keys(userSummary).sort((a,b) => userSummary[a].name.localeCompare(userSummary[b].name));
-            
-            if (sortedUserIds.length === 0) {
-                 summaryBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`;
-            } else {
-                sortedUserIds.forEach(uid => {
-                    const u = userSummary[uid];
-                    if (u.h === 0 && u.i === 0 && u.s === 0 && u.a === 0 && u.details.length === 0) return; 
-                    
-                    const detailsHtml = u.details.length > 0 ? u.details.join('') : '<span class="text-slate-300">-</span>';
-                    
-                    summaryBody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                            <td class="px-6 py-4 font-bold text-slate-700 text-[11px]">${u.name}</td>
-                            <td class="px-2 py-4 text-center font-bold text-blue-600">${u.h}</td>
-                            <td class="px-2 py-4 text-center font-bold text-orange-500">${u.i}</td>
-                            <td class="px-2 py-4 text-center font-bold text-yellow-500">${u.s}</td>
-                            <td class="px-2 py-4 text-center font-bold text-red-500">${u.a}</td>
-                            <td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td>
-                        </tr>
-                    `;
+        // 2. window.handleCheck (Logika 1 Nama 1 Ceklis)
+        window.handleCheck = (el) => {
+            if(el.checked) {
+                // Ambil baris (tr)
+                const row = el.closest('tr');
+                // Uncheck checkbox lain di baris yang sama
+                const checks = row.querySelectorAll('input[type="checkbox"]');
+                checks.forEach(c => {
+                    if(c !== el) c.checked = false;
                 });
             }
+            // Hitung ulang Metrix (MPP & Prod)
+            window.calcMetrics();
+        };
+
+        // 3. window.calcMetrics (Hitung Otomatis di Modal Laporan)
+        window.calcMetrics = () => {
+            // A. Hitung Total Paket
+            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
+            const st = window.parseFormattedNumber(document.getElementById('lap-staging').value);
+            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
+            const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            
+            const totalPaket = g + st + j + sa;
+            const dispPaket = document.getElementById('disp-total-paket');
+            if(dispPaket) dispPaket.innerText = window.formatNumber(totalPaket);
+
+            // B. Hitung Total MPP (Hanya Sorter & DW yang hadir Shift 1/2/3)
+            let totalMpp = 0;
+            const tb = document.getElementById('attendance-tbody');
+            if(tb) {
+                const rows = tb.children;
+                for(let r of rows) {
+                    if(r.innerText.includes('Pilih HUB')) continue;
+                    
+                    // Cek kehadiran (Hanya S1, S2, S3 yang dihitung MPP)
+                    const s1 = r.querySelector('.att-s1').checked;
+                    const s2 = r.querySelector('.att-s2').checked;
+                    const s3 = r.querySelector('.att-s3').checked;
+                    
+                    // Ambil Posisi (Hidden Input)
+                    const posEl = r.querySelector('.att-pos');
+                    const pos = posEl ? posEl.value : ''; // Sorter, DW, Leader, Admin
+
+                    // Logika: Hitung jika (Hadir) AND (Sorter atau DW)
+                    if ((s1 || s2 || s3) && (pos === 'Sorter' || pos === 'DW')) {
+                        totalMpp++;
+                    }
+                }
+            }
+            const dispMpp = document.getElementById('disp-total-mpp');
+            if(dispMpp) dispMpp.innerText = totalMpp;
+
+            // C. Hitung Productivity
+            const prod = totalMpp > 0 ? Math.round(totalPaket / totalMpp) : 0;
+            const dispProd = document.getElementById('disp-productivity');
+            if(dispProd) dispProd.innerText = window.formatNumber(prod);
         };
 
         // 3. window.addManualDWRow (Tambah baris manual)

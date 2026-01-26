@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4.1</title>
+    <title>DailyReport v4.2</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -94,13 +94,14 @@
         .island-error .island-icon-bg { background: #ef476f; }
         .island-success .island-icon-bg { background: #06d6a0; }
 
-        /* NAV LINK UPDATED: Responsive Text */
+        /* NAV LINK UPDATED: Vertical Layout (Icon Top, Text Bottom) */
         .nav-link { 
             position: relative; color: #64748b; transition: all 0.3s ease;
-            cursor: pointer; padding: 0.75rem 1.25rem; border-radius: 1rem; font-weight: 600; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 0.75rem;
+            cursor: pointer; padding: 0.5rem 0.75rem; border-radius: 0.8rem; font-weight: 600; font-size: 0.9rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem;
+            min-width: 72px; /* Lebar minimum agar rapi */
         }
-        .nav-link i { font-size: 1.1em; transition: transform 0.3s; }
+        .nav-link i { font-size: 1.2em; transition: transform 0.3s; margin-bottom: 1px; }
         .nav-link:hover { color: #4361ee; background: rgba(67, 97, 238, 0.05); }
         .nav-link:hover i { transform: scale(1.1); }
         .nav-link.active { 
@@ -174,23 +175,23 @@
                 </div>
 
                 <div class="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-                    <!-- UPDATE: MENU BAR (Icon + Text on Desktop, Icon Only on Tablet) -->
+                    <!-- UPDATE: MENU BAR (Icon + Text Vertical) -->
                     <div class="flex items-center gap-2 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 backdrop-blur-sm">
-                        <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active px-4 py-3" title="Dashboard">
-                            <i class="fas fa-chart-pie text-xl"></i>
-                            <span class="hidden lg:block">Dashboard</span>
+                        <a onclick="window.navigate('dashboard')" id="nav-dashboard" class="nav-link active" title="Dashboard">
+                            <i class="fas fa-chart-pie"></i>
+                            <span class="text-[10px] tracking-wide leading-none">Dash</span>
                         </a>
-                        <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link px-4 py-3" title="Laporan">
-                            <i class="fas fa-file-contract text-xl"></i>
-                            <span class="hidden lg:block">Laporan</span>
+                        <a onclick="window.navigate('laporan')" id="nav-laporan" class="nav-link" title="Laporan">
+                            <i class="fas fa-file-contract"></i>
+                            <span class="text-[10px] tracking-wide leading-none">Laporan</span>
                         </a>
-                        <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link px-4 py-3" title="Absensi">
-                            <i class="fas fa-user-check text-xl"></i>
-                            <span class="hidden lg:block">Absensi</span>
+                        <a onclick="window.navigate('absensi')" id="nav-absensi" class="nav-link" title="Absensi">
+                            <i class="fas fa-user-check"></i>
+                            <span class="text-[10px] tracking-wide leading-none">Absensi</span>
                         </a>
-                        <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden px-4 py-3" title="Pengaturan">
-                            <i class="fas fa-cog text-xl"></i>
-                            <span class="hidden lg:block">Pengaturan</span>
+                        <a onclick="window.navigate('pengaturan')" id="nav-pengaturan" class="nav-link hidden" title="Pengaturan">
+                            <i class="fas fa-cog"></i>
+                            <span class="text-[10px] tracking-wide leading-none">Setting</span>
                         </a>
                     </div>
                 </div>

@@ -1678,20 +1678,33 @@
                  let maxVal = -1, maxDate = ''; let minVal = Infinity, minDate = '';
                  dates.forEach(d => { const val = dailyLoad[d]; if(val > maxVal) { maxVal=val; maxDate=d; } if(val < minVal) { minVal=val; minDate=d; } });
                  
-                 const mid = Math.floor(dates.length / 2);
-                 const firstHalf = dates.slice(0, mid);
-                 const secondHalf = dates.slice(mid);
-                 const avg1 = firstHalf.length ? (firstHalf.reduce((a,b)=>a+dailyLoad[b],0)/firstHalf.length) : 0;
-                 const avg2 = secondHalf.length ? (secondHalf.reduce((a,b)=>a+dailyLoad[b],0)/secondHalf.length) : (dates.length ? dailyLoad[dates[0]] : 0);
+                 // REVISI LOGIKA TREN: Membandingkan Rata-rata Harian Periode Ini vs Periode Lalu
+                 const daysCountCurr = dates.length || 1;
+                 const avgCurr = curr.pkt / daysCountCurr;
+
+                 // Hitung Avg Periode Sebelumnya untuk komparasi
+                 const dailyLoadPrev = {};
+                 prevData.forEach(r => { if(!dailyLoadPrev[r.tanggal]) dailyLoadPrev[r.tanggal]=0; dailyLoadPrev[r.tanggal]+=r.total_paket; });
+                 const datesPrev = Object.keys(dailyLoadPrev);
+                 const daysCountPrev = datesPrev.length || 1;
+                 const avgPrev = prev.pkt / daysCountPrev;
                  
-                 let trendStr = 'Stabil';
-                 const diffPct = avg1 > 0 ? ((avg2 - avg1)/avg1)*100 : 0;
-                 if(diffPct > 5) trendStr = 'Naik'; else if(diffPct < -5) trendStr = 'Turun';
+                 let trendStr = 'Stabil'; 
+                 let trendIcon = '➖';
+                 
+                 // Ambang batas toleransi 5%
+                 if (avgPrev > 0) {
+                     const diffPct = ((avgCurr - avgPrev) / avgPrev) * 100;
+                     if (diffPct > 5) { trendStr = 'Naik'; trendIcon = '📈'; }
+                     else if (diffPct < -5) { trendStr = 'Turun'; trendIcon = '📉'; }
+                 } else if (avgCurr > 0) {
+                     trendStr = 'Naik'; trendIcon = '📈';
+                 }
 
                  txt += "```\n";
                  txt += padEnd("METRIC", 10) + "|" + padStart("VALUE", 24) + "\n";
                  txt += "-".repeat(10) + "+" + "-".repeat(24) + "\n";
-                 txt += padEnd("Tren", 10) + "|" + padStart(trendStr, 24) + "\n";
+                 txt += padEnd("Tren", 10) + "|" + padStart(`${trendStr} ${trendIcon}`, 24) + "\n";
                  txt += padEnd("Tertinggi", 10) + "|" + padStart(`${fmtD(maxDate)} (${fmt(maxVal)})`, 24) + "\n";
                  txt += padEnd("Terendah", 10) + "|" + padStart(`${fmtD(minDate)} (${fmt(minVal)})`, 24) + "\n";
                  txt += "```\n";
@@ -1708,23 +1721,34 @@
             
             hubKeys.forEach(hub => {
                 const hubDaily = {};
-                currData.filter(r => r.hub === hub).forEach(r => { if(!hubDaily[r.tanggal]) hubDaily[r.tanggal]=0; hubDaily[r.tanggal]+=r.total_paket; });
+                // Filter current data for this hub
+                const hubCurrData = currData.filter(r => r.hub === hub);
+                hubCurrData.forEach(r => { if(!hubDaily[r.tanggal]) hubDaily[r.tanggal]=0; hubDaily[r.tanggal]+=r.total_paket; });
                 const hDates = Object.keys(hubDaily).sort();
                 
                 if(hDates.length > 0) {
+                     // 1. Cari Peak/Low di Current Period
                      let hMax = -1, hMaxD = ''; let hMin = Infinity, hMinD = '';
                      hDates.forEach(d => { const val = hubDaily[d]; if(val > hMax) { hMax=val; hMaxD=d; } if(val < hMin) { hMin=val; hMinD=d; } });
 
-                     const mid = Math.floor(hDates.length / 2);
-                     const fh = hDates.slice(0, mid); const sh = hDates.slice(mid);
-                     const hAvg1 = fh.length ? (fh.reduce((a,b)=>a+hubDaily[b],0)/fh.length) : 0;
-                     const hAvg2 = sh.length ? (sh.reduce((a,b)=>a+hubDaily[b],0)/sh.length) : (hDates.length ? hubDaily[hDates[0]] : 0);
-                     
-                     let hTrend = 'Stabl';
-                     const hDiff = hAvg1 > 0 ? ((hAvg2 - hAvg1)/hAvg1)*100 : 0;
-                     if(hDiff > 5) hTrend = 'Naik'; else if(hDiff < -5) hTrend = 'Turun';
+                     // 2. Hitung Trend vs Previous Period (Logic Baru)
+                     const hAvgCurr = curr.hubMap[hub].pkt / hDates.length; // Rata-rata harian current
 
-                     // FIX: Low Value now includes the number
+                     // Ambil data previous untuk hub ini
+                     const hubPrevData = prevData.filter(r => r.hub === hub);
+                     const hubPrevDates = new Set(hubPrevData.map(r => r.tanggal)).size || 1;
+                     const hTotalPrev = prev.hubMap[hub] ? prev.hubMap[hub].pkt : 0;
+                     const hAvgPrev = hTotalPrev / hubPrevDates;
+
+                     let hTrend = '➖'; // Stabil
+                     if (hAvgPrev > 0) {
+                         const hDiff = ((hAvgCurr - hAvgPrev) / hAvgPrev) * 100;
+                         if (hDiff > 5) hTrend = '📈'; 
+                         else if (hDiff < -5) hTrend = '📉';
+                     } else if (hAvgCurr > 0) {
+                         hTrend = '📈';
+                     }
+
                      const sPeak = `${fmtD(hMaxD)}(${fmt(hMax)})`;
                      const sLow = `${fmtD(hMinD)}(${fmt(hMin)})`; 
 

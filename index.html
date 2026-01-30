@@ -2038,10 +2038,8 @@
             const groupedUsers = {}; // { 'HUB_A': [User1, User2], 'HUB_B': ... }
 
             hubsToShow.forEach(h => {
-                groupedUsers[h] = [];
-                
-                // 1. Ambil dari Master User
-                const hubUsers = appData.users.filter(u => {
+                // 1. Ambil Semua User (Master + History)
+                let rawHubUsers = appData.users.filter(u => {
                     if (u.kode_hub !== h) return false;
                     if (u.is_resign) {
                         if (!u.tanggal_resign) return false; 
@@ -2052,9 +2050,8 @@
                     return true;
                 }).map(u => ({...u, source: 'master'}));
 
-                const registeredIds = new Set(hubUsers.map(u => u.id));
+                const registeredIds = new Set(rawHubUsers.map(u => u.id));
 
-                // 2. Ambil dari History Laporan (misal DW manual atau user yg sudah dihapus/pindah)
                 reports.forEach(r => {
                     if(r.hub !== h) return;
                     if(r.attendance_data) {
@@ -2062,22 +2059,42 @@
                              if (!registeredIds.has(a.userId)) {
                                  let role = 'DW'; 
                                  if (!a.userId.startsWith('manual_')) role = 'History';
-                                 hubUsers.push({ id: a.userId, nama: a.name || a.nama, posisi: role, kode_hub: h, source: 'history' });
+                                 rawHubUsers.push({ id: a.userId, nama: a.name || a.nama, posisi: role, kode_hub: h, source: 'history' });
                                  registeredIds.add(a.userId);
                              }
                         });
                     }
                 });
 
+                // 2. LOGIKA MERGE: Gabungkan baris jika Nama sama (Khusus DW/Manual)
+                const mergedMap = new Map();
+                rawHubUsers.forEach(u => {
+                    // Key unik: Jika DW/Manual gunakan Nama, jika Karyawan Tetap gunakan ID
+                    let key = u.id;
+                    if (u.posisi === 'DW' || u.id.startsWith('manual_')) {
+                        key = (u.nama || '').trim().toLowerCase() + '_DW';
+                    }
+
+                    if (!mergedMap.has(key)) {
+                        u.linkedIds = [u.id]; // Simpan semua ID yg merged ke array ini
+                        mergedMap.set(key, u);
+                    } else {
+                        const existing = mergedMap.get(key);
+                        existing.linkedIds.push(u.id); // Gabungkan ID
+                    }
+                });
+
+                const finalUsers = Array.from(mergedMap.values());
+
                 // Sort: Posisi (Leader first) -> Nama
-                hubUsers.sort((a,b) => {
+                finalUsers.sort((a,b) => {
                      const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
                      const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
                      if(rA!==rB) return rA-rB; 
-                     return a.nama.localeCompare(b.nama);
+                     return (a.nama||'').localeCompare(b.nama||'');
                 });
 
-                groupedUsers[h] = hubUsers;
+                groupedUsers[h] = finalUsers;
             });
 
             // --- RENDER TABEL ---
@@ -2136,30 +2153,30 @@
                         const dateKey = `${y}-${m}-${da}`;
                         
                         let status = '';
-                        if(attMap[h] && attMap[h][u.id] && attMap[h][u.id][dateKey]) {
-                            status = attMap[h][u.id][dateKey];
+                        // Cek status di semua ID yang terhubung (linkedIds) untuk baris ini
+                        const idsToCheck = u.linkedIds || [u.id];
+                        for (const uid of idsToCheck) {
+                            if(attMap[h] && attMap[h][uid] && attMap[h][uid][dateKey]) {
+                                status = attMap[h][uid][dateKey];
+                                if(status) break; // Ambil status pertama yg ketemu
+                            }
                         }
                         
-                        // UPDATE: Warna Soft / Pastel
-                        // Shift 1: Emerald (Soft Green) - Pagi
-                        // Shift 2: Blue (Soft Blue) - Siang
-                        // Shift 3: Violet (Soft Purple) - Malam
-                        // I: Orange Soft, S: Yellow Soft, A: Red Soft
+                        // UPDATE: Warna Shift Lebih Nyaman (Solid Pastel)
+                        // Shift 1, 2, 3 diubah agar lebih kontras tapi tetap soft
                         
-                        let cellClass = 'bg-white'; // Default bersih
+                        let cellClass = 'bg-white'; 
                         let cellText = ''; 
 
                         if(status) {
                             cellText = status;
-                            // Tambahkan border-white agar terlihat seperti grid yang rapi
-                            if(status==='1') cellClass='bg-emerald-50 text-emerald-600 font-bold border border-white';
-                            else if(status==='2') cellClass='bg-blue-50 text-blue-600 font-bold border border-white';
-                            else if(status==='3') cellClass='bg-purple-50 text-purple-600 font-bold border border-white';
+                            if(status==='1') cellClass='bg-emerald-200 text-emerald-800 font-bold border border-white';
+                            else if(status==='2') cellClass='bg-blue-200 text-blue-800 font-bold border border-white';
+                            else if(status==='3') cellClass='bg-indigo-200 text-indigo-800 font-bold border border-white';
                             else if(status==='I') cellClass='bg-orange-50 text-orange-500 font-bold border border-white'; 
-                            else if(status==='S') cellClass='bg-amber-50 text-amber-500 font-bold border border-white'; 
+                            else if(status==='S') cellClass='bg-yellow-50 text-yellow-600 font-bold border border-white'; 
                             else if(status==='A') cellClass='bg-rose-50 text-rose-500 font-bold border border-white'; 
                         } else {
-                            // Sel kosong diberi sedikit warna abu sangat tipis agar beda dengan header
                             cellClass = 'bg-slate-50/30';
                         }
 

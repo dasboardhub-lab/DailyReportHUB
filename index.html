@@ -2086,11 +2086,23 @@
 
                 const finalUsers = Array.from(mergedMap.values());
 
-                // Sort: Posisi (Leader first) -> Nama
+                // Sort: Leader -> Sorter (NIK) -> DW
                 finalUsers.sort((a,b) => {
-                     const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1;
-                     const rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1;
-                     if(rA!==rB) return rA-rB; 
+                     const getRank = (pos) => {
+                         if(pos === 'LEADER' || pos === 'Admin') return 1;
+                         if(pos === 'Sorter') return 2;
+                         return 3; // DW dan lainnya
+                     };
+                     
+                     const rA = getRank(a.posisi);
+                     const rB = getRank(b.posisi);
+                     
+                     if(rA !== rB) return rA - rB;
+                     
+                     // Jika Sorter, urutkan ID (NIK)
+                     if(rA === 2) return (a.id||'').localeCompare(b.id||'', undefined, {numeric:true});
+                     
+                     // Sisanya (Leader/DW) urut Nama
                      return (a.nama||'').localeCompare(b.nama||'');
                 });
 

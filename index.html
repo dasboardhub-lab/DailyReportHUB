@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4.2</title>
+    <title>DailyReport v4.1</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -661,10 +661,32 @@
                                 <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Executive Briefing</p>
                             </div>
                         </div>
-                        <button onclick="window.copyManagerSummary()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group shadow-lg">
-                            <i class="fas fa-copy text-blue-300 group-hover:text-white transition"></i>
-                            <span>Salin Laporan</span>
-                        </button>
+                        <div class="flex gap-2 flex-wrap justify-end">
+                            <button onclick="window.generateManagerInsight()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-indigo-400 active:scale-95 group shadow-lg shadow-indigo-500/30">
+                                <i class="fas fa-magic group-hover:animate-spin"></i>
+                                <span>Insight</span>
+                            </button>
+                            <!-- NEW: BUTTON REFINE LOG -->
+                            <button onclick="window.refineManagerLog()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-amber-400 active:scale-95 group shadow-lg shadow-amber-500/30">
+                                <i class="fas fa-tools group-hover:rotate-12 transition"></i>
+                                <span>Perbaiki Log</span>
+                            </button>
+                            <button onclick="window.copyManagerSummary()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group shadow-lg">
+                                <i class="fas fa-copy text-blue-300 group-hover:text-white transition"></i>
+                                <span>Salin</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI INSIGHT CONTAINER (NEW) -->
+                    <div id="ai-insight-container" class="hidden mb-6 bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-sm relative animate-pulse">
+                        <div class="absolute -left-1 top-4 bottom-4 w-1 bg-indigo-500 rounded-r-lg"></div>
+                        <h4 class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2"> 
+                            <i class="fas fa-robot"></i> Executive Insight (AI Generated)
+                        </h4>
+                        <p id="ai-insight-text" class="text-xs text-slate-200 leading-relaxed font-light italic">
+                            Sedang menganalisis data operasional...
+                        </p>
                     </div>
 
                     <!-- Target ID for JS Injection -->
@@ -1042,11 +1064,20 @@
 
                     <!-- BAGIAN CATATAN KENDALA BARU -->
                     <div class="mb-6">
-                        <h4 class="font-bold text-slate-700 mb-2 text-sm flex items-center">
-                            <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center mr-3"><i class="fas fa-exclamation-triangle"></i></span>
-                            Catatan Kendala / Isu Lapangan
-                        </h4>
-                        <textarea id="lap-catatan" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary outline-none transition shadow-sm h-24 resize-none" placeholder="Tuliskan kendala operasional, isu system, atau kejadian khusus di sini..."></textarea>
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-slate-700 text-sm flex items-center">
+                                <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center mr-3"><i class="fas fa-exclamation-triangle"></i></span>
+                                Catatan Kendala / Isu Lapangan
+                            </h4>
+                            <button type="button" onclick="window.improveTextWithAI()" class="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg font-bold border border-indigo-100 hover:bg-indigo-100 transition flex items-center gap-1 group shadow-sm">
+                                <i class="fas fa-magic group-hover:animate-pulse"></i> Perbaiki dengan AI
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <textarea id="lap-catatan" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary outline-none transition shadow-sm h-24 resize-none" placeholder="Tuliskan kendala operasional, isu system, atau kejadian khusus di sini... (Contoh: paket numpuk gara2 ujan deres)"></textarea>
+                            <div id="ai-loading-indicator" class="absolute top-2 right-2 hidden"><i class="fas fa-circle-notch fa-spin text-indigo-500"></i></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1 italic">*Klik tombol AI untuk merapikan kalimat laporan secara otomatis.</p>
                     </div>
 
                     <div>
@@ -1590,6 +1621,12 @@
                 }
             });
 
+            // --- SAVE STATS GLOBALLY FOR AI ---
+            window.lastDashStats = { curr, prev, issues, topHub: topLoadHubName };
+            window.lastAIInsight = null; // Reset AI insight when data changes
+            window.lastRefinedLog = null; // NEW: Reset refined log
+            document.getElementById('ai-insight-container').classList.add('hidden'); // Hide old insight
+
             // --- 1. RENDER VISUAL CARDS (UI ONLY - Tetap Tampil Cantik di Layar) ---
             container.innerHTML = `
                 <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
@@ -1626,6 +1663,10 @@
             // 1. HEADER
             let txt = `*SUMMARY REPORT HUB KALSULAMP*\n`;
             txt += `Periode: ${dateDisplay}\n\n`;
+
+            // PLACEHOLDER FOR AI INSIGHT
+            // We will inject AI text here if it exists during copy
+            txt += `__AI_INSIGHT_PLACEHOLDER__`;
             
             // ==========================================
             // SECTION 1: GLOBAL PERFORMANCE & RINCIAN HUB
@@ -1783,6 +1824,7 @@
             // ==========================================
             // SECTION 4: LOG KENDALA
             // ==========================================
+            // NOTE: Bagian ini akan di-replace oleh window.copyManagerSummary jika AI digunakan
             if (issues.length > 0) {
                 txt += `*4. Log Kendala / Isu:*\n`;
                 issues.forEach(i => txt += `- ${i}\n`);
@@ -1795,12 +1837,152 @@
             // Store in a global variable for the copy button
             window.managerSummaryText = txt;
         };
+
+        // NEW: REFINE MANAGER LOGS (AI)
+        window.refineManagerLog = async () => {
+            const stats = window.lastDashStats;
+            if(!stats || stats.issues.length === 0) return window.notify('Tidak ada kendala untuk diperbaiki', 'warning');
+
+            window.notify('AI sedang merapikan log...', 'loading');
+            
+            const apiKey = "";
+            const prompt = `
+                Bertindak sebagai editor laporan operasional. 
+                Tugas: Tulis ulang daftar kendala berikut agar menjadi poin-poin yang profesional, baku (Bahasa Indonesia), ringkas, dan jelas.
+                Format Output: Bullet points saja (diawali tanda "-"). 
+                Jangan ubah data [Tanggal] dan [HUB].
+                
+                Input:
+                ${stats.issues.join('\n')}
+            `;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) throw new Error('AI Error');
+                const data = await response.json();
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (result) {
+                    window.lastRefinedLog = result.trim();
+                    window.notify('Log Kendala Diperbaiki! Klik Salin.', 'success');
+                }
+            } catch (e) {
+                console.error(e);
+                window.notify('Gagal Memproses AI', 'error');
+            }
+        };
+
+        // NEW: GENERATE MANAGER INSIGHT (AI)
+        window.generateManagerInsight = async () => {
+            const stats = window.lastDashStats;
+            if(!stats) return window.notify('Data belum siap', 'error');
+
+            const container = document.getElementById('ai-insight-container');
+            const txtEl = document.getElementById('ai-insight-text');
+            
+            container.classList.remove('hidden');
+            container.classList.add('animate-pulse');
+            txtEl.innerText = "Sedang menganalisis data operasional dan menyusun narasi...";
+            
+            // Siapkan Data Prompt
+            const pktDiff = stats.curr.pkt - stats.prev.pkt;
+            const pktPct = stats.prev.pkt===0 ? 0 : Math.round((pktDiff/stats.prev.pkt)*100);
+            const prodDiff = stats.curr.prod - stats.prev.prod;
+            const issueText = stats.issues.length > 0 ? stats.issues.join(". ") : "Tidak ada kendala berarti.";
+            
+            const prompt = `
+                Bertindak sebagai Manajer Operasional Logistik Senior.
+                Buatlah "Executive Summary" (maksimal 50 kata) dalam Bahasa Indonesia yang profesional untuk dilaporkan ke Top Management.
+                
+                Data:
+                - Total Load: ${window.formatNumber(stats.curr.pkt)} Paket (${pktDiff>0?'Naik':'Turun'} ${Math.abs(pktPct)}% dari periode lalu).
+                - Rata-rata Produktivitas: ${stats.curr.prod} Paket/Org (${prodDiff>0?'Naik':'Turun'} dari ${stats.prev.prod}).
+                - Top Hub: ${stats.topHub}.
+                - Kendala Lapangan: ${issueText}.
+                
+                Instruksi:
+                Buat 1 paragraf narasi yang padat. Fokus pada tren performa (naik/turun), hub yang menonjol, dan dampak kendala (jika ada). Gunakan bahasa bisnis yang lugas.
+            `;
+
+            const apiKey = ""; 
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) throw new Error('Gagal menghubungi AI');
+                const data = await response.json();
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (result) {
+                    // Tampilkan Hasil
+                    container.classList.remove('animate-pulse');
+                    txtEl.innerText = result.trim();
+                    window.lastAIInsight = result.trim();
+                    window.notify('Analisis Selesai', 'success');
+                } else {
+                    throw new Error('No Data');
+                }
+            } catch (e) {
+                console.error(e);
+                container.classList.add('hidden');
+                window.notify('Gagal Analisis AI', 'error');
+            }
+        };
         
         window.copyManagerSummary = () => {
             if (!window.managerSummaryText) return window.notify('Data belum siap', 'error');
             
+            let finalTxt = window.managerSummaryText;
+            
+            // 1. Inject AI Insight if available
+            if (window.lastAIInsight) {
+                const insightBlock = `*Executive Insight:*\n"${window.lastAIInsight}"\n\n`;
+                finalTxt = finalTxt.replace('__AI_INSIGHT_PLACEHOLDER__', insightBlock);
+            } else {
+                finalTxt = finalTxt.replace('__AI_INSIGHT_PLACEHOLDER__', '');
+            }
+
+            // 2. Inject Refined Logs if available (NEW)
+            if (window.lastRefinedLog) {
+                // Kita cari pattern Section 4 untuk di-replace
+                // Format asli: "*4. Log Kendala / Isu:*" ...sampai... "\n_Generated by"
+                
+                const headerMarker = "*4. Log Kendala / Isu:*";
+                const footerMarker = "_Generated by";
+                
+                // Simple split strategy agar aman
+                const parts = finalTxt.split(headerMarker);
+                
+                if (parts.length > 1) {
+                    const prePart = parts[0]; // Bagian atas laporan
+                    
+                    // Bagian bawah (Log asli + Footer)
+                    const contentAndFooter = parts[1];
+                    const footerIndex = contentAndFooter.lastIndexOf(footerMarker);
+                    
+                    if (footerIndex !== -1) {
+                        const postPart = contentAndFooter.substring(footerIndex); // "_Generated by..."
+                        
+                        // Reconstruct
+                        finalTxt = prePart + 
+                                   "*4. Log Kendala / Isu (AI Refined):*\n" + 
+                                   window.lastRefinedLog + "\n\n" + 
+                                   postPart;
+                    }
+                }
+            }
+            
             const el = document.createElement('textarea');
-            el.value = window.managerSummaryText;
+            el.value = finalTxt;
             el.setAttribute('readonly', '');
             el.style.position = 'absolute';
             el.style.left = '-9999px';
@@ -2799,6 +2981,50 @@
         window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
         
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded text-xs' : 'bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded text-xs';
+
+        // FITUR AI REWRITE
+        window.improveTextWithAI = async () => {
+            const input = document.getElementById('lap-catatan');
+            const originalText = input.value.trim();
+            
+            if (!originalText) return window.notify('Isi catatan kendala dulu', 'error');
+            if (originalText.length < 5) return window.notify('Teks terlalu pendek', 'error');
+
+            window.notify('AI sedang memperbaiki...', 'loading');
+            const indicator = document.getElementById('ai-loading-indicator');
+            if(indicator) indicator.classList.remove('hidden');
+            input.disabled = true;
+
+            const apiKey = ""; // API Key disediakan runtime
+            const prompt = `Perbaiki tata bahasa teks laporan operasional logistik berikut agar menjadi kalimat baku, profesional, jelas, singkat, dan mudah dipahami oleh manajemen. Jangan ubah makna aslinya. Langsung berikan hasil perbaikan tanpa pembuka/penutup. Teks: "${originalText}"`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (!response.ok) throw new Error('Gagal menghubungi AI');
+
+                const data = await response.json();
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (result) {
+                    input.value = result.trim();
+                    window.notify('Kalimat diperbaiki!', 'success');
+                } else {
+                    throw new Error('Tidak ada respon');
+                }
+            } catch (e) {
+                console.error(e);
+                window.notify('Gagal memproses AI', 'error');
+            } finally {
+                if(indicator) indicator.classList.add('hidden');
+                input.disabled = false;
+                input.focus();
+            }
+        };
 
         // ==========================================================
         // MISSING FUNCTIONS DEFINITIONS (Fixed)

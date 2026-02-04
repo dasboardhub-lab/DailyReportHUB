@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4.2</title>
+    <title>DailyReport v4.3</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -291,7 +291,7 @@
                         <p class="text-[10px] text-slate-400 font-medium ml-1">Team Dashboard</p>
                     </div>
                     <div class="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
-                        <p class="text-[9px] text-slate-500 font-mono">v4.1 Stable Build</p>
+                        <p class="text-[9px] text-slate-500 font-mono">v4.3 Stable Build</p>
                         <i class="fas fa-shield-alt text-slate-600 text-xs"></i>
                     </div>
                 </div>
@@ -692,6 +692,11 @@
                     <!-- Target ID for JS Injection -->
                     <div id="manager-summary-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
                         <!-- Content will be injected by window.renderManagerBrief -->
+                    </div>
+
+                    <!-- NEW: SILENT HUBS MONITORING (Added Below Stats) -->
+                    <div id="manager-silent-hubs" class="mt-6 relative z-10 transition-all duration-500">
+                        <!-- Content injected by JS -->
                     </div>
                 </div>
 
@@ -1569,6 +1574,7 @@
         // NEW: FUNCTION TO RENDER MANAGER REPORT SUMMARY
         window.renderManagerBrief = (currData, prevData) => {
             const container = document.getElementById('manager-summary-stats');
+            const silentContainer = document.getElementById('manager-silent-hubs');
             
             if (!container) return;
 
@@ -1608,7 +1614,15 @@
                 if (curr.hubMap[h].pkt > topLoadHubVal) { topLoadHubVal = curr.hubMap[h].pkt; topLoadHubName = h; }
             });
 
-            // PERBAIKAN: Definisikan kembali variabel issues
+            // 1. Identify Active HUBs in this period (Yang submit laporan)
+            const activeHubs = [...new Set(currData.map(r => r.hub))];
+            
+            // 2. Identify HUBs with Issues (Yang punya catatan > 0)
+            const hubsWithIssues = new Set(currData.filter(r => r.catatan && r.catatan.trim().length > 0).map(r => r.hub));
+            
+            // 3. Find Difference (Active tapi Gak Lapor Kendala)
+            const silentHubs = activeHubs.filter(h => !hubsWithIssues.has(h)).sort();
+
             const issues = [];
             const sortedLogs = [...currData].sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
             
@@ -1622,12 +1636,12 @@
             });
 
             // --- SAVE STATS GLOBALLY FOR AI ---
-            window.lastDashStats = { curr, prev, issues, topHub: topLoadHubName };
-            window.lastAIInsight = null; // Reset AI insight when data changes
-            window.lastRefinedLog = null; // NEW: Reset refined log
-            document.getElementById('ai-insight-container').classList.add('hidden'); // Hide old insight
+            window.lastDashStats = { curr, prev, issues, topHub: topLoadHubName, silentHubs }; // Added silentHubs to AI context
+            window.lastAIInsight = null; 
+            window.lastRefinedLog = null; 
+            document.getElementById('ai-insight-container').classList.add('hidden'); 
 
-            // --- 1. RENDER VISUAL CARDS (UI ONLY - Tetap Tampil Cantik di Layar) ---
+            // --- 1. RENDER VISUAL CARDS ---
             container.innerHTML = `
                 <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
                     <p class="text-[10px] uppercase font-bold text-blue-200 tracking-wider mb-1">Total Load</p>
@@ -1649,6 +1663,36 @@
                     <h4 class="text-xl font-extrabold text-white truncate">${window.formatRupiah(curr.cost)}</h4>
                 </div>
             `;
+
+            // --- RENDER SILENT HUBS UI ---
+            if (silentContainer) {
+                if (silentHubs.length > 0) {
+                    silentContainer.innerHTML = `
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition">
+                            <h4 class="text-xs font-bold text-orange-200 mb-2 flex items-center gap-2">
+                                <span class="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center text-orange-400"><i class="fas fa-eye-slash text-[10px]"></i></span>
+                                Monitoring Transparansi (Silent HUBs)
+                            </h4>
+                            <p class="text-[10px] text-slate-300 mb-3 leading-relaxed">
+                                HUB berikut aktif beroperasi (Load > 0) namun <b class="text-orange-100">tidak melaporkan kendala</b> sama sekali selama periode ini. Perlu validasi apakah operasional benar-benar lancar atau kendala tidak terinfo.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                ${silentHubs.map(h => `<span class="px-2.5 py-1 bg-white/10 rounded-lg text-[10px] font-mono text-white border border-white/10 hover:bg-white/20 cursor-help" title="Zero Issues Reported">${h}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    silentContainer.innerHTML = `
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3 opacity-70">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-check"></i></div>
+                            <div>
+                                <h4 class="text-xs font-bold text-emerald-200">Transparansi Baik</h4>
+                                <p class="text-[10px] text-slate-300">Seluruh HUB aktif telah memberikan catatan operasional/kendala.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
             
             // --- 2. GENERATE TEXT FOR CLIPBOARD (ALL TABLES) ---
             const sDate = document.getElementById('dash-start-date').value;
@@ -1830,6 +1874,18 @@
                 issues.forEach(i => txt += `- ${i}\n`);
             } else {
                  txt += `*4. Log Kendala:* Nihil\n`;
+            }
+
+            // ==========================================
+            // SECTION 5: SILENT HUBS (NEW)
+            // ==========================================
+            txt += `\n*5. Monitoring Transparansi (Silent HUBs):*\n`;
+            if(silentHubs.length > 0) {
+                txt += `HUB berikut beroperasi (Load > 0) namun TIDAK melaporkan kendala sama sekali dalam periode ini:\n`;
+                silentHubs.forEach(h => txt += `- ⚠ ${h}\n`);
+                txt += `_(Mohon divalidasi apakah operasional benar-benar lancar atau kendala tidak terinfo)_\n`;
+            } else {
+                txt += `✅ Seluruh HUB aktif telah transparan melaporkan kondisi lapangan.\n`;
             }
             
             txt += `\n_Generated by DailyReport System_`;

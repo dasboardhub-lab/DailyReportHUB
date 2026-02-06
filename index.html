@@ -465,26 +465,24 @@
                     </div>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-primary shadow-sm"><i class="fas fa-chart-area"></i></div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-primary shadow-sm">
+                                <i class="fas fa-chart-area" id="chart-icon"></i>
+                            </div>
                             <div>
-                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Trend Tahunan</h3>
-                                <p class="text-[10px] text-slate-400">Analisis pergerakan volume paket</p>
+                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide" id="chart-title">Trend Analisis</h3>
+                                <p class="text-[10px] text-slate-400" id="chart-subtitle">Monitoring pergerakan volume paket</p>
                             </div>
                         </div>
-                        <div class="h-64"><canvas id="chart-annual"></canvas></div>
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button onclick="window.switchChart('annual')" id="btn-chart-annual" class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition bg-white text-slate-800 shadow-sm">Bulan</button>
+                            <button onclick="window.switchChart('daily')" id="btn-chart-daily" class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition text-slate-500 hover:text-slate-700">Harian</button>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
-                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm"><i class="fas fa-chart-line"></i></div>
-                             <div>
-                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Trend Harian</h3>
-                                <p class="text-[10px] text-slate-400">Monitoring harian productivity</p>
-                            </div>
-                        </div>
-                        <div class="h-64"><canvas id="chart-daily"></canvas></div>
+                    <div class="h-72 relative">
+                        <canvas id="chart-combined"></canvas>
                     </div>
                 </div>
 
@@ -810,10 +808,10 @@
                                 <label for="gemini-api-key-input" class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-indigo-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Gemini API Key</label>
                             </div>
                             <div class="flex gap-3">
-                                 <button onclick="window.saveAIKey()" class="w-full bg-indigo-600 text-white px-4 py-3.5 rounded-xl text-xs font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/20 tracking-wide uppercase">Simpan Key</button>
+                                 <button onclick="window.saveAIKey()" class="w-full bg-indigo-600 text-white px-4 py-3.5 rounded-xl text-xs font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/20 tracking-wide uppercase">Simpan Key (Global)</button>
                                  <button onclick="window.testAIKey()" class="w-auto bg-slate-100 text-slate-600 px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-slate-200 transition border border-slate-200"><i class="fas fa-plug"></i> Test</button>
                             </div>
-                            <p class="text-[10px] text-slate-400 mt-3 ml-1">Key disimpan di browser ini (Local Storage). Diperlukan untuk fitur 'Perbaiki Log' dan 'Manager Insight'.</p>
+                            <p class="text-[10px] text-slate-400 mt-3 ml-1">Key disimpan di Database Cloud. Satu Key untuk seluruh tim (Shared).</p>
                         </div>
 
                         <!-- Existing Settings -->
@@ -849,6 +847,7 @@
     
     <!-- MODAL USER (Same as before) -->
     <div id="user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
+        <!-- ... existing user modal content ... -->
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50" id="user-modal-content">
             <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3><button onclick="window.closeUserModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button></div>
             <form id="user-form" class="space-y-5">
@@ -902,6 +901,7 @@
 
     <!-- MODAL LAPORAN (Same as before) -->
     <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
+        <!-- ... existing laporan modal content ... -->
         <div class="bg-white rounded-[2rem] w-full max-w-5xl shadow-2xl my-6 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 border border-white/40" id="laporan-modal-content">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-[2rem] shadow-sm">
                 <div><h3 class="text-xl font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3></div>
@@ -1004,14 +1004,14 @@
         
         // --- UPDATED AI SERVICE HANDLER (BYOK Logic) ---
         async function callGeminiAPI(promptText) {
-            // Cek Key di LocalStorage
-            const storedKey = localStorage.getItem('daily_report_ai_key');
+            // Cek Key di AppData (Cloud Settings) bukan LocalStorage
+            const storedKey = appData.geminiKey;
 
             if (!storedKey) {
                 // Tampilkan pesan error jika key tidak ada
                 Swal.fire({
                     title: 'API Key Dibutuhkan',
-                    text: 'Fitur AI memerlukan Gemini API Key. Silakan masukkan di menu Pengaturan > Akses/General.',
+                    text: 'Fitur AI belum dikonfigurasi oleh Admin. Hubungi Admin untuk input API Key.',
                     icon: 'warning',
                     confirmButtonText: 'Ke Pengaturan',
                     customClass: window.Swal.getCustomClass()
@@ -1046,11 +1046,19 @@
         }
 
         // --- NEW: AI KEY MANAGEMENT FUNCTIONS ---
-        window.saveAIKey = () => {
+        window.saveAIKey = async () => {
             const k = document.getElementById('gemini-api-key-input').value.trim();
             if(!k) return window.notify('Key kosong', 'error');
-            localStorage.setItem('daily_report_ai_key', k);
-            window.notify('API Key Disimpan', 'success');
+            
+            // Simpan ke Firestore (Settings Main)
+            try {
+                window.notify('Menyimpan ke Database...', 'loading');
+                await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { geminiKey: k });
+                window.notify('API Key Tersimpan (Shared)', 'success');
+            } catch(e) {
+                console.error(e);
+                window.notify('Gagal Simpan', 'error');
+            }
         };
 
         window.testAIKey = async () => {
@@ -1070,7 +1078,7 @@
                 title: 'text-lg font-bold text-slate-800', 
                 htmlContainer: 'text-xs text-slate-500 mt-1', 
                 confirmButton: 'bg-primary text-white px-5 py-2 rounded-xl font-bold text-[11px] shadow-md hover:bg-blue-600 transition transform active:scale-95 uppercase tracking-wide mx-1', 
-                cancelButton: 'bg-slate-100 text-slate-500 px-5 py-2 rounded-xl font-bold text-[11px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide mx-1', 
+                cancelButton: 'bg-slate-100 text-slate-500 px-5 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide mx-1', 
                 input: 'w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-bold shadow-sm'
             },
             buttonsStyling: false
@@ -1107,6 +1115,8 @@
         let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
         let currentUser = null, annualChart = null, dailyChart = null;
         let isLoggingOut = false;
+        let currentChartMode = 'annual'; // Default chart mode
+        let mainChartInstance = null; // Single chart instance
 
         function handleAuthSuccess(user) {
             if(isLoggingOut) return;
@@ -1150,7 +1160,13 @@
             const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
             
             onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (s) => {
-                if(s.exists()) { const d = s.data(); appData.adminPass = d.adminPass; appData.accessCode = d.accessCode; appData.costDW = d.costDW; }
+                if(s.exists()) { 
+                    const d = s.data(); 
+                    appData.adminPass = d.adminPass; 
+                    appData.accessCode = d.accessCode; 
+                    appData.costDW = d.costDW; 
+                    appData.geminiKey = d.geminiKey; // Ambil Key dari Cloud
+                }
                 else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
             });
 
@@ -1892,12 +1908,27 @@
             }}); else t=r.total_mpp*hr; return t;
         };
 
-        window.updateCharts = (data, hubs) => {
-            const cy = new Date().getFullYear(), mD = Array(12).fill(0).map(()=>({p:0,m:0}));
-            let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
-            if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
-            yrData.forEach(l=>{ const m=new Date(l.tanggal).getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
+        window.switchChart = (mode) => {
+            currentChartMode = mode;
+            const bA = document.getElementById('btn-chart-annual');
+            const bD = document.getElementById('btn-chart-daily');
+            const active = ['bg-white', 'text-slate-800', 'shadow-sm'];
+            const inactive = ['text-slate-500', 'hover:text-slate-700', 'bg-transparent', 'shadow-none'];
             
+            if(mode === 'annual') {
+                bA.classList.add(...active); bA.classList.remove(...inactive);
+                bD.classList.remove(...active); bD.classList.add(...inactive);
+            } else {
+                bD.classList.add(...active); bD.classList.remove(...inactive);
+                bA.classList.remove(...active); bA.classList.add(...inactive);
+            }
+            window.loadDashboardData();
+        };
+
+        window.updateCharts = (data, hubs) => {
+            const ctx = document.getElementById('chart-combined').getContext('2d');
+            if (window.mainChartInstance) window.mainChartInstance.destroy();
+
             const chartOptions = {
                 responsive: true, maintainAspectRatio: false,
                 scales: {
@@ -1939,32 +1970,42 @@
                 }
             };
 
-            const ctx1=document.getElementById('chart-annual').getContext('2d');
-            if(annualChart) annualChart.destroy();
-            annualChart=new Chart(ctx1, { 
-                type:'bar', 
-                data:{ 
-                    labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'], 
-                    datasets:[
-                        {label:'Paket', data:mD.map(d=>d.p), backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
-                        {label:'Prod', data:mD.map(d=>d.m?Math.round(d.p/d.m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: mD.map(d=>(d.m && Math.round(d.p/d.m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
-                    ] 
-                }, 
-                options: chartOptions 
-            });
+            let labels, dataset1, dataset2, colors2;
 
-            const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
-            const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b)), lbs=sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
-            
-            const ctx2=document.getElementById('chart-daily').getContext('2d');
-            if(dailyChart) dailyChart.destroy();
-            dailyChart=new Chart(ctx2, { 
-                type:'bar', 
-                data:{ 
-                    labels:lbs, 
-                    datasets:[
-                        {label:'Paket', data:sD.map(d=>agg[d].p), backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
-                        {label:'Prod', data:sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0), type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981'), yAxisID: 'y1'}
+            if (currentChartMode === 'annual') {
+                document.getElementById('chart-title').innerText = 'Trend Bulan';
+                document.getElementById('chart-subtitle').innerText = 'Analisis pergerakan volume paket Bulanan';
+                document.getElementById('chart-icon').className = 'fas fa-chart-area';
+
+                const cy = new Date().getFullYear(), mD = Array(12).fill(0).map(()=>({p:0,m:0}));
+                let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
+                if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
+                yrData.forEach(l=>{ const m=new Date(l.tanggal).getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
+
+                labels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+                dataset1 = mD.map(d=>d.p);
+                dataset2 = mD.map(d=>d.m?Math.round(d.p/d.m):0);
+                colors2 = mD.map(d=>(d.m && Math.round(d.p/d.m)<600)?'#ef4444':'#10b981');
+            } else {
+                document.getElementById('chart-title').innerText = 'Trend Harian';
+                document.getElementById('chart-subtitle').innerText = 'Monitoring harian productivity (Filter Range)';
+                document.getElementById('chart-icon').className = 'fas fa-chart-line';
+
+                const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
+                const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b));
+                labels = sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
+                dataset1 = sD.map(d=>agg[d].p);
+                dataset2 = sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0);
+                colors2 = sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981');
+            }
+
+            window.mainChartInstance = new Chart(ctx, { 
+                type: 'bar', 
+                data: { 
+                    labels: labels, 
+                    datasets: [
+                        {label:'Paket', data:dataset1, backgroundColor:'#4361ee', borderRadius:8, barPercentage:0.6, yAxisID: 'y'},
+                        {label:'Prod', data:dataset2, type:'line', borderColor:'#94a3b8', borderWidth:2, tension:0.4, pointRadius:4, pointBackgroundColor: colors2, yAxisID: 'y1'}
                     ] 
                 }, 
                 options: chartOptions 
@@ -2309,8 +2350,8 @@
             document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); 
             window.renderCostInputs(); 
             
-            const storedKey = localStorage.getItem('daily_report_ai_key');
-            if(storedKey) document.getElementById('gemini-api-key-input').value = storedKey;
+            // Tampilkan Key dari Cloud di Input (jika ada)
+            if(appData.geminiKey) document.getElementById('gemini-api-key-input').value = appData.geminiKey;
         };
         
         window.toggleResignDate = () => {

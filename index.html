@@ -450,36 +450,36 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-primary shadow-sm">
-                                <i class="fas fa-chart-area" id="chart-icon"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide" id="chart-title">Trend Analisis</h3>
-                                <p class="text-[10px] text-slate-400" id="chart-subtitle">Monitoring pergerakan volume paket</p>
-                            </div>
-                        </div>
-                        <div class="flex bg-slate-100 p-1 rounded-xl">
-                            <button onclick="window.switchChart('annual')" id="btn-chart-annual" class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition bg-white text-slate-800 shadow-sm">Bulan</button>
-                            <button onclick="window.switchChart('daily')" id="btn-chart-daily" class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition text-slate-500 hover:text-slate-700">Harian</button>
-                        </div>
-                    </div>
-                    <div class="h-72 relative">
-                        <canvas id="chart-combined"></canvas>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-fit">
-                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60 flex flex-col">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 shrink-0">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-primary shadow-sm">
+                                    <i class="fas fa-chart-area" id="chart-icon"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide" id="chart-title">Trend Analisis</h3>
+                                    <p class="text-[10px] text-slate-400" id="chart-subtitle">Monitoring pergerakan volume paket</p>
+                                </div>
+                            </div>
+                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                                <button onclick="window.switchChart('annual')" id="btn-chart-annual" class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition bg-white text-slate-800 shadow-sm">Bulan</button>
+                                <button onclick="window.switchChart('daily')" id="btn-chart-daily" class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition text-slate-500 hover:text-slate-700">Harian</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-h-[300px] relative w-full">
+                            <canvas id="chart-combined"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-[400px]">
+                        <div class="p-6 border-b border-slate-50 flex items-center gap-3 bg-white shrink-0">
                              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-trophy"></i></div>
                             <h3 class="font-bold text-slate-700 text-sm">Top Performa</h3>
                         </div>
-                        <div class="overflow-x-auto table-scroll-container" style="max-height: 500px;">
+                        <div class="overflow-auto custom-scrollbar flex-1">
                             <table class="w-full text-xs text-center">
-                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
+                                <thead class="text-slate-400 bg-slate-50/90 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
                                         <th class="px-3 py-4 text-left pl-6">HUB</th><th class="px-2 py-4 text-primary">MPP</th>
                                         <th class="px-3 py-4 text-slate-700">Out.</th><th class="px-2 py-4 text-success">Prod</th><th class="px-3 py-4 text-right pr-6 text-slate-400">Cost</th>
@@ -489,14 +489,29 @@
                             </table>
                         </div>
                     </div>
-                    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col">
-                        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60 flex flex-col h-[500px]">
+                        <div class="flex items-center gap-3 mb-4 border-b border-slate-50 pb-4 shrink-0">
+                             <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm"><i class="fas fa-clipboard-list"></i></div>
+                             <div>
+                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Log Kendala</h3>
+                                <p class="text-[10px] text-slate-400">Catatan isu operasional</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto custom-scrollbar pr-2 flex-1" id="dashboard-notes-container"></div>
+                        <div id="dashboard-notes-empty" class="hidden text-center py-8 text-slate-400 text-xs italic">Tidak ada catatan kendala pada periode ini.</div>
+                    </div>
+
+                    <div class="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-slate-100/60 overflow-hidden flex flex-col h-[500px]">
+                        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
                             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2"><i class="fas fa-list text-slate-400 bg-slate-100 p-1.5 rounded-lg"></i> Rincian Data</h3>
                             <button onclick="window.exportTableToCSV('table-daily-detail', 'rincian.csv')" class="text-[10px] font-bold text-primary bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition border border-blue-100"><i class="fas fa-download mr-1"></i> EXPORT CSV</button>
                         </div>
-                        <div class="overflow-x-auto flex-1 table-scroll-container">
+                        <div class="overflow-auto custom-scrollbar flex-1">
                             <table id="table-daily-detail" class="w-full text-xs text-center whitespace-nowrap">
-                                <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
+                                <thead class="text-slate-400 bg-slate-50/90 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
                                         <th class="px-3 py-4 text-left pl-6 tracking-wider">Tanggal</th><th class="px-3 py-4 tracking-wider">HUB</th><th class="px-3 py-4 text-primary tracking-wider">MPP</th>
                                         <th class="px-3 py-4 text-slate-400">Stg</th><th class="px-3 py-4 text-slate-400">Gtw</th>
@@ -510,59 +525,48 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60 mt-6">
-                    <div class="flex items-center gap-3 mb-4 border-b border-slate-50 pb-4">
-                         <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm"><i class="fas fa-clipboard-list"></i></div>
-                         <div>
-                            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Log Kendala & Catatan Operasional</h3>
-                            <p class="text-[10px] text-slate-400">Rekapitulasi isu lapangan berdasarkan filter tanggal</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="dashboard-notes-container"></div>
-                    <div id="dashboard-notes-empty" class="hidden text-center py-8 text-slate-400 text-xs italic">Tidak ada catatan kendala pada periode ini.</div>
-                </div>
+                <div id="manager-summary-section" class="hidden mt-6 relative overflow-hidden bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-800">
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+                    <div class="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
 
-                <div id="manager-summary-section" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-lg border border-slate-700 text-white relative overflow-hidden mt-6">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                    
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 relative z-10 gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-inner">
-                                <i class="fas fa-briefcase text-blue-300"></i>
+                    <div class="relative z-10 p-8">
+                        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 border-b border-slate-700/50 pb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-primary flex items-center justify-center shadow-lg shadow-indigo-500/30 border border-white/10">
+                                    <i class="fas fa-crown text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-extrabold text-white tracking-tight">Manager Summary</h3>
+                                    <p class="text-xs text-indigo-300 font-medium uppercase tracking-widest mt-1">Executive Briefing & AI Analysis</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-lg tracking-tight text-white">Manager Summary</h3>
-                                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Executive Briefing</p>
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="window.generateManagerInsight()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group backdrop-blur-sm shadow-sm">
+                                    <i class="fas fa-magic text-indigo-400 group-hover:rotate-12 transition"></i> Generate Insight
+                                </button>
+                                <button onclick="window.refineManagerLog()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group backdrop-blur-sm shadow-sm">
+                                    <i class="fas fa-tools text-amber-400 group-hover:rotate-12 transition"></i> Perbaiki Log
+                                </button>
+                                <button onclick="window.copyManagerSummary()" class="bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-blue-500 active:scale-95 group shadow-lg shadow-blue-500/30">
+                                    <i class="fas fa-copy group-hover:scale-110 transition"></i> Salin Laporan
+                                </button>
                             </div>
                         </div>
-                        <div class="flex gap-2 flex-wrap justify-end">
-                            <button onclick="window.generateManagerInsight()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-indigo-400 active:scale-95 group shadow-lg shadow-indigo-500/30">
-                                <i class="fas fa-magic group-hover:animate-spin"></i>
-                                <span>Insight</span>
-                            </button>
-                            <button onclick="window.refineManagerLog()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-amber-400 active:scale-95 group shadow-lg shadow-amber-500/30">
-                                <i class="fas fa-tools group-hover:rotate-12 transition"></i>
-                                <span>Perbaiki Log</span>
-                            </button>
-                            <button onclick="window.copyManagerSummary()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group shadow-lg">
-                                <i class="fas fa-copy text-blue-300 group-hover:text-white transition"></i>
-                                <span>Salin</span>
-                            </button>
+
+                        <div id="ai-insight-container" class="hidden mb-8 bg-indigo-950/50 p-6 rounded-2xl border border-indigo-500/30 backdrop-blur-md relative shadow-inner">
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-400 to-primary rounded-l-2xl"></div>
+                            <h4 class="text-xs font-extrabold text-indigo-300 uppercase tracking-widest mb-3 flex items-center gap-2"> 
+                                <i class="fas fa-robot text-base"></i> AI Executive Insight
+                            </h4>
+                            <p id="ai-insight-text" class="text-sm text-slate-200 leading-relaxed font-light">
+                                Sedang menganalisis data operasional...
+                            </p>
                         </div>
-                    </div>
 
-                    <div id="ai-insight-container" class="hidden mb-6 bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-sm relative animate-pulse">
-                        <div class="absolute -left-1 top-4 bottom-4 w-1 bg-indigo-500 rounded-r-lg"></div>
-                        <h4 class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2"> 
-                            <i class="fas fa-robot"></i> Executive Insight (AI Generated)
-                        </h4>
-                        <p id="ai-insight-text" class="text-xs text-slate-200 leading-relaxed font-light italic">
-                            Sedang menganalisis data operasional...
-                        </p>
+                        <div id="manager-summary-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+                        <div id="manager-silent-hubs" class="mt-8 transition-all duration-500"></div>
                     </div>
-
-                    <div id="manager-summary-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10"></div>
-                    <div id="manager-silent-hubs" class="mt-6 relative z-10 transition-all duration-500"></div>
                 </div>
             </div>
 
@@ -1515,50 +1519,55 @@
             document.getElementById('ai-insight-container').classList.add('hidden'); 
 
             container.innerHTML = `
-                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
-                    <p class="text-[10px] uppercase font-bold text-blue-200 tracking-wider mb-1">Total Load</p>
-                    <h4 class="text-2xl font-extrabold text-white">${window.formatNumber(curr.pkt)} <span class="text-xs font-normal opacity-70">Pkt</span></h4>
-                     <p class="text-[10px] text-white/50 mt-1">${curr.pkt >= prev.pkt ? '↑' : '↓'} ${Math.abs(curr.pkt - prev.pkt)} vs prev</p>
+                <div class="bg-slate-800/50 p-5 rounded-2xl backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800 transition duration-300 group">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 group-hover:text-slate-300 transition">Total Load</p>
+                    <h4 class="text-3xl font-extrabold text-white mb-1">${window.formatNumber(curr.pkt)} <span class="text-sm font-normal text-slate-500">Pkt</span></h4>
+                    <div class="flex items-center gap-1.5">
+                         <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${curr.pkt >= prev.pkt ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${curr.pkt >= prev.pkt ? '↑' : '↓'} ${window.formatNumber(Math.abs(curr.pkt - prev.pkt))}</span>
+                         <span class="text-[10px] text-slate-500">vs prev</span>
+                    </div>
                 </div>
-                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
-                    <p class="text-[10px] uppercase font-bold text-emerald-200 tracking-wider mb-1">Avg Productivity</p>
-                    <h4 class="text-2xl font-extrabold text-white">${window.formatNumber(curr.prod)} <span class="text-xs font-normal opacity-70">/Org</span></h4>
-                     <p class="text-[10px] text-white/50 mt-1">${curr.prod >= prev.prod ? '↑' : '↓'} ${Math.abs(curr.prod - prev.prod)} vs prev</p>
+                <div class="bg-slate-800/50 p-5 rounded-2xl backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800 transition duration-300 group">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 group-hover:text-slate-300 transition">Avg Productivity</p>
+                    <h4 class="text-3xl font-extrabold text-white mb-1">${window.formatNumber(curr.prod)} <span class="text-sm font-normal text-slate-500">/Org</span></h4>
+                    <div class="flex items-center gap-1.5">
+                         <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${curr.prod >= prev.prod ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">${curr.prod >= prev.prod ? '↑' : '↓'} ${Math.abs(curr.prod - prev.prod)}</span>
+                         <span class="text-[10px] text-slate-500">vs prev</span>
+                    </div>
                 </div>
-                <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
-                    <p class="text-[10px] uppercase font-bold text-amber-200 tracking-wider mb-1">Top Hub Load</p>
-                    <h4 class="text-xl font-extrabold text-white truncate" title="${topLoadHubName}">${topLoadHubName}</h4>
-                    <p class="text-[10px] text-white/60 font-mono">${window.formatNumber(topLoadHubVal)} Pkt</p>
+                <div class="bg-slate-800/50 p-5 rounded-2xl backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800 transition duration-300 group">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 group-hover:text-slate-300 transition">Top Hub Load</p>
+                    <h4 class="text-2xl font-extrabold text-white mb-1 truncate" title="${topLoadHubName}">${topLoadHubName}</h4>
+                    <p class="text-[10px] text-slate-400 font-mono">${window.formatNumber(topLoadHubVal)} Pkt</p>
                 </div>
-                 <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/5">
-                    <p class="text-[10px] uppercase font-bold text-rose-200 tracking-wider mb-1">Total Cost</p>
-                    <h4 class="text-xl font-extrabold text-white truncate">${window.formatRupiah(curr.cost)}</h4>
+                <div class="bg-slate-800/50 p-5 rounded-2xl backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800 transition duration-300 group">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 group-hover:text-slate-300 transition">Total Cost</p>
+                    <h4 class="text-2xl font-extrabold text-white mb-1 truncate">${window.formatRupiah(curr.cost)}</h4>
                 </div>
             `;
 
             if (silentContainer) {
                 if (silentHubs.length > 0) {
                     silentContainer.innerHTML = `
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition">
-                            <h4 class="text-xs font-bold text-orange-200 mb-2 flex items-center gap-2">
-                                <span class="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center text-orange-400"><i class="fas fa-eye-slash text-[10px]"></i></span>
-                                Monitoring Transparansi (Silent HUBs)
+                        <div class="bg-amber-950/30 border border-amber-500/20 rounded-2xl p-5">
+                            <h4 class="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                                <i class="fas fa-exclamation-circle"></i> Monitoring Transparansi (Silent HUBs)
                             </h4>
-                            <p class="text-[10px] text-slate-300 mb-3 leading-relaxed">
-                                HUB berikut aktif beroperasi (Load > 0) namun <b class="text-orange-100">tidak melaporkan kendala</b> sama sekali selama periode ini. Perlu validasi apakah operasional benar-benar lancar atau kendala tidak terinfo.
+                            <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                                HUB berikut memiliki operasional aktif (Load > 0) namun <span class="text-amber-200 font-bold">tidak melaporkan kendala</span> sama sekali. Harap validasi keakuratan pelaporan.
                             </p>
                             <div class="flex flex-wrap gap-2">
-                                ${silentHubs.map(h => `<span class="px-2.5 py-1 bg-white/10 rounded-lg text-[10px] font-mono text-white border border-white/10 hover:bg-white/20 cursor-help" title="Zero Issues Reported">${h}</span>`).join('')}
+                                ${silentHubs.map(h => `<span class="px-3 py-1.5 bg-slate-800/80 rounded-xl text-xs font-bold text-slate-200 border border-slate-700 shadow-sm">${h}</span>`).join('')}
                             </div>
                         </div>
                     `;
                 } else {
                     silentContainer.innerHTML = `
-                        <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3 opacity-70">
-                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400"><i class="fas fa-check"></i></div>
+                        <div class="bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-5 flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0"><i class="fas fa-check text-lg"></i></div>
                             <div>
-                                <h4 class="text-xs font-bold text-emerald-200">Transparansi Baik</h4>
-                                <p class="text-[10px] text-slate-300">Seluruh HUB aktif telah memberikan catatan operasional/kendala.</p>
+                                <h4 class="text-sm font-bold text-emerald-400">Transparansi Baik</h4>
+                                <p class="text-xs text-slate-300 mt-1">Seluruh HUB aktif telah memberikan catatan operasional atau kendala.</p>
                             </div>
                         </div>
                     `;

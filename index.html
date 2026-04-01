@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4.4 BYOK</title>
+    <title>DailyReport v4.4 Supabase</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Flaticon Uicons (Regular Rounded) -->
     <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
         tailwind.config = {
@@ -138,7 +133,6 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
 
-    <!-- DYNAMIC ISLAND -->
     <div id="dynamic-island-container" class="fixed top-6 left-0 right-0 flex justify-center">
         <div id="dynamic-island" class="island-hidden flex items-center text-white group relative overflow-hidden ring-1 ring-white/10">
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
@@ -160,7 +154,6 @@
         </div>
     </div>
 
-    <!-- NAVBARS -->
     <nav id="app-navbar" class="glass-nav sticky top-0 z-50 hidden transition-all duration-300 md:flex">
         <div class="w-full px-6 md:px-12 mx-auto">
             <div class="flex items-center justify-between h-20">
@@ -170,7 +163,7 @@
                     </div>
                     <div>
                         <h1 class="font-extrabold text-lg tracking-tight leading-none text-slate-800">DAILY<span class="text-primary">REPORT</span></h1>
-                        <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Operational System</p>
+                        <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Supabase Version</p>
                     </div>
                 </div>
 
@@ -208,7 +201,6 @@
         </div>
     </nav>
 
-    <!-- Mobile Topbar -->
     <div id="mobile-topbar" class="md:hidden glass-nav px-6 py-4 flex justify-between items-center shadow-md z-40 hidden sticky top-0 bg-white/90 backdrop-blur-lg">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 border border-white/20">
@@ -230,7 +222,6 @@
         </div>
     </div>
 
-    <!-- Mobile Bottom Nav -->
     <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-50 flex justify-around items-center pb-safe hidden px-6 py-4 rounded-t-3xl safe-area-bottom">
         <button onclick="window.navigate('dashboard')" id="mob-nav-dashboard" class="mobile-nav-item active flex-1 flex flex-col items-center justify-center py-2">
             <i class="fi fi-rr-chart-pie-alt text-2xl mb-1"></i>
@@ -246,7 +237,6 @@
         </button>
     </div>
 
-    <!-- LOGIN SECTION -->
     <div id="login-section" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-100/80 backdrop-blur-sm hidden">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50/50 to-blue-50/50"></div>
@@ -281,7 +271,7 @@
                         <p class="text-[10px] text-slate-400 font-medium ml-1">Team Dashboard</p>
                     </div>
                     <div class="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
-                        <p class="text-[9px] text-slate-500 font-mono">v4.4 BYOK</p>
+                        <p class="text-[9px] text-slate-500 font-mono">v4.4 Supabase</p>
                         <i class="fas fa-shield-alt text-slate-600 text-xs"></i>
                     </div>
                 </div>
@@ -314,7 +304,7 @@
                                     <input type="checkbox" id="is-pic-checkbox" class="sr-only peer" onchange="window.togglePasswordField()">
                                     <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
                                 </div>
-                                <span class="ml-2 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login Leader / PIC</span>
+                                <span class="ml-2 text-xs font-bold text-slate-500 group-hover:text-primary transition">Login Leader / PIC / Visitor</span>
                             </label>
                             
                             <div id="login-pass-container" class="hidden mt-4 origin-top transition-all duration-300">
@@ -359,7 +349,6 @@
         </div>
     </div>
 
-    <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
         <div class="relative">
             <div class="w-20 h-20 border-4 border-slate-100 border-t-primary rounded-full animate-spin"></div>
@@ -370,13 +359,10 @@
         <div id="loading-logs" class="hidden"></div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 pb-44 md:pb-12 hidden scroll-smooth">
         <div class="w-full px-2 md:px-4 space-y-8">
             
-            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view-content fade-in space-y-6">
-                <!-- Layout Header Dashboard -->
                 <div class="glass p-5 rounded-3xl shadow-sm flex flex-col md:flex-row items-start md:items-center gap-4 relative z-30">
                     <div class="shrink-0">
                         <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard</h2>
@@ -406,7 +392,6 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
-                    <!-- KPI Cards (Same as before) -->
                     <div class="bg-white p-5 rounded-2xl shadow-card kpi-card group relative overflow-hidden border border-slate-100 transition-all duration-300 hover:shadow-float">
                         <div class="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 group-hover:scale-125 group-hover:-rotate-12 pointer-events-none"><i class="fi fi-rr-users-alt text-7xl text-blue-600"></i></div>
                         <div class="relative z-10">
@@ -525,7 +510,6 @@
                     </div>
                 </div>
 
-                <!-- Log Kendala & Catatan -->
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100/60 mt-6">
                     <div class="flex items-center gap-3 mb-4 border-b border-slate-50 pb-4">
                          <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm"><i class="fas fa-clipboard-list"></i></div>
@@ -538,7 +522,6 @@
                     <div id="dashboard-notes-empty" class="hidden text-center py-8 text-slate-400 text-xs italic">Tidak ada catatan kendala pada periode ini.</div>
                 </div>
 
-                <!-- MANAGER SUMMARY SECTION -->
                 <div id="manager-summary-section" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl shadow-lg border border-slate-700 text-white relative overflow-hidden mt-6">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                     
@@ -568,7 +551,6 @@
                         </div>
                     </div>
 
-                    <!-- AI INSIGHT CONTAINER -->
                     <div id="ai-insight-container" class="hidden mb-6 bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-sm relative animate-pulse">
                         <div class="absolute -left-1 top-4 bottom-4 w-1 bg-indigo-500 rounded-r-lg"></div>
                         <h4 class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-1 flex items-center gap-2"> 
@@ -584,7 +566,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: LAPORAN (Same as before) -->
              <div id="view-laporan" class="view-content hidden fade-in space-y-5">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl border border-slate-100 shadow-sm gap-4">
                     <div>
@@ -635,7 +616,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: ABSENSI (Same as before) -->
              <div id="view-absensi" class="view-content hidden fade-in space-y-6">
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <div class="flex flex-wrap gap-3 items-end justify-between">
@@ -724,7 +704,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: SETTINGS -->
             <div id="view-pengaturan" class="view-content hidden fade-in space-y-8">
                  <div class="flex items-center justify-between">
                     <div>
@@ -797,10 +776,8 @@
                     </div>
                 </div>
 
-                <!-- UPDATE: SETTINGS GENERAL with API KEY CONFIG -->
                 <div id="settings-general" class="settings-panel hidden">
                     <div class="grid md:grid-cols-2 gap-6">
-                        <!-- AI Config Card (NEW) -->
                         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 md:col-span-2">
                             <h3 class="font-bold text-slate-800 mb-6 text-sm flex items-center gap-2"><i class="fas fa-robot text-indigo-500"></i> Konfigurasi AI (Gemini)</h3>
                             <div class="mb-5 relative group">
@@ -814,7 +791,6 @@
                             <p class="text-[10px] text-slate-400 mt-3 ml-1">Key disimpan di Database Cloud. Satu Key untuk seluruh tim (Shared).</p>
                         </div>
 
-                        <!-- Existing Settings -->
                         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                             <h3 class="font-bold text-slate-800 mb-6 text-sm flex items-center gap-2"><i class="fas fa-key text-primary"></i> Password Admin</h3>
                             <div class="mb-5 relative group">
@@ -845,9 +821,7 @@
         </div>
     </main>
     
-    <!-- MODAL USER (Same as before) -->
     <div id="user-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center z-50 transition-opacity duration-300 px-4">
-        <!-- ... existing user modal content ... -->
         <div class="bg-white p-8 rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0 border border-white/50" id="user-modal-content">
             <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-bold text-slate-800" id="modal-title">User</h3><button onclick="window.closeUserModal()" class="w-9 h-9 rounded-full bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-danger transition flex items-center justify-center"><i class="fas fa-times"></i></button></div>
             <form id="user-form" class="space-y-5">
@@ -857,13 +831,19 @@
                     <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Nama Lengkap</label>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                     <div>
+                     <div id="hub-container">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">Kode HUB</label>
                         <select id="input-kode-hub" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium cursor-pointer" required></select>
                     </div>
-                    <div>
+                    <div id="posisi-container">
                          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider ml-1">Posisi</label>
-                         <select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium cursor-pointer" onchange="window.toggleUserModalPassword()"><option value="Sorter">Sorter</option><option value="DW">DW</option><option value="LEADER">LEADER</option><option value="Admin">Admin</option></select>
+                         <select id="input-posisi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-primary outline-none transition font-medium cursor-pointer" onchange="window.toggleUserModalPassword()">
+                            <option value="Sorter">Sorter</option>
+                            <option value="DW">DW</option>
+                            <option value="LEADER">LEADER</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Visitor">Visitor</option>
+                        </select>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -872,7 +852,7 @@
                          <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">ID User</label>
                     </div>
                     <div class="hidden col-span-1 relative group" id="password-container">
-                        <input type="text" id="input-sandi" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Kata Sandi">
+                        <input type="password" id="input-sandi" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-primary focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Kata Sandi">
                         <label class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Kata Sandi</label>
                     </div>
                 </div>
@@ -899,9 +879,7 @@
         </div>
     </div>
 
-    <!-- MODAL LAPORAN (Same as before) -->
     <div id="laporan-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 overflow-y-auto">
-        <!-- ... existing laporan modal content ... -->
         <div class="bg-white rounded-[2rem] w-full max-w-5xl shadow-2xl my-6 mx-4 flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 border border-white/40" id="laporan-modal-content">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20 rounded-t-[2rem] shadow-sm">
                 <div><h3 class="text-xl font-bold text-slate-800" id="laporan-modal-title">Form Laporan</h3></div>
@@ -984,31 +962,77 @@
         </div>
     </div>
 
-    <!-- MODULE SCRIPT -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, updateDoc, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    <script>
+        const supabaseUrl = 'https://qtsjehqdakvmmmnyuzda.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0c2plaHFkYWt2bW1tbnl1emRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDc4NzksImV4cCI6MjA5MDYyMzg3OX0.zeWEZw4Pw3dWqZpwRZFXnUHvDd_sMamSI9jRQquQPB8';
+        const supa = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDXOfZbVDqtfGB0abQkTeILo-XC6a9xxKI",
-            authDomain: "hub-dashboard-92428.firebaseapp.com",
-            projectId: "hub-dashboard-92428",
-            storageBucket: "hub-dashboard-92428.firebasestorage.app",
-            messagingSenderId: "827243064075",
-            appId: "1:827243064075:web:21b8e40b88f13b2433d00e"
-        };
+        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
+        let currentUser = null, annualChart = null, dailyChart = null;
+        let isLoggingOut = false;
+        let currentChartMode = 'annual'; 
+        let mainChartInstance = null; 
 
-        const storageId = 'hub-data-v1';
-        let app, auth, db;
-        
-        // --- UPDATED AI SERVICE HANDLER (BYOK Logic) ---
+        async function fetchAllData() {
+            try {
+                const [setRes, usrRes, costRes, lapRes] = await Promise.all([
+                    supa.from('settings').select('*').eq('id', 'main').maybeSingle(),
+                    supa.from('users').select('*'),
+                    supa.from('costs').select('*'),
+                    supa.from('laporan').select('*')
+                ]);
+
+                if(setRes.data) {
+                    appData.adminPass = setRes.data.adminPass || '123456';
+                    appData.accessCode = setRes.data.accessCode || 'SUPERHUB';
+                    appData.costDW = setRes.data.costDW || 120000;
+                    appData.geminiKey = setRes.data.geminiKey || '';
+                }
+                if(usrRes.data) appData.users = usrRes.data;
+                if(costRes.data) appData.costs = costRes.data;
+                if(lapRes.data) appData.laporan = lapRes.data;
+
+                if(currentUser) {
+                    window.renderUserTable();
+                    window.renderHubDropdownOptions();
+                    window.renderCostInputs();
+                    if(!document.getElementById('view-dashboard').classList.contains('hidden')) window.loadDashboardData();
+                    if(!document.getElementById('view-laporan').classList.contains('hidden')) window.renderLaporanList();
+                    if(!document.getElementById('view-absensi').classList.contains('hidden')) window.loadAbsensiData();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchAllData().then(() => {
+                handleAuthSuccess();
+            }).catch(e => {
+                if(!isLoggingOut) {
+                    window.notify('Gagal Koneksi', 'error');
+                    document.getElementById('init-error-text').innerText = "Cek koneksi internet atau pengaturan tabel Supabase.";
+                    document.getElementById('init-error-container').classList.remove('hidden');
+                }
+            });
+        });
+
+        function handleAuthSuccess() {
+            if(isLoggingOut) return;
+            window.notify('Terhubung', 'success');
+            const overlay = document.getElementById('loading-overlay');
+            if(overlay) {
+                overlay.classList.add('hidden-fade');
+                setTimeout(() => { overlay.classList.add('hidden'); overlay.remove(); }, 300);
+            }
+            const loginSec = document.getElementById('login-section');
+            if(loginSec) loginSec.classList.remove('hidden');
+        }
+
         async function callGeminiAPI(promptText) {
-            // Cek Key di AppData (Cloud Settings) bukan LocalStorage
             const storedKey = appData.geminiKey;
 
             if (!storedKey) {
-                // Tampilkan pesan error jika key tidak ada
                 Swal.fire({
                     title: 'API Key Dibutuhkan',
                     text: 'Fitur AI belum dikonfigurasi oleh Admin. Hubungi Admin untuk input API Key.',
@@ -1034,8 +1058,6 @@
             });
 
             if (!response.ok) {
-                 const errData = await response.json();
-                 // Handle invalid key
                  if (response.status === 400 || response.status === 403) {
                      window.notify('API Key Tidak Valid', 'error');
                  }
@@ -1045,15 +1067,14 @@
             return data.candidates?.[0]?.content?.parts?.[0]?.text;
         }
 
-        // --- NEW: AI KEY MANAGEMENT FUNCTIONS ---
         window.saveAIKey = async () => {
             const k = document.getElementById('gemini-api-key-input').value.trim();
             if(!k) return window.notify('Key kosong', 'error');
             
-            // Simpan ke Firestore (Settings Main)
             try {
                 window.notify('Menyimpan ke Database...', 'loading');
-                await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { geminiKey: k });
+                await supa.from('settings').upsert({ id: 'main', geminiKey: k });
+                await fetchAllData();
                 window.notify('API Key Tersimpan (Shared)', 'success');
             } catch(e) {
                 console.error(e);
@@ -1067,7 +1088,6 @@
                 const res = await callGeminiAPI("Jawab dengan satu kata: 'Berhasil'");
                 if(res) Swal.fire('Sukses', `Koneksi AI Berhasil! Respon: ${res}`, 'success');
             } catch(e) {
-                // Error handled by callGeminiAPI or here
                 console.error(e);
             }
         };
@@ -1111,81 +1131,6 @@
                 }, 3000);
             }
         };
-
-        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
-        let currentUser = null, annualChart = null, dailyChart = null;
-        let isLoggingOut = false;
-        let currentChartMode = 'annual'; // Default chart mode
-        let mainChartInstance = null; // Single chart instance
-
-        function handleAuthSuccess(user) {
-            if(isLoggingOut) return;
-            window.notify('Terhubung', 'success');
-            
-            const overlay = document.getElementById('loading-overlay');
-            if(overlay) {
-                overlay.classList.add('hidden-fade');
-                setTimeout(() => {
-                    if(overlay) {
-                        overlay.classList.add('hidden');
-                        overlay.remove();
-                    }
-                }, 300);
-            }
-            
-            const loginSec = document.getElementById('login-section');
-            if(loginSec) loginSec.classList.remove('hidden');
-            
-            initListeners();
-        }
-
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            enableIndexedDbPersistence(db).catch(err => { console.log('Persistence disabled') });
-            onAuthStateChanged(auth, (u) => { 
-                if(u) handleAuthSuccess(u); 
-            });
-            signInAnonymously(auth).catch(e => {
-                if(!isLoggingOut) {
-                    console.error(e); window.notify('Gagal Koneksi', 'error');
-                    document.getElementById('init-error-text').innerText = "Cek koneksi internet.";
-                    document.getElementById('init-error-container').classList.remove('hidden');
-                }
-            });
-        } catch(e) { window.notify('Config Error', 'error'); }
-
-        function initListeners() {
-            const pub = (c) => collection(db, 'artifacts', storageId, 'public', 'data', c);
-            
-            onSnapshot(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), (s) => {
-                if(s.exists()) { 
-                    const d = s.data(); 
-                    appData.adminPass = d.adminPass; 
-                    appData.accessCode = d.accessCode; 
-                    appData.costDW = d.costDW; 
-                    appData.geminiKey = d.geminiKey; // Ambil Key dari Cloud
-                }
-                else setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), appData);
-            });
-
-            onSnapshot(pub('users'), (s) => { appData.users=[]; s.forEach(d=>appData.users.push(d.data())); if(currentUser) window.renderUserTable(); });
-            onSnapshot(pub('costs'), (s) => { appData.costs=[]; s.forEach(d=>appData.costs.push(d.data())); window.renderHubDropdownOptions(); if(currentUser) { 
-                window.renderCostInputs(); 
-                if(document.getElementById('view-absensi').classList.contains('hidden')===false) window.renderAbsensiHubSelect();
-            } });
-            
-            onSnapshot(pub('laporan'), (s) => { 
-                appData.laporan=[]; 
-                s.forEach(d=>appData.laporan.push(d.data())); 
-                if(currentUser) { 
-                    if(!document.getElementById('view-dashboard').classList.contains('hidden')) window.loadDashboardData(); 
-                    if(!document.getElementById('view-laporan').classList.contains('hidden')) window.renderLaporanList(); 
-                    if(!document.getElementById('view-absensi').classList.contains('hidden')) window.loadAbsensiData();
-                } 
-            });
-        }
 
         window.Chart.register(ChartDataLabels);
         window.formatNumber = (n) => (!n && n!==0)?'':n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -1245,7 +1190,7 @@
             document.getElementById('btn-tambah-laporan').classList.toggle('hidden', !(isAdm||isAcc));
             
             const sumSec = document.getElementById('manager-summary-section');
-            if (sumSec) sumSec.classList.toggle('hidden', !isAdm);
+            if (sumSec) sumSec.classList.toggle('hidden', !(isAdm || role === 'pic'));
             
             document.getElementById('app-navbar').classList.add('md:flex');
 
@@ -1281,33 +1226,37 @@
             if (!result.isConfirmed) return;
 
             isLoggingOut = true;
-            try {
-                document.getElementById('app-navbar').classList.add('hidden');
-                document.getElementById('app-navbar').classList.remove('md:flex');
-                document.getElementById('mobile-topbar').classList.add('hidden');
-                document.getElementById('mobile-bottom-nav').classList.add('hidden');
-                document.getElementById('mobile-bottom-nav').classList.remove('flex');
-                document.getElementById('app-content').classList.add('hidden');
-                document.getElementById('login-section').classList.remove('hidden');
-                currentUser = null;
-                document.getElementById('login-id').value = '';
-                document.getElementById('login-pass-user').value = '';
-                document.getElementById('login-pass-admin').value = '';
-                await signOut(auth);
-                setTimeout(() => { signInAnonymously(auth); isLoggingOut=false; }, 500);
-                window.notify('Berhasil Keluar', 'success');
-            } catch (e) {
-                location.reload();
-            }
+            document.getElementById('app-navbar').classList.add('hidden');
+            document.getElementById('app-navbar').classList.remove('md:flex');
+            document.getElementById('mobile-topbar').classList.add('hidden');
+            document.getElementById('mobile-bottom-nav').classList.add('hidden');
+            document.getElementById('mobile-bottom-nav').classList.remove('flex');
+            document.getElementById('app-content').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            currentUser = null;
+            document.getElementById('login-id').value = '';
+            document.getElementById('login-pass-user').value = '';
+            document.getElementById('login-pass-admin').value = '';
+            setTimeout(() => { isLoggingOut=false; }, 500);
+            window.notify('Berhasil Keluar', 'success');
         };
         window.logout = window.doLogout;
 
         document.getElementById('form-login-admin').onsubmit = (e) => { e.preventDefault(); if(document.getElementById('login-pass-admin').value===appData.adminPass) doLogin('admin','Administrator','admin','YA','ALL'); else window.notify('Password Salah', 'error'); };
+        
         document.getElementById('form-login-user').onsubmit = (e) => { 
             e.preventDefault(); 
             const u = appData.users.find(x => x.id === document.getElementById('login-id').value);
             if(!u) return window.notify('ID Tidak Ditemukan', 'error');
             const isLeader = document.getElementById('is-pic-checkbox').checked;
+
+            if(u.posisi === 'Visitor') {
+                if(!isLeader) return window.notify('Gunakan centang Login Leader/PIC', 'warning');
+                if(u.sandi === document.getElementById('login-pass-user').value) doLogin('visitor', u.nama, u.id, 'TIDAK', 'ALL');
+                else window.notify('Password Salah', 'error');
+                return;
+            }
+
             if(isLeader) {
                 if(u.sandi === document.getElementById('login-pass-user').value) doLogin('pic', u.nama, u.id, u.akses, u.kode_hub);
                 else window.notify('Password Salah', 'error');
@@ -1341,7 +1290,7 @@
                 const s = document.getElementById('lap-filter-hub');
                 const sWrapper = document.getElementById('lap-filter-wrapper');
                 
-                if(currentUser.role === 'admin') {
+                if(currentUser.role === 'admin' || currentUser.role === 'visitor') {
                     sWrapper.classList.remove('hidden'); 
                     const curr = s.value;
                     s.innerHTML = '<option value="ALL">Semua HUB</option>';
@@ -2050,9 +1999,11 @@
              appData.costs.forEach(c => s.innerHTML += `<option value="${c.hub}">${c.hub}</option>`);
              s.value = val !== 'ALL' ? val : 'ALL';
              
-             if (currentUser.role !== 'admin' && currentUser.role !== 'pic') {
+             if (currentUser.role !== 'admin' && currentUser.role !== 'pic' && currentUser.role !== 'visitor') {
                  s.value = currentUser.kode_hub;
-                s.disabled = false; 
+                 s.disabled = true; 
+             } else {
+                 s.disabled = false;
              }
         };
 
@@ -2196,7 +2147,7 @@
 
                 finalUsers.sort((a,b) => {
                      const getRank = (pos) => {
-                         if(pos === 'LEADER' || pos === 'Admin') return 1;
+                         if(pos === 'LEADER' || pos === 'Admin' || pos === 'Visitor') return 1;
                          if(pos === 'Sorter') return 2;
                          return 3; 
                      };
@@ -2243,6 +2194,7 @@
                     let posStyle = 'text-slate-400 font-medium';
                     let posText = u.posisi;
                     if(u.posisi === 'LEADER' || u.posisi === 'Admin') { posStyle = 'text-blue-600 font-bold bg-blue-50/50 rounded px-1'; posText = 'LEADER'; }
+                    else if(u.posisi === 'Visitor') { posStyle = 'text-purple-600 font-bold bg-purple-50/50 rounded px-1'; posText = 'VISITOR'; }
                     else if(u.posisi === 'DW' || u.source === 'history') { posStyle = 'text-slate-400 italic'; }
 
                     html += `<tr class="hover:bg-slate-50 transition group">
@@ -2350,7 +2302,6 @@
             document.getElementById('global-cost-dw').value = window.formatNumber(appData.costDW); 
             window.renderCostInputs(); 
             
-            // Tampilkan Key dari Cloud di Input (jika ada)
             if(appData.geminiKey) document.getElementById('gemini-api-key-input').value = appData.geminiKey;
         };
         
@@ -2399,6 +2350,7 @@
 
                 let pos = u.posisi;
                 if(pos === 'Admin') pos = 'LEADER';
+                if(pos === 'Visitor') pos = 'VISITOR';
                 pos = pos.toUpperCase(); 
 
                 let entry = stats.find(s => s.hub === u.kode_hub && s.pos === pos);
@@ -2431,7 +2383,7 @@
 
                 sortedHubs.forEach(hub => {
                     const group = hubGroups[hub];
-                    const posOrder = { 'LEADER': 1, 'SORTER': 2, 'DW': 3 };
+                    const posOrder = { 'LEADER': 1, 'VISITOR': 2, 'SORTER': 3, 'DW': 4 };
                     group.sort((a,b) => (posOrder[a.pos]||99) - (posOrder[b.pos]||99));
 
                     let hubTotalAct = 0;
@@ -2440,6 +2392,7 @@
                     group.forEach(s => {
                         let posBadge = '';
                         if(s.pos === 'LEADER') posBadge = `<span class="text-blue-600 font-bold text-[10px]">LEADER</span>`;
+                        else if(s.pos === 'VISITOR') posBadge = `<span class="text-purple-600 font-bold text-[10px]">VISITOR</span>`;
                         else if(s.pos === 'SORTER') posBadge = `<span class="text-slate-500 text-[10px]">SORTER</span>`;
                         else posBadge = `<span class="text-slate-500 text-[10px]">DW</span>`;
 
@@ -2471,11 +2424,35 @@
             if(elRsg) elRsg.innerText = totalResign;
         };
 
-        window.toggleUserModalPassword = () => { const p=document.getElementById('input-posisi').value, isL=p==='LEADER'||p==='Admin', pc=document.getElementById('password-container'), ic=document.getElementById('id-container'); pc.classList.toggle('hidden', !isL); if(isL){ic.classList.remove('col-span-2');ic.classList.add('col-span-1')}else{ic.classList.remove('col-span-1');ic.classList.add('col-span-2')} };
+        window.toggleUserModalPassword = () => { 
+            const p=document.getElementById('input-posisi').value;
+            const isL=p==='LEADER'||p==='Admin'||p==='Visitor';
+            const pc=document.getElementById('password-container');
+            const ic=document.getElementById('id-container'); 
+            const hc=document.getElementById('hub-container');
+            const hi=document.getElementById('input-kode-hub');
+            const posc=document.getElementById('posisi-container');
+
+            pc.classList.toggle('hidden', !isL); 
+            if(isL){ic.classList.remove('col-span-2');ic.classList.add('col-span-1')}
+            else{ic.classList.remove('col-span-1');ic.classList.add('col-span-2')} 
+
+            if(p==='Visitor') {
+                hc.classList.add('hidden');
+                hi.removeAttribute('required');
+                hi.value = 'ALL';
+                posc.classList.add('col-span-2');
+            } else {
+                hc.classList.remove('hidden');
+                hi.setAttribute('required', 'true');
+                if(hi.value === 'ALL') hi.value = '';
+                posc.classList.remove('col-span-2');
+            }
+        };
         
         window.openUserModal = (id=null) => {
             const m=document.getElementById('user-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
-            const hS=document.getElementById('input-kode-hub'); hS.innerHTML='<option value="">-- Pilih --</option>'; appData.costs.forEach(c=>hS.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`);
+            const hS=document.getElementById('input-kode-hub'); hS.innerHTML='<option value="">-- Pilih --</option><option value="ALL">Semua HUB (ALL)</option>'; appData.costs.forEach(c=>hS.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`);
             
             if(id) { 
                 const u=appData.users.find(x=>x.id===id); 
@@ -2528,13 +2505,39 @@
                 tanggal_resign: isResign ? document.getElementById('input-tanggal-resign').value : ''
             }; 
             
-            try { await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id), data); window.closeUserModal(); window.notify('Tersimpan', 'success'); } catch(err){ window.notify('Gagal', 'error'); } 
+            try { 
+                await supa.from('users').upsert(data);
+                await fetchAllData();
+                window.closeUserModal(); 
+                window.notify('Tersimpan', 'success'); 
+            } catch(err){ window.notify('Gagal', 'error'); } 
         };
 
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
         window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
-        window.saveCosts = async () => { window.notify('Menyimpan...', 'loading'); const dw=window.parseFormattedNumber(document.getElementById('global-cost-dw').value), batch=[]; const rows=document.getElementById('cost-container').children; const newCosts=[]; for(let i=0;i<rows.length;i++){ const h=document.getElementById(`cost-hub-${i}`).value, c=window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); newCosts.push({hub:h, cost:c}); batch.push(setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'costs', h), {hub:h, cost:c})); } try { await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), {costDW:dw}); await Promise.all(batch); window.notify('Tersimpan', 'success'); } catch(e) { window.notify('Gagal', 'error'); } };
+        
+        window.saveCosts = async () => { 
+            window.notify('Menyimpan...', 'loading'); 
+            const dw=window.parseFormattedNumber(document.getElementById('global-cost-dw').value);
+            const rows=document.getElementById('cost-container').children; 
+            const newCosts=[]; 
+            
+            for(let i=0;i<rows.length;i++){ 
+                const h=document.getElementById(`cost-hub-${i}`).value;
+                const c=window.parseFormattedNumber(document.getElementById(`cost-val-${i}`).value); 
+                newCosts.push({hub:h, cost:c}); 
+            } 
+            
+            try { 
+                await supa.from('settings').upsert({ id: 'main', costDW: dw });
+                if(newCosts.length > 0) {
+                    await supa.from('costs').upsert(newCosts);
+                }
+                await fetchAllData();
+                window.notify('Tersimpan', 'success'); 
+            } catch(e) { window.notify('Gagal', 'error'); } 
+        };
 
         window.copyReportToClipboard = (laporan) => {
             const d = new Date(laporan.tanggal);
@@ -2575,6 +2578,7 @@
                         }
                     }
                     if (pos === 'Admin') pos = 'LEADER';
+                    if (pos === 'Visitor') pos = 'VISITOR';
                     
                     const nameDisplay = pos ? `${p.nama} (${pos})` : p.nama;
 
@@ -2652,7 +2656,7 @@
                 d = d.filter(l => { const x = new Date(l.tanggal); return x >= s && x <= e; });
             }
 
-            if(currentUser.role !== 'admin') {
+            if(currentUser.role !== 'admin' && currentUser.role !== 'visitor') {
                 d = d.filter(l => l.hub === currentUser.kode_hub);
             } else {
                 const hFilter = document.getElementById('lap-filter-hub').value;
@@ -2666,7 +2670,7 @@
                 d.forEach(l => {
                     const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
                     const shareBtn = `<button onclick='window.copyReportHandler("${safeId(l.id)}")' class="text-green-600 bg-green-50 hover:bg-green-100 p-2 rounded-lg transition" title="Salin Laporan"><i class="fab fa-whatsapp"></i></button>`;
-                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2">${shareBtn}<button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-300 text-[10px] italic">Read-only</span>';
+                    const acts = hasEditAccess ? `<div class="flex justify-end gap-2">${shareBtn}<button onclick="window.editLaporan('${safeId(l.id)}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button><button onclick="window.deleteLaporan('${safeId(l.id)}')" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button></div>` : '<span class="text-gray-400 bg-slate-100 px-2 py-1 rounded text-[10px] font-bold shadow-sm">READ-ONLY</span>';
                     
                     const prod = Math.round(l.productivity);
                     const prodClass = window.getProdColorClass(prod);
@@ -2758,6 +2762,7 @@
             ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id=>document.getElementById(id).innerText='0');
         };
         window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
+        
         window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
             const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; 
             const tb = document.getElementById('attendance-tbody'); 
@@ -2773,19 +2778,18 @@
                 }
                 return true;
             }).sort((a,b) => { 
-                const rA=(a.posisi==='LEADER'||a.posisi==='Admin')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin')?0:1; 
+                const rA=(a.posisi==='LEADER'||a.posisi==='Admin'||a.posisi==='Visitor')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin'||b.posisi==='Visitor')?0:1; 
                 if(rA!==rB)return rA-rB; 
                 return a.id.localeCompare(b.id); 
             });
 
             const map = {}; existingData.forEach(x => map[x.userId] = x);
-            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); });
+            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'||u.posisi==='Visitor'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,i:0,s:0,a:0,ket:''}, false); });
             existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
             window.calcMetrics();
         };
 
         window.deleteLaporan = async (id) => {
-
             const processDelete = async () => {
                 const r = await Swal.fire({
                     title: '',
@@ -2818,7 +2822,14 @@
 
                 if (!r.isConfirmed) return;
 
-                try { await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', id)); window.notify('Laporan berhasil dihapus', 'success'); } catch (err) { console.error(err); window.notify('Gagal menghapus laporan', 'error'); }
+                try { 
+                    await supa.from('laporan').delete().eq('id', id);
+                    await fetchAllData();
+                    window.notify('Laporan berhasil dihapus', 'success'); 
+                } catch (err) { 
+                    console.error(err); 
+                    window.notify('Gagal menghapus laporan', 'error'); 
+                }
             };
 
             if (currentUser.role === 'admin') { await processDelete(); return; }
@@ -2857,8 +2868,21 @@
             if (code === appData.accessCode) { window.notify('Akses Diberikan', 'success'); await processDelete(); } else { window.notify('Kode Akses Salah', 'error'); }
         };
 
-        window.saveAdminPass = async () => { const p = document.getElementById('new-admin-pass').value; if(p.length<4) return window.notify('Min 4 Char', 'error'); await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { adminPass: p }); window.notify('Password Updated', 'success'); };
-        window.saveAccessCode = async () => { const c = document.getElementById('access-code-input').value; if(!c) return; await updateDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'settings', 'main'), { accessCode: c }); window.notify('Kode Updated', 'success'); };
+        window.saveAdminPass = async () => { 
+            const p = document.getElementById('new-admin-pass').value; 
+            if(p.length<4) return window.notify('Min 4 Char', 'error'); 
+            await supa.from('settings').upsert({ id: 'main', adminPass: p });
+            await fetchAllData();
+            window.notify('Password Updated', 'success'); 
+        };
+        
+        window.saveAccessCode = async () => { 
+            const c = document.getElementById('access-code-input').value; 
+            if(!c) return; 
+            await supa.from('settings').upsert({ id: 'main', accessCode: c }); 
+            await fetchAllData();
+            window.notify('Kode Updated', 'success'); 
+        };
         
         window.improveTextWithAI = async () => {
             const input = document.getElementById('lap-catatan');
@@ -3004,7 +3028,8 @@
             });
             if (r.isConfirmed) {
                 try {
-                    await deleteDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'users', id));
+                    await supa.from('users').delete().eq('id', id);
+                    await fetchAllData();
                     window.notify('User dihapus', 'success');
                 } catch(e) {
                     window.notify('Gagal menghapus', 'error');
@@ -3084,7 +3109,8 @@
             };
 
             try {
-                await setDoc(doc(db, 'artifacts', storageId, 'public', 'data', 'laporan', docId), data);
+                await supa.from('laporan').upsert(data);
+                await fetchAllData();
                 window.closeLaporanModal();
                 
                 window.notify('Data Tersimpan', 'success'); 

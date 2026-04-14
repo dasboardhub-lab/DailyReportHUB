@@ -1009,19 +1009,9 @@
             }
         }
 
-        function setupRealtime() {
-            supa.channel('custom-all-channel')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'laporan' }, () => fetchAllData())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchAllData())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'costs' }, () => fetchAllData())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => fetchAllData())
-                .subscribe();
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
             fetchAllData().then(() => {
                 handleAuthSuccess();
-                setupRealtime();
             }).catch(e => {
                 if(!isLoggingOut) {
                     window.notify('Gagal Koneksi', 'error');
@@ -3022,162 +3012,77 @@
         };
 
         window.deleteUser = async (id) => {
-            const r = await Swal.fire({
-                title: '',
-                html: `
-                    <div class="flex flex-col items-center">
-                        <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-3 text-amber-500 shadow-sm border border-amber-100">
-                            <i class="fas fa-exclamation-triangle text-2xl animate-pulse"></i>
-                        </div>
-                        <h3 class="text-lg font-extrabold text-slate-800">Hapus User?</h3>
-                        <p class="text-xs text-slate-500 mt-2 text-center">Data akan dihapus permanen.</p>
-                    </div>
-                `,
-                width: '18rem',
-                showCancelButton: true,
-                confirmButtonText: 'Hapus',
-                cancelButtonText: 'Batal',
-                reverseButtons: true,
-                customClass: {
-                    popup: 'rounded-2xl border border-slate-100 shadow-xl p-5 font-sans',
-                    confirmButton: 'bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-rose-600 transition flex-1 mx-1',
-                    cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition flex-1 mx-1',
-                    actions: 'flex gap-2 w-full justify-center mt-3'
-                }
-            });
-            if (r.isConfirmed) {
-                try {
-                    await supa.from('users').delete().eq('id', id);
-                    await fetchAllData();
-                    window.notify('User dihapus', 'success');
-                } catch(e) {
-                    window.notify('Gagal menghapus', 'error');
-                }
-            }
+            const r = await Swal.fire({ title: '', html: `<div class="flex flex-col items-center"><div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-3 text-amber-500 shadow-sm border border-amber-100"><i class="fas fa-exclamation-triangle text-2xl animate-pulse"></i></div><h3 class="text-lg font-extrabold text-slate-800">Hapus User?</h3><p class="text-xs text-slate-500 mt-2 text-center">Data akan dihapus permanen.</p></div>`, width: '18rem', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', reverseButtons: true, customClass: { popup: 'rounded-2xl border border-slate-100 shadow-xl p-5 font-sans', confirmButton: 'bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-rose-600 transition flex-1 mx-1', cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition flex-1 mx-1', actions: 'flex gap-2 w-full justify-center mt-3' } });
+            if (r.isConfirmed) { try { await supa.from('users').delete().eq('id', id); await fetchAllData(); window.notify('User dihapus', 'success'); } catch(e) { window.notify('Gagal menghapus', 'error'); } }
         };
 
         document.getElementById('laporan-form').onsubmit = async (e) => {
-            e.preventDefault();
-            
+            e.preventDefault(); 
             const editId = document.getElementById('edit-laporan-id').value;
-            const hub = currentUser.role==='admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value;
+            const hub = currentUser.role==='admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value; 
             const tanggal = document.getElementById('lap-tanggal').value;
             const docId = hub + '_' + tanggal;
-
+            
             if(!hub) return window.notify('Pilih HUB', 'error');
             
+            let isMovingData = false;
+
             if (!editId || editId !== docId) {
                 const isExist = appData.laporan.some(l => l.id === docId);
                 if (isExist) {
-                    return window.notify('Laporan tanggal ini sudah ada. Gunakan tombol edit.', 'error');
+                    return window.notify('Laporan tanggal ini sudah ada. Silakan gunakan tombol edit.', 'error');
                 }
             }
-            
-            const rows = document.getElementById('attendance-tbody').children;
-            const attData = [];
-            let totalMpp = 0;
-            let totalFilled = 0; 
 
-            for(let r of rows) {
-                if(r.innerText.includes('Pilih HUB')) continue; 
-                
-                const s1 = r.querySelector('.att-s1').checked;
-                const s2 = r.querySelector('.att-s2').checked;
-                const s3 = r.querySelector('.att-s3').checked;
-                const i = r.querySelector('.att-i').checked;
-                const s = r.querySelector('.att-s').checked;
-                const a = r.querySelector('.att-a').checked;
-                
-                const posEl = r.querySelector('.att-pos');
-                const pos = posEl ? posEl.value : '';
-
-                if((s1||s2||s3) && (pos === 'Sorter' || pos === 'DW')) totalMpp++;
-                
-                if(s1||s2||s3||i||s||a) totalFilled++; 
-                
-                attData.push({
-                    userId: r.querySelector('.att-id').value,
-                    nama: r.querySelector('.att-name').value, 
-                    pos: pos, 
-                    s1, s2, s3, i, s, a,
-                    ket: r.querySelector('.att-ket').value
-                });
-            }
-
-            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
-            const st = window.parseFormattedNumber(document.getElementById('lap-staging').value);
-            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
-            const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
-            const totalPaket = g+st+j+sa;
-            
-            if (totalPaket <= 0 || totalMpp <= 0) {
-                let msg = 'Gagal Simpan: ';
-                if(totalPaket <= 0 && totalMpp <= 0) msg += 'Paket & MPP masih kosong';
-                else if(totalPaket <= 0) msg += 'Total Paket tidak boleh 0';
-                else if(totalMpp <= 0) msg += 'Total MPP (Absen Hadir) tidak boleh 0';
-                
-                return window.notify(msg, 'error');
-            }
-
-            window.notify('Menyimpan Laporan...', 'loading');
-            
-            const data = {
-                id: docId,
-                tanggal: tanggal,
-                hub: hub,
-                gateway: g, staging: st, jne: j, sap: sa,
-                total_paket: totalPaket,
-                total_mpp: totalMpp,
-                productivity: totalMpp>0 ? totalPaket/totalMpp : 0,
-                attendance_data: attData,
-                last_updated: new Date().toISOString(),
-                updated_by: currentUser.name,
-                catatan: document.getElementById('lap-catatan').value 
-            };
-
-            try {
-                if (editId && editId !== docId) {
-                    await supa.from('laporan').delete().eq('id', editId);
-                }
-                await supa.from('laporan').upsert(data);
-                await fetchAllData();
-                window.closeLaporanModal();
-                
-                window.notify('Data Tersimpan', 'success'); 
-                
-                const r = await Swal.fire({
-                    title: '',
-                    html: `
-                        <div class="flex flex-col items-center">
-                            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-3 text-emerald-500 shadow-sm border border-emerald-100">
-                                <i class="fas fa-check-circle text-3xl animate-bounce"></i>
-                            </div>
-                            <h3 class="text-lg font-extrabold text-slate-800">Berhasil!</h3>
-                            <p class="text-xs text-slate-500 mt-2 text-center">Laporan tersimpan di database.</p>
-                        </div>
-                    `,
-                    width: '18rem', 
+            if (editId && editId !== docId) {
+                const ask = await Swal.fire({
+                    title: 'Salin atau Pindah?',
+                    text: 'Kamu mengubah tanggal atau HUB. Pilih Salin Baru untuk menggandakan data atau Pindah Data untuk menghapus laporan lama.',
                     showCancelButton: true,
-                    confirmButtonText: '<i class="fab fa-whatsapp mr-1"></i> Salin',
-                    cancelButtonText: 'Tutup',
+                    showDenyButton: true,
+                    confirmButtonText: 'Salin Baru',
+                    denyButtonText: 'Pindah Data',
+                    cancelButtonText: 'Batal',
                     reverseButtons: true,
-                    buttonsStyling: false,
                     customClass: {
                         popup: 'rounded-2xl border border-slate-100 shadow-2xl p-5 font-sans',
-                        confirmButton: 'bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-green-600 transition transform active:scale-95 uppercase tracking-wide flex-1 mx-1',
-                        cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        confirmButton: 'bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-emerald-600 transition mx-1 uppercase',
+                        denyButton: 'bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-blue-600 transition mx-1 uppercase',
+                        cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition mx-1 uppercase',
                         actions: 'flex gap-2 w-full justify-center mt-4'
-                    }
+                    },
+                    buttonsStyling: false
                 });
 
-                if (r.isConfirmed) {
-                    window.copyReportToClipboard(data);
+                if (ask.isConfirmed) {
+                    isMovingData = false; 
+                } else if (ask.isDenied) {
+                    isMovingData = true; 
+                } else {
+                    return; 
                 }
-
-            } catch(err) {
-                console.error(err);
-                window.notify('Gagal menyimpan', 'error');
             }
+
+            const rows = document.getElementById('attendance-tbody').children, attData = []; let totalMpp = 0, totalFilled = 0; 
+            for(let r of rows) {
+                if(r.innerText.includes('Pilih HUB')) continue; 
+                const s1 = r.querySelector('.att-s1').checked, s2 = r.querySelector('.att-s2').checked, s3 = r.querySelector('.att-s3').checked, i = r.querySelector('.att-i').checked, s = r.querySelector('.att-s').checked, a = r.querySelector('.att-a').checked, posEl = r.querySelector('.att-pos'), pos = posEl ? posEl.value : '';
+                if((s1||s2||s3) && (pos === 'Sorter' || pos === 'DW')) totalMpp++; if(s1||s2||s3||i||s||a) totalFilled++; 
+                attData.push({ userId: r.querySelector('.att-id').value, nama: r.querySelector('.att-name').value, pos: pos, s1, s2, s3, i, s, a, ket: r.querySelector('.att-ket').value });
+            }
+            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value), st = window.parseFormattedNumber(document.getElementById('lap-staging').value), j = window.parseFormattedNumber(document.getElementById('lap-jne').value), sa = window.parseFormattedNumber(document.getElementById('lap-sap').value), totalPaket = g+st+j+sa;
+            if (totalPaket <= 0 || totalMpp <= 0) { let msg = 'Gagal Simpan: '; if(totalPaket <= 0 && totalMpp <= 0) msg += 'Paket & MPP masih kosong'; else if(totalPaket <= 0) msg += 'Total Paket tidak boleh 0'; else if(totalMpp <= 0) msg += 'Total MPP (Absen Hadir) tidak boleh 0'; return window.notify(msg, 'error'); }
+            window.notify('Menyimpan Laporan...', 'loading');
+            
+            const data = { id: docId, tanggal: tanggal, hub: hub, gateway: g, staging: st, jne: j, sap: sa, total_paket: totalPaket, total_mpp: totalMpp, productivity: totalMpp>0 ? totalPaket/totalMpp : 0, attendance_data: attData, last_updated: new Date().toISOString(), updated_by: currentUser.name, catatan: document.getElementById('lap-catatan').value };
+            try {
+                if (editId && editId !== docId && isMovingData) { 
+                    await supa.from('laporan').delete().eq('id', editId); 
+                }
+                await supa.from('laporan').upsert(data); await fetchAllData(); window.closeLaporanModal(); window.notify('Data Tersimpan', 'success'); 
+                const r = await Swal.fire({ title: '', html: `<div class="flex flex-col items-center"><div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-3 text-emerald-500 shadow-sm border border-emerald-100"><i class="fas fa-check-circle text-3xl animate-bounce"></i></div><h3 class="text-lg font-extrabold text-slate-800">Berhasil!</h3><p class="text-xs text-slate-500 mt-2 text-center">Laporan tersimpan di database.</p></div>`, width: '18rem', showCancelButton: true, confirmButtonText: '<i class="fab fa-whatsapp mr-1"></i> Salin', cancelButtonText: 'Tutup', reverseButtons: true, buttonsStyling: false, customClass: { popup: 'rounded-2xl border border-slate-100 shadow-2xl p-5 font-sans', confirmButton: 'bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-green-600 transition transform active:scale-95 uppercase tracking-wide flex-1 mx-1', cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1', actions: 'flex gap-2 w-full justify-center mt-4' } });
+                if (r.isConfirmed) { window.copyReportToClipboard(data); }
+            } catch(err) { console.error(err); window.notify('Gagal menyimpan', 'error'); }
         };
 
     </script>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4.4</title>
+    <title>DailyReport v4.4 Supabase</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1009,9 +1009,19 @@
             }
         }
 
+        function setupRealtime() {
+            supa.channel('custom-all-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'laporan' }, () => fetchAllData())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchAllData())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'costs' }, () => fetchAllData())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => fetchAllData())
+                .subscribe();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             fetchAllData().then(() => {
                 handleAuthSuccess();
+                setupRealtime();
             }).catch(e => {
                 if(!isLoggingOut) {
                     window.notify('Gagal Koneksi', 'error');
@@ -3049,8 +3059,19 @@
         document.getElementById('laporan-form').onsubmit = async (e) => {
             e.preventDefault();
             
+            const editId = document.getElementById('edit-laporan-id').value;
             const hub = currentUser.role==='admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value;
+            const tanggal = document.getElementById('lap-tanggal').value;
+            const docId = hub + '_' + tanggal;
+
             if(!hub) return window.notify('Pilih HUB', 'error');
+            
+            if (!editId || editId !== docId) {
+                const isExist = appData.laporan.some(l => l.id === docId);
+                if (isExist) {
+                    return window.notify('Laporan tanggal ini sudah ada. Gunakan tombol edit.', 'error');
+                }
+            }
             
             const rows = document.getElementById('attendance-tbody').children;
             const attData = [];
@@ -3100,12 +3121,9 @@
 
             window.notify('Menyimpan Laporan...', 'loading');
             
-            const editId = document.getElementById('edit-laporan-id').value;
-            const docId = editId || (hub + '_' + document.getElementById('lap-tanggal').value);
-            
             const data = {
                 id: docId,
-                tanggal: document.getElementById('lap-tanggal').value,
+                tanggal: tanggal,
                 hub: hub,
                 gateway: g, staging: st, jne: j, sap: sa,
                 total_paket: totalPaket,
@@ -3118,6 +3136,9 @@
             };
 
             try {
+                if (editId && editId !== docId) {
+                    await supa.from('laporan').delete().eq('id', editId);
+                }
                 await supa.from('laporan').upsert(data);
                 await fetchAllData();
                 window.closeLaporanModal();

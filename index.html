@@ -163,7 +163,7 @@
                     </div>
                     <div>
                         <h1 class="font-extrabold text-lg tracking-tight leading-none text-slate-800">DAILY<span class="text-primary">REPORT</span></h1>
-                        <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">Supabase Version</p>
+                        <p class="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">HUB KalSul</p>
                     </div>
                 </div>
 
@@ -638,26 +638,28 @@
                                 <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">Filter Area</span>
                                 <select id="abs-hub-select" class="bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-xs text-slate-700 font-bold focus:ring-2 focus:ring-primary focus:border-primary outline-none cursor-pointer hover:bg-white transition h-[42px]" onchange="window.loadAbsensiData()"><option value="ALL">Semua HUB</option></select>
                             </div>
+                            <div class="hidden md:block w-px h-8 bg-slate-200 mb-1 mx-2"></div>
+                            <div class="flex flex-col gap-1 w-full md:w-auto">
+                                <span class="text-[9px] font-bold text-blue-400 uppercase tracking-wider ml-1">Total MPP</span>
+                                <div class="flex items-center justify-center bg-blue-50 border border-blue-100 rounded-xl px-4 text-blue-600 font-bold text-sm h-[42px] min-w-[80px] shadow-sm">
+                                    <span id="abs-kpi-mpp">0</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 w-full md:w-auto">
+                                <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider ml-1">Total Cost</span>
+                                <div class="flex items-center justify-center bg-rose-50 border border-rose-100 rounded-xl px-4 text-rose-600 font-bold text-sm h-[42px] min-w-[120px] shadow-sm">
+                                    <span id="abs-kpi-cost">Rp 0</span>
+                                </div>
+                            </div>
                          </div>
                          <div class="flex gap-2">
                              <button onclick="window.initAbsensiFilters()" class="text-slate-400 hover:text-primary px-4 transition bg-white border border-slate-200 hover:border-primary/30 rounded-xl h-[42px]"><i class="fas fa-sync-alt"></i></button>
                          </div>
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                     <div class="bg-gradient-to-br from-blue-50 to-white p-6 rounded-3xl shadow-card border border-blue-100/50 flex flex-col justify-between group">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Total MPP</p><div class="w-10 h-10 rounded-xl bg-blue-100/50 flex items-center justify-center text-primary"><i class="fas fa-users"></i></div></div>
-                        <h3 class="text-3xl font-extrabold text-primary mt-2" id="abs-kpi-mpp">0</h3>
-                    </div>
-                    <div class="bg-gradient-to-br from-rose-50 to-white p-6 rounded-3xl shadow-card border border-rose-100/50 flex flex-col justify-between group">
-                        <div class="flex justify-between items-start"><p class="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Total Cost</p><div class="w-10 h-10 rounded-xl bg-rose-100/50 flex items-center justify-center text-danger"><i class="fas fa-coins"></i></div></div>
-                        <h3 class="text-3xl font-extrabold text-danger mt-2" id="abs-kpi-cost">Rp 0</h3>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[50vh]">
-                    <div class="overflow-auto flex-1">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[65vh]">
+                    <div class="overflow-auto custom-scrollbar flex-1">
                         <div id="absensi-table-container" class="min-h-full bg-white"><div class="flex items-center justify-center h-full text-slate-400 text-xs font-medium flex-col gap-2"><i class="fas fa-search text-3xl opacity-20"></i><p>Silakan pilih filter...</p></div></div>
                     </div>
                 </div>
@@ -689,11 +691,12 @@
                             <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><i class="fas fa-list-alt"></i></div>
                             <h3 class="font-bold text-slate-700 text-sm">Ringkasan Detail Absensi</h3>
                         </div>
-                        <div class="overflow-x-auto max-h-[400px]">
+                        <div class="overflow-x-auto custom-scrollbar max-h-[400px]">
                              <table class="w-full text-xs text-left">
                                 <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
                                         <th class="px-6 py-4">Nama Personil</th>
+                                        <th class="px-4 py-4 text-center">Posisi</th>
                                         <th class="px-2 py-4 text-center text-blue-600" title="Hadir">H</th>
                                         <th class="px-2 py-4 text-center text-orange-500" title="Ijin">I</th>
                                         <th class="px-2 py-4 text-center text-yellow-500" title="Sakit">S</th>
@@ -1141,7 +1144,12 @@
         window.parseFormattedNumber = (s) => { if(!s)return 0; return parseInt(s.toString().replace(/[^0-9]/g,''),10)||0; };
         window.formatCostInput = (e) => { let v=e.value.replace(/[^0-9]/g,''); e.value=window.formatNumber(v); };
         window.formatRupiah = (n) => n==null?'': 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        const safeId = (id) => id?id.replace(/'/g,"\\'").replace(/"/g,'&quot;'):'';
+        
+        window.safeId = (id) => {
+            if(!id) return '';
+            return id.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        };
+        
         window.getProdColorClass = (val) => val < 600 ? 'bg-red-100 text-red-600 font-bold px-2 py-1 rounded-lg text-[10px]' : 'bg-green-100 text-green-600 font-bold px-2 py-1 rounded-lg text-[10px]';
 
         window.switchLoginTab = (t) => {
@@ -1722,13 +1730,42 @@
                  txt += `*4. Log Kendala:* Nihil\n`;
             }
 
-            txt += `\n*5. Monitoring Transparansi (Silent HUBs):*\n`;
-            if(silentHubs.length > 0) {
-                txt += `HUB berikut beroperasi (Load > 0) namun TIDAK melaporkan kendala sama sekali dalam periode ini:\n`;
-                silentHubs.forEach(h => txt += `- ⚠ ${h}\n`);
-                txt += `_(Mohon divalidasi apakah operasional benar-benar lancar atau kendala tidak terinfo)_\n`;
+            txt += `\n*5. Karyawan Tidak Hadir (Ijin/Sakit/Alfa):*\n`;
+            const absenteeMap = {};
+            currData.forEach(r => {
+                if (r.attendance_data) {
+                    r.attendance_data.forEach(a => {
+                        if (a.i || a.s || a.a) {
+                            const hub = r.hub;
+                            const namaUpper = (a.nama || a.name || '').trim().toUpperCase();
+                            
+                            if (!absenteeMap[hub]) absenteeMap[hub] = {};
+                            if (!absenteeMap[hub][namaUpper]) absenteeMap[hub][namaUpper] = { i: 0, s: 0, a: 0 };
+                            
+                            if (a.i) absenteeMap[hub][namaUpper].i++;
+                            if (a.s) absenteeMap[hub][namaUpper].s++;
+                            if (a.a) absenteeMap[hub][namaUpper].a++;
+                        }
+                    });
+                }
+            });
+
+            const hubsWithAbsentees = Object.keys(absenteeMap).sort();
+            if(hubsWithAbsentees.length > 0) {
+                txt += "```\n";
+                txt += padEnd("HUB", 5) + "|" + padEnd("NAMA", 14) + "|I|S|A\n";
+                txt += "-".repeat(5) + "+" + "-".repeat(14) + "+-+-+-\n";
+                hubsWithAbsentees.forEach(hub => {
+                    const persons = Object.keys(absenteeMap[hub]).sort();
+                    persons.forEach(person => {
+                        const counts = absenteeMap[hub][person];
+                        const pName = person.length > 13 ? person.substring(0, 13) : person;
+                        txt += padEnd(hub.substring(0, 4), 5) + "|" + padEnd(pName, 14) + "|" + counts.i + "|" + counts.s + "|" + counts.a + "\n";
+                    });
+                });
+                txt += "```\n";
             } else {
-                txt += `✅ Seluruh HUB aktif telah transparan melaporkan kondisi lapangan.\n`;
+                txt += `Nihil\n`;
             }
             
             txt += `\n_Generated by DailyReport System_`;
@@ -2045,12 +2082,6 @@
             
             let totAbsMpp = 0;
             let totAbsCost = 0;
-            reports.forEach(r => {
-                totAbsMpp += r.total_mpp;
-                totAbsCost += window.calculateReportCost(r);
-            });
-            document.getElementById('abs-kpi-mpp').innerText = window.formatNumber(totAbsMpp);
-            document.getElementById('abs-kpi-cost').innerText = window.formatRupiah(totAbsCost);
 
             const attMap = {};
             const colTotals = {}; 
@@ -2058,52 +2089,33 @@
             const hubStats = {};
 
             reports.forEach(r => {
-                if(!attMap[r.hub]) attMap[r.hub] = {};
-                if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
-                
-                if(!hubStats[r.hub]) hubStats[r.hub] = { h:0, i:0, s:0, a:0 };
+                totAbsMpp += r.total_mpp || 0;
+                totAbsCost += window.calculateReportCost(r) || 0;
 
+                if(!attMap[r.hub]) attMap[r.hub] = {}; if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0; if(!hubStats[r.hub]) hubStats[r.hub] = { h:0, i:0, s:0, a:0 };
                 if(r.attendance_data) {
                     r.attendance_data.forEach(a => {
-                         let status = '';
-                         if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3';
-                         else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
+                         let status = ''; if(a.s1) status='1'; else if(a.s2) status='2'; else if(a.s3) status='3'; else if(a.i) status='I'; else if(a.s) status='S'; else if(a.a) status='A';
+                         let pos = a.pos; 
+                         if(!pos) { 
+                             if(a.userId.startsWith('manual_')) pos='DW'; 
+                             else { const u = appData.users.find(x=>x.id===a.userId); if(u) pos=u.posisi; } 
+                         }
+                         if(!pos) pos='DW';
                          
-                         if(!userSummary[a.userId]) userSummary[a.userId] = { name: a.nama || a.name, h:0, i:0, s:0, a:0, details: [] };
+                         const rawName = (a.nama || a.name || '').trim().toUpperCase(); 
+                         const summaryKey = `${rawName}_${r.hub}`;
                          
-                         if(['1','2','3'].includes(status)) {
-                             userSummary[a.userId].h++;
-                             hubStats[r.hub].h++;
-                         } else if (status === 'I') {
-                             userSummary[a.userId].i++;
-                             hubStats[r.hub].i++;
-                         } else if (status === 'S') {
-                             userSummary[a.userId].s++;
-                             hubStats[r.hub].s++;
-                         } else if (status === 'A') {
-                             userSummary[a.userId].a++;
-                             hubStats[r.hub].a++;
-                         }
-
-                         if (['I','S','A'].includes(status)) {
-                             const reason = a.ket ? `(${a.ket})` : '';
-                             const label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : 'Alfa');
-                             const dObj = new Date(r.tanggal);
-                             const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
-                             userSummary[a.userId].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`);
-                         }
-
-                         if(status) {
-                             if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama };
-                             attMap[r.hub][a.userId][r.tanggal] = status;
-                             if(['1','2','3'].includes(status)) {
-                                 if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0;
-                                 colTotals[r.tanggal]++;
-                             }
-                         }
+                         if(!userSummary[summaryKey]) userSummary[summaryKey] = { name: rawName, hub: r.hub, pos: pos, h:0, i:0, s:0, a:0, details: [] };
+                         if(['1','2','3'].includes(status)) { userSummary[summaryKey].h++; hubStats[r.hub].h++; } else if (status === 'I') { userSummary[summaryKey].i++; hubStats[r.hub].i++; } else if (status === 'S') { userSummary[summaryKey].s++; hubStats[r.hub].s++; } else if (status === 'A') { userSummary[summaryKey].a++; hubStats[r.hub].a++; }
+                         if (['I','S','A'].includes(status)) { const reason = a.ket ? `(${a.ket})` : '', label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : 'Alfa'), dObj = new Date(r.tanggal), dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; userSummary[summaryKey].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`); }
+                         if(status) { if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama }; attMap[r.hub][a.userId][r.tanggal] = status; if(['1','2','3'].includes(status)) { if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0; colTotals[r.tanggal]++; } }
                     });
                 }
             });
+
+            document.getElementById('abs-kpi-mpp').innerText = window.formatNumber(totAbsMpp);
+            document.getElementById('abs-kpi-cost').innerText = window.formatRupiah(totAbsCost);
 
             let hubsToShow = (hubFilter === 'ALL') ? appData.costs.map(c=>c.hub) : [hubFilter];
             const groupedUsers = {}; 
@@ -2278,28 +2290,29 @@
                 `;
             });
 
-            summaryBody.innerHTML = '';
-            const sortedUserIds = Object.keys(userSummary).sort((a,b) => userSummary[a].name.localeCompare(userSummary[b].name));
-            
-            if (sortedUserIds.length === 0) {
-                 summaryBody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`;
-            } else {
-                sortedUserIds.forEach(uid => {
-                    const u = userSummary[uid];
-                    if (u.h === 0 && u.i === 0 && u.s === 0 && u.a === 0 && u.details.length === 0) return; 
-                    
+            hubRecapBody.innerHTML = ''; Object.keys(hubStats).sort().forEach(h => { const s = hubStats[h]; hubRecapBody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50"><td class="px-4 py-3 font-bold text-slate-700 text-left">${h}</td><td class="px-3 py-3 font-bold text-emerald-600 bg-emerald-50/30 rounded">${s.h}</td><td class="px-3 py-3 font-bold text-amber-500">${s.i}</td><td class="px-3 py-3 font-bold text-purple-500">${s.s}</td><td class="px-3 py-3 font-bold text-rose-500">${s.a}</td></tr>`; });
+
+            summaryBody.innerHTML = ''; 
+            const sortedUserKeys = Object.keys(userSummary).sort((a,b) => {
+                const uA = userSummary[a], uB = userSummary[b];
+                if(uA.hub !== uB.hub) return uA.hub.localeCompare(uB.hub);
+                const getRank = (p) => { const pu = (p||'').toUpperCase(); if(pu.includes('LEADER')||pu.includes('ADMIN')||pu.includes('VISITOR')) return 1; if(pu.includes('SORTER')) return 2; return 3; };
+                const rA = getRank(uA.pos), rB = getRank(uB.pos);
+                if(rA !== rB) return rA - rB;
+                return uA.name.localeCompare(uB.name);
+            });
+            if (sortedUserKeys.length === 0) { summaryBody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`; } else {
+                let currHub = '';
+                sortedUserKeys.forEach(key => {
+                    const u = userSummary[key]; if (u.h === 0 && u.i === 0 && u.s === 0 && u.a === 0 && u.details.length === 0) return; 
+                    if (currHub !== u.hub) { currHub = u.hub; summaryBody.innerHTML += `<tr class="bg-slate-100/80 border-b border-slate-200"><td colspan="7" class="p-2.5 font-extrabold text-slate-700 pl-6"><span class="bg-slate-200/50 px-2 py-0.5 rounded border border-slate-300/50 mr-2"><i class="fas fa-building text-slate-500 text-[10px]"></i></span> ${u.hub}</td></tr>`; }
                     const detailsHtml = u.details.length > 0 ? u.details.join('') : '<span class="text-slate-300">-</span>';
-                    
-                    summaryBody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition border-b border-slate-50">
-                            <td class="px-6 py-4 font-bold text-slate-700 text-[11px]">${u.name}</td>
-                            <td class="px-2 py-4 text-center font-bold text-emerald-600 bg-emerald-50/30 rounded">${u.h}</td>
-                            <td class="px-2 py-4 text-center font-bold text-amber-500">${u.i}</td>
-                            <td class="px-2 py-4 text-center font-bold text-purple-500">${u.s}</td>
-                            <td class="px-2 py-4 text-center font-bold text-rose-500">${u.a}</td>
-                            <td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td>
-                        </tr>
-                    `;
+                    let posStyle = 'text-slate-400 font-medium', posText = (u.pos||'DW').toUpperCase();
+                    if(posText==='ADMIN') posText='LEADER';
+                    if(posText==='LEADER'||posText==='VISITOR') posStyle = 'text-blue-600 font-bold bg-blue-50/50 rounded px-1.5 py-0.5';
+                    else if(posText==='DW'||posText==='HISTORY') posStyle = 'text-slate-400 italic bg-slate-50 rounded px-1.5 py-0.5 border border-slate-200';
+                    else posStyle = 'text-slate-500 font-bold bg-slate-100 rounded px-1.5 py-0.5 border border-slate-200';
+                    summaryBody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700 text-[11px] uppercase">${window.safeId(u.name)}</td><td class="px-4 py-4 text-center"><span class="${posStyle} text-[9px]">${posText}</span></td><td class="px-2 py-4 text-center font-bold text-emerald-600 bg-emerald-50/30 rounded">${u.h}</td><td class="px-2 py-4 text-center font-bold text-amber-500">${u.i}</td><td class="px-2 py-4 text-center font-bold text-purple-500">${u.s}</td><td class="px-2 py-4 text-center font-bold text-rose-500">${u.a}</td><td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td></tr>`;
                 });
             }
         };

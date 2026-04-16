@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v4.4 Supabase</title>
+    <title>DailyReport v4</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1019,6 +1019,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             fetchAllData().then(() => {
                 handleAuthSuccess();
+                window.setupRealtime();
             }).catch(e => {
                 if(!isLoggingOut) {
                     window.notify('Gagal Koneksi', 'error');
@@ -1039,6 +1040,24 @@
             const loginSec = document.getElementById('login-section');
             if(loginSec) loginSec.classList.remove('hidden');
         }
+
+        let pollingInterval = null;
+
+        window.setupRealtime = () => {
+            // Karena lingkungan eksekusi memblokir koneksi WebSocket (wss://),
+            // kita menggunakan metode Polling berkala sebagai pengganti realtime 
+            // agar data antar perangkat tetap tersinkronisasi.
+            try {
+                if (pollingInterval) clearInterval(pollingInterval);
+                pollingInterval = setInterval(() => {
+                    if (currentUser && !isLoggingOut) {
+                        fetchAllData();
+                    }
+                }, 10000); // Sinkronisasi otomatis setiap 10 detik
+            } catch (error) {
+                console.error("Setup Sync Error:", error);
+            }
+        };
 
         async function callGeminiAPI(promptText) {
             const storedKey = appData.geminiKey;

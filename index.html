@@ -133,6 +133,24 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
 
+    <div id="trial-warning-banner" class="hidden bg-rose-500 text-white text-center py-2 px-4 text-xs font-bold tracking-wide z-[9999] relative flex-shrink-0 shadow-md">
+        PERHATIAN: Masa trial aplikasi berakhir pada <span id="trial-warning-date"></span>. Hubungi Admin untuk aktivasi.
+    </div>
+
+    <div id="trial-lock-overlay" class="fixed inset-0 z-[99999] bg-slate-900 hidden flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white p-8 rounded-[2rem] max-w-md w-full shadow-2xl border border-white/20">
+            <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner">
+                <i class="fas fa-lock text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Masa Trial Berakhir</h2>
+            <p class="text-xs text-slate-500 mb-8 leading-relaxed font-medium">Aplikasi ini telah mencapai batas waktu uji coba. Hubungi pengembang untuk mendapatkan kode aktivasi dan membuka akses penuh.</p>
+            <div class="space-y-4">
+                <input type="text" id="unlock-code-input" placeholder="KODE AKTIVASI" class="w-full text-center px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl font-extrabold text-slate-700 focus:ring-2 focus:ring-primary outline-none uppercase tracking-widest text-sm shadow-sm">
+                <button onclick="window.verifyUnlockCode()" class="w-full py-4 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition active:scale-95 uppercase tracking-wide text-xs">Aktivasi Aplikasi</button>
+            </div>
+        </div>
+    </div>
+
     <div id="dynamic-island-container" class="fixed top-6 left-0 right-0 flex justify-center">
         <div id="dynamic-island" class="island-hidden flex items-center text-white group relative overflow-hidden ring-1 ring-white/10">
             <div id="island-spinner" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
@@ -978,7 +996,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0c2plaHFkYWt2bW1tbnl1emRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDc4NzksImV4cCI6MjA5MDYyMzg3OX0.zeWEZw4Pw3dWqZpwRZFXnUHvDd_sMamSI9jRQquQPB8';
         const supa = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [] };
+        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [], isUnlocked: false, unlockCode: 'tes', trialEndDate: '2026-04-27' };
         let currentUser = null, annualChart = null, dailyChart = null;
         let isLoggingOut = false;
         let currentChartMode = 'annual'; 
@@ -998,6 +1016,9 @@
                     appData.accessCode = setRes.data.accessCode || 'SUPERHUB';
                     appData.costDW = setRes.data.costDW || 120000;
                     appData.geminiKey = setRes.data.geminiKey || '';
+                    appData.isUnlocked = setRes.data.isUnlocked || false;
+                    appData.unlockCode = setRes.data.unlockCode || 'tes';
+                    appData.trialEndDate = setRes.data.trialEndDate || '2026-04-27';
                 }
                 if(usrRes.data) appData.users = usrRes.data;
                 if(costRes.data) appData.costs = costRes.data;
@@ -1018,6 +1039,30 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchAllData().then(() => {
+                const trialEndDate = new Date(appData.trialEndDate);
+                const now = new Date();
+                
+                if (!appData.isUnlocked) {
+                    if (now > trialEndDate) {
+                        document.getElementById('trial-lock-overlay').classList.remove('hidden');
+                        document.getElementById('trial-lock-overlay').classList.add('flex');
+                        const overlay = document.getElementById('loading-overlay');
+                        if(overlay) overlay.remove();
+                        return;
+                    } else {
+                        const diffTime = trialEndDate - now;
+                        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (daysLeft <= 30) {
+                            const banner = document.getElementById('trial-warning-banner');
+                            if (banner) {
+                                banner.classList.remove('hidden');
+                                const dateStr = trialEndDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                                document.getElementById('trial-warning-date').innerText = `${dateStr} (${daysLeft} hari lagi)`;
+                            }
+                        }
+                    }
+                }
+
                 handleAuthSuccess();
             }).catch(e => {
                 if(!isLoggingOut) {
@@ -1039,6 +1084,58 @@
             const loginSec = document.getElementById('login-section');
             if(loginSec) loginSec.classList.remove('hidden');
         }
+
+        window.verifyUnlockCode = async () => {
+            const input = document.getElementById('unlock-code-input').value.trim().toUpperCase();
+            if (input === appData.unlockCode) {
+                window.notify('Memproses Aktivasi...', 'loading');
+                const { error } = await supa.from('settings').update({ isUnlocked: true }).eq('id', 'main');
+                
+                if (error) {
+                    console.error("Detail Error:", error);
+                    window.notify('Gagal. Cek pengaturan database.', 'error');
+                } else {
+                    window.notify('Aktivasi Berhasil', 'success');
+                    
+                    setTimeout(() => {
+                        Swal.fire({
+                            html: `
+                                <div class="flex flex-col items-center text-center mt-2">
+                                    <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 text-emerald-500 shadow-inner border border-emerald-100">
+                                        <i class="fas fa-heart text-3xl animate-pulse"></i>
+                                    </div>
+                                    <h3 class="text-xl font-extrabold text-slate-800 mb-2">Terima Kasih!</h3>
+                                    <p class="text-xs text-slate-500 leading-relaxed font-medium">
+                                        Dukungan Kamu sangat berarti bagi pengembangan aplikasi ini. Selamat menikmati akses penuh tanpa batas waktu.
+                                    </p>
+                                </div>
+                            `,
+                            confirmButtonText: 'Mulai Bekerja <i class="fas fa-rocket ml-1"></i>',
+                            customClass: {
+                                popup: 'rounded-[2rem] border border-slate-100 shadow-2xl p-6 font-sans max-w-sm',
+                                confirmButton: 'w-full bg-slate-800 text-white px-6 py-3.5 rounded-xl font-bold text-xs shadow-lg hover:bg-slate-900 transition active:scale-95 uppercase tracking-wide mt-4'
+                            },
+                            buttonsStyling: false,
+                            allowOutsideClick: false
+                        }).then(() => {
+                            appData.isUnlocked = true;
+                            const lockOverlay = document.getElementById('trial-lock-overlay');
+                            lockOverlay.style.transition = 'opacity 0.5s ease';
+                            lockOverlay.style.opacity = '0';
+                            
+                            setTimeout(() => {
+                                lockOverlay.classList.add('hidden');
+                                lockOverlay.classList.remove('flex');
+                                lockOverlay.style.opacity = '1'; 
+                                handleAuthSuccess();
+                            }, 500);
+                        });
+                    }, 800);
+                }
+            } else {
+                window.notify('Kode Aktivasi Salah', 'error');
+            }
+        };
 
         async function callGeminiAPI(promptText) {
             const storedKey = appData.geminiKey;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v5</title>
+    <title>DailyReport v4.4 Supabase</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -133,8 +133,8 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
 
-    <div id="trial-warning-banner" class="hidden bg-rose-500 text-white text-center py-2 px-4 text-xs font-bold tracking-wide z-[9999] relative flex-shrink-0 shadow-md">
-        PERHATIAN: Masa trial aplikasi berakhir pada <span id="trial-warning-date"></span>. Hubungi Admin untuk aktivasi.
+    <div id="trial-warning-banner" class="hidden bg-rose-500 hover:bg-rose-600 transition cursor-pointer text-white text-center py-2 px-4 text-xs font-bold tracking-wide z-[9999] relative flex-shrink-0 shadow-md" onclick="window.openSubscriptionModal()">
+        PERHATIAN: Masa trial aplikasi berakhir pada <span id="trial-warning-date"></span>. Klik di sini untuk aktivasi paket.
     </div>
 
     <div id="trial-lock-overlay" class="fixed inset-0 z-[99999] bg-slate-900 hidden flex-col items-center justify-center p-6 text-center">
@@ -147,6 +147,53 @@
             <div class="space-y-4">
                 <input type="text" id="unlock-code-input" placeholder="KODE AKTIVASI" class="w-full text-center px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl font-extrabold text-slate-700 focus:ring-2 focus:ring-primary outline-none uppercase tracking-widest text-sm shadow-sm">
                 <button onclick="window.verifyUnlockCode()" class="w-full py-4 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition active:scale-95 uppercase tracking-wide text-xs">Aktivasi Aplikasi</button>
+                <button onclick="window.openSubscriptionModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold shadow-sm transition active:scale-95 uppercase tracking-wide text-xs">Lihat Paket Langganan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="subscription-modal" class="fixed inset-0 z-[100000] bg-slate-900/80 backdrop-blur-sm hidden flex-col items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col relative transform scale-95 transition-transform duration-300" id="subscription-modal-content">
+            <button onclick="window.closeSubscriptionModal()" class="absolute top-6 right-6 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-rose-100 hover:text-rose-500 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-8 text-center bg-slate-50 border-b border-slate-100">
+                <h2 class="text-2xl font-extrabold text-slate-800">Pilih Paket Langganan</h2>
+                <p class="text-xs text-slate-500 mt-2 font-medium">Buka akses penuh aplikasi tanpa batas waktu</p>
+            </div>
+            <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-100/50">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-glow transition flex flex-col">
+                    <div class="text-blue-500 mb-4"><i class="fas fa-paper-plane text-3xl"></i></div>
+                    <h3 class="text-lg font-bold text-slate-800">Basic</h3>
+                    <div class="text-3xl font-extrabold text-slate-800 my-4">Rp 100k<span class="text-xs text-slate-400 font-medium">/bulan</span></div>
+                    <ul class="text-xs text-slate-600 space-y-3 flex-1 mb-6 text-left">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Akses 3-4 HUB Utama</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Laporan Harian Standar</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Support Email Harian</li>
+                    </ul>
+                    <button onclick="window.contactAdmin('Basic')" class="w-full py-3 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl font-bold transition uppercase text-xs">Pilih Paket</button>
+                </div>
+                <div class="bg-blue-600 p-6 rounded-3xl shadow-float border border-blue-500 transform md:-translate-y-4 flex flex-col relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[9px] font-extrabold px-2 py-1 rounded-md uppercase tracking-wider">Populer</div>
+                    <div class="text-blue-200 mb-4"><i class="fas fa-rocket text-3xl"></i></div>
+                    <h3 class="text-lg font-bold text-white">Pro</h3>
+                    <div class="text-3xl font-extrabold text-white my-4">Rp 1 Jt<span class="text-xs text-blue-200 font-medium">/tahun</span></div>
+                    <ul class="text-xs text-blue-50 space-y-3 flex-1 mb-6 text-left">
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> Akses Semua HUB</li>
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> Fitur AI Manager Lengkap</li>
+                        <li><i class="fas fa-check text-yellow-400 mr-2"></i> Support Prioritas via WA</li>
+                    </ul>
+                    <button onclick="window.contactAdmin('Pro')" class="w-full py-3 bg-yellow-400 text-yellow-900 hover:bg-yellow-500 rounded-xl font-bold transition shadow-lg uppercase text-xs">Pilih Paket</button>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-glow transition flex flex-col">
+                    <div class="text-purple-500 mb-4"><i class="fas fa-building text-3xl"></i></div>
+                    <h3 class="text-lg font-bold text-slate-800">Enterprise</h3>
+                    <div class="text-3xl font-extrabold text-slate-800 my-4">Custom</div>
+                    <ul class="text-xs text-slate-600 space-y-3 flex-1 mb-6 text-left">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Instalasi Server Private</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Kustomisasi Fitur Laporan</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Dedicated Support 24/7</li>
+                    </ul>
+                    <button onclick="window.contactAdmin('Enterprise')" class="w-full py-3 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl font-bold transition uppercase text-xs">Hubungi Sales</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1084,6 +1131,35 @@
             const loginSec = document.getElementById('login-section');
             if(loginSec) loginSec.classList.remove('hidden');
         }
+
+        window.openSubscriptionModal = () => {
+            const m = document.getElementById('subscription-modal');
+            const c = document.getElementById('subscription-modal-content');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            setTimeout(() => {
+                m.classList.remove('opacity-0');
+                c.classList.remove('scale-95');
+            }, 10);
+        };
+
+        window.closeSubscriptionModal = () => {
+            const m = document.getElementById('subscription-modal');
+            const c = document.getElementById('subscription-modal-content');
+            m.classList.add('opacity-0');
+            c.classList.add('scale-95');
+            setTimeout(() => {
+                m.classList.add('hidden');
+                m.classList.remove('flex');
+            }, 300);
+        };
+
+        window.contactAdmin = (paket) => {
+            window.closeSubscriptionModal();
+            const nomorWA = '6281354875592';
+            const pesan = encodeURIComponent(`Halo Admin, saya tertarik dan ingin mengaktivasi aplikasi DailyReport untuk paket ${paket}.`);
+            window.open(`https://wa.me/${nomorWA}?text=${pesan}`, '_blank');
+        };
 
         window.verifyUnlockCode = async () => {
             const input = document.getElementById('unlock-code-input').value.trim().toUpperCase();
@@ -3010,211 +3086,184 @@
             if(p.length<4) return window.notify('Min 4 Char', 'error'); 
             await supa.from('settings').upsert({ id: 'main', adminPass: p });
             await fetchAllData();
-            window.notify('Password Updated', 'success'); 
+            window.notify('Password Updated', 'success');
         };
-        
-        window.saveAccessCode = async () => { 
-            const c = document.getElementById('access-code-input').value; 
-            if(!c) return; 
-            await supa.from('settings').upsert({ id: 'main', accessCode: c }); 
+
+        window.saveAccessCode = async () => {
+            const c = document.getElementById('access-code-input').value.trim();
+            if(!c) return window.notify('Kode Kosong', 'error');
+            await supa.from('settings').upsert({ id: 'main', accessCode: c });
             await fetchAllData();
-            window.notify('Kode Updated', 'success'); 
-        };
-        
-        window.improveTextWithAI = async () => {
-            const input = document.getElementById('lap-catatan');
-            const originalText = input.value.trim();
-            
-            if (!originalText) return window.notify('Isi catatan kendala dulu', 'error');
-            if (originalText.length < 5) return window.notify('Teks terlalu pendek', 'error');
-
-            window.notify('AI sedang memperbaiki...', 'loading');
-            const indicator = document.getElementById('ai-loading-indicator');
-            if(indicator) indicator.classList.remove('hidden');
-            input.disabled = true;
-
-            const prompt = `Perbaiki tata bahasa teks laporan operasional logistik berikut agar menjadi kalimat baku, profesional, jelas, singkat, dan mudah dipahami oleh manajemen. Jangan ubah makna aslinya. Langsung berikan hasil perbaikan tanpa pembuka/penutup. Teks: "${originalText}"`;
-
-            try {
-                const result = await callGeminiAPI(prompt);
-                if (result) {
-                    input.value = result.trim();
-                    window.notify('Kalimat diperbaiki!', 'success');
-                }
-            } catch (e) {
-                console.error(e);
-                window.notify('Gagal memproses AI', 'error');
-            } finally {
-                if(indicator) indicator.classList.add('hidden');
-                input.disabled = false;
-                input.focus();
-            }
-        };
-
-        window.renderRow = (tb, id, name, pos, isLeader, d, isManual) => {
-            const r = document.createElement('tr');
-            r.className = 'hover:bg-slate-50 transition border-b border-slate-50 last:border-0';
-            
-            let nameContent = '';
-            if (isManual) {
-                nameContent = `<input type="text" class="att-name-input w-full bg-slate-50 border border-slate-200 rounded-lg text-xs px-2 py-1 focus:ring-1 focus:ring-primary font-bold text-slate-700" placeholder="Nama DW..." value="${name}" onkeyup="this.closest('td').querySelector('.att-name').value = this.value">`;
-            } else {
-                nameContent = `<div class="font-bold text-slate-700 text-xs">${name}</div>`;
-            }
-
-            r.innerHTML = `
-                <td class="p-3 pl-6 text-left">
-                    ${nameContent}
-                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isManual ? 'MANUAL DW' : pos}</div>
-                    <input type="hidden" class="att-id" value="${id}">
-                    <input type="hidden" class="att-name" value="${name}">
-                    <input type="hidden" class="att-pos" value="${isManual ? 'DW' : pos}">
-                </td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-s1 w-4 h-4 text-sky-600 rounded focus:ring-sky-500 border-gray-300 transition cursor-pointer" ${d.s1?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-s2 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 transition cursor-pointer" ${d.s2?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center border-r border-slate-100"><input type="checkbox" class="att-s3 w-4 h-4 text-teal-600 rounded focus:ring-teal-500 border-gray-300 transition cursor-pointer" ${d.s3?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-do w-4 h-4 text-slate-500 rounded focus:ring-slate-500 border-gray-300 transition cursor-pointer" ${d.do?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-c w-4 h-4 text-purple-500 rounded focus:ring-purple-500 border-gray-300 transition cursor-pointer" ${d.c?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-i w-4 h-4 text-orange-500 rounded focus:ring-orange-500 border-gray-300 transition cursor-pointer" ${d.i?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-s w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500 border-gray-300 transition cursor-pointer" ${d.s?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2 text-center"><input type="checkbox" class="att-a w-4 h-4 text-red-500 rounded focus:ring-red-500 border-gray-300 transition cursor-pointer" ${d.a?'checked':''} onchange="window.handleCheck(this)"></td>
-                <td class="p-2"><input type="text" class="att-ket w-full bg-slate-50 border-none rounded-lg text-xs px-2 py-1.5 focus:ring-1 focus:ring-slate-300 placeholder-slate-300" placeholder="..." value="${d.ket||''}"></td>
-                <td class="p-2 text-center">${isManual ? `<button type="button" onclick="this.closest('tr').remove(); window.calcMetrics()" class="text-rose-400 hover:text-rose-600 transition"><i class="fas fa-times"></i></button>` : ''}</td>
-            `;
-            tb.appendChild(r);
-        };
-
-        window.handleCheck = (el) => {
-            if(el.checked) {
-                const row = el.closest('tr');
-                const checks = row.querySelectorAll('input[type="checkbox"]');
-                checks.forEach(c => {
-                    if(c !== el) c.checked = false;
-                });
-            }
-            window.calcMetrics();
+            window.notify('Kode Akses Disimpan', 'success');
         };
 
         window.calcMetrics = () => {
-            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
-            const st = window.parseFormattedNumber(document.getElementById('lap-staging').value);
-            const j = window.parseFormattedNumber(document.getElementById('lap-jne').value);
-            const sa = window.parseFormattedNumber(document.getElementById('lap-sap').value);
+            const gw = window.parseFormattedNumber(document.getElementById('lap-gateway').value);
+            const stg = window.parseFormattedNumber(document.getElementById('lap-staging').value);
+            const jne = window.parseFormattedNumber(document.getElementById('lap-jne').value);
+            const sap = window.parseFormattedNumber(document.getElementById('lap-sap').value);
             
-            const totalPaket = g + st + j + sa;
-            const dispPaket = document.getElementById('disp-total-paket');
-            if(dispPaket) dispPaket.innerText = window.formatNumber(totalPaket);
+            const total = gw + stg + jne + sap;
+            document.getElementById('disp-total-paket').innerText = window.formatNumber(total);
+            document.getElementById('val-total-paket').value = total;
+            
+            const mpp = parseInt(document.getElementById('disp-total-mpp').innerText) || 0;
+            const prod = mpp > 0 ? Math.round(total / mpp) : 0;
+            document.getElementById('disp-productivity').innerText = window.formatNumber(prod);
+        };
 
-            let totalMpp = 0;
-            const tb = document.getElementById('attendance-tbody');
-            if(tb) {
-                const rows = tb.children;
-                for(let r of rows) {
-                    if(r.innerText.includes('Pilih HUB')) continue; 
-                    
-                    const s1 = r.querySelector('.att-s1').checked;
-                    const s2 = r.querySelector('.att-s2').checked;
-                    const s3 = r.querySelector('.att-s3').checked;
-                    
-                    const posEl = r.querySelector('.att-pos');
-                    const pos = posEl ? posEl.value : ''; 
-
-                    if ((s1 || s2 || s3) && (pos === 'Sorter' || pos === 'DW')) {
-                        totalMpp++;
-                    }
-                }
+        window.improveTextWithAI = async () => {
+            const input = document.getElementById('lap-catatan').value.trim();
+            if(!input) return window.notify('Catatan kosong', 'warning');
+            
+            const ind = document.getElementById('ai-loading-indicator');
+            ind.classList.remove('hidden');
+            
+            const prompt = `Perbaiki tata bahasa dan ejaan laporan kendala berikut menjadi lebih baku, profesional, dan rapi. Jangan tambah informasi yang tidak ada. Input: "${input}"`;
+            try {
+                const result = await callGeminiAPI(prompt);
+                if(result) document.getElementById('lap-catatan').value = result.trim();
+            } catch(e) {
+                window.notify('Gagal memperbaiki dengan AI', 'error');
+            } finally {
+                ind.classList.add('hidden');
             }
-            const dispMpp = document.getElementById('disp-total-mpp');
-            if(dispMpp) dispMpp.innerText = totalMpp;
-
-            const prod = totalMpp > 0 ? Math.round(totalPaket / totalMpp) : 0;
-            const dispProd = document.getElementById('disp-productivity');
-            if(dispProd) dispProd.innerText = window.formatNumber(prod);
         };
 
         window.addManualDWRow = () => {
-            const id = 'manual_' + Date.now();
             const tb = document.getElementById('attendance-tbody');
-            if (tb.children.length > 0 && tb.children[0].innerText.includes('Pilih HUB')) {
-                tb.innerHTML = '';
-            }
+            const id = 'manual_' + Date.now();
             window.renderRow(tb, id, '', 'DW', false, {s1:0,s2:0,s3:0,do:0,c:0,i:0,s:0,a:0,ket:''}, true);
+            window.updateTotalMPP();
         };
 
-        window.deleteUser = async (id) => {
-            const r = await Swal.fire({ title: '', html: `<div class="flex flex-col items-center"><div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-3 text-amber-500 shadow-sm border border-amber-100"><i class="fas fa-exclamation-triangle text-2xl animate-pulse"></i></div><h3 class="text-lg font-extrabold text-slate-800">Hapus User?</h3><p class="text-xs text-slate-500 mt-2 text-center">Data akan dihapus permanen.</p></div>`, width: '18rem', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal', reverseButtons: true, customClass: { popup: 'rounded-2xl border border-slate-100 shadow-xl p-5 font-sans', confirmButton: 'bg-rose-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-rose-600 transition flex-1 mx-1', cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition flex-1 mx-1', actions: 'flex gap-2 w-full justify-center mt-3' } });
-            if (r.isConfirmed) { try { await supa.from('users').delete().eq('id', id); await fetchAllData(); window.notify('User dihapus', 'success'); } catch(e) { window.notify('Gagal menghapus', 'error'); } }
+        window.updateTotalMPP = () => {
+            const tb = document.getElementById('attendance-tbody');
+            let mpp = 0;
+            tb.querySelectorAll('tr').forEach(tr => {
+                const s1 = tr.querySelector('.chk-s1')?.checked;
+                const s2 = tr.querySelector('.chk-s2')?.checked;
+                const s3 = tr.querySelector('.chk-s3')?.checked;
+                if(s1 || s2 || s3) mpp++;
+            });
+            document.getElementById('disp-total-mpp').innerText = mpp;
+            window.calcMetrics();
+        };
+
+        window.renderRow = (tb, id, nama, pos, isL, dat, isDW) => {
+            const nameHtml = isDW 
+                ? `<input type="text" class="manual-name w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs" placeholder="Nama DW" value="${nama}">` 
+                : `<span class="font-bold text-slate-700">${nama}</span><br><span class="text-[9px] ${isL?'text-blue-500':'text-slate-400'}">${pos}</span>`;
+            
+            const delBtn = isDW ? `<button type="button" onclick="this.closest('tr').remove(); window.updateTotalMPP();" class="text-rose-400 hover:text-rose-600"><i class="fas fa-times"></i></button>` : '';
+
+            const chk = (cls, val) => `<input type="checkbox" class="${cls} w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" ${val?'checked':''} onchange="window.handleCheck(this); window.updateTotalMPP();">`;
+            
+            tb.innerHTML += `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100" data-id="${id}" data-pos="${pos}">
+                    <td class="p-3 text-left border-r border-slate-100">${nameHtml}</td>
+                    <td class="p-2 text-center bg-sky-50/30">${chk('chk-s1', dat.s1)}</td>
+                    <td class="p-2 text-center bg-indigo-50/30">${chk('chk-s2', dat.s2)}</td>
+                    <td class="p-2 text-center bg-teal-50/30 border-r border-slate-100">${chk('chk-s3', dat.s3)}</td>
+                    <td class="p-2 text-center">${chk('chk-do', dat.do)}</td>
+                    <td class="p-2 text-center bg-purple-50/30">${chk('chk-c', dat.c)}</td>
+                    <td class="p-2 text-center">${chk('chk-i', dat.i)}</td>
+                    <td class="p-2 text-center bg-yellow-50/30">${chk('chk-s', dat.s)}</td>
+                    <td class="p-2 text-center">${chk('chk-a', dat.a)}</td>
+                    <td class="p-2"><input type="text" class="inp-ket w-full bg-transparent border-b border-dashed border-slate-300 focus:border-primary outline-none text-[10px] px-1" placeholder="Ket..." value="${dat.ket||''}"></td>
+                    <td class="p-2 text-center">${delBtn}</td>
+                </tr>
+            `;
+        };
+
+        window.handleCheck = (el) => {
+            const tr = el.closest('tr');
+            const isAtt = el.classList.contains('chk-s1') || el.classList.contains('chk-s2') || el.classList.contains('chk-s3');
+            if(el.checked) {
+                if(isAtt) {
+                    ['chk-do','chk-c','chk-i','chk-s','chk-a'].forEach(c => {
+                        const box = tr.querySelector('.'+c);
+                        if(box && box !== el) box.checked = false;
+                    });
+                } else {
+                    tr.querySelectorAll('input[type="checkbox"]').forEach(box => {
+                        if(box !== el) box.checked = false;
+                    });
+                }
+            }
         };
 
         document.getElementById('laporan-form').onsubmit = async (e) => {
-            e.preventDefault(); 
-            const editId = document.getElementById('edit-laporan-id').value;
-            const hub = currentUser.role==='admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value; 
-            const tanggal = document.getElementById('lap-tanggal').value;
-            const docId = hub + '_' + tanggal;
-            
-            if(!hub) return window.notify('Pilih HUB', 'error');
-            
-            let isMovingData = false;
-
-            if (!editId || editId !== docId) {
-                const isExist = appData.laporan.some(l => l.id === docId);
-                if (isExist) {
-                    return window.notify('Laporan tanggal ini sudah ada. Silakan gunakan tombol edit.', 'error');
-                }
-            }
-
-            if (editId && editId !== docId) {
-                const ask = await Swal.fire({
-                    title: 'Salin atau Pindah?',
-                    text: 'Kamu mengubah tanggal atau HUB. Pilih Salin Baru untuk menggandakan data atau Pindah Data untuk menghapus laporan lama.',
-                    showCancelButton: true,
-                    showDenyButton: true,
-                    confirmButtonText: 'Salin Baru',
-                    denyButtonText: 'Pindah Data',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                    customClass: {
-                        popup: 'rounded-2xl border border-slate-100 shadow-2xl p-5 font-sans',
-                        confirmButton: 'bg-emerald-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-emerald-600 transition mx-1 uppercase',
-                        denyButton: 'bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-blue-600 transition mx-1 uppercase',
-                        cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition mx-1 uppercase',
-                        actions: 'flex gap-2 w-full justify-center mt-4'
-                    },
-                    buttonsStyling: false
-                });
-
-                if (ask.isConfirmed) {
-                    isMovingData = false; 
-                } else if (ask.isDenied) {
-                    isMovingData = true; 
-                } else {
-                    return; 
-                }
-            }
-
-            const rows = document.getElementById('attendance-tbody').children, attData = []; let totalMpp = 0, totalFilled = 0; 
-            for(let r of rows) {
-                if(r.innerText.includes('Pilih HUB')) continue; 
-                const s1 = r.querySelector('.att-s1').checked, s2 = r.querySelector('.att-s2').checked, s3 = r.querySelector('.att-s3').checked, dOff = r.querySelector('.att-do').checked, cuti = r.querySelector('.att-c').checked, i = r.querySelector('.att-i').checked, s = r.querySelector('.att-s').checked, a = r.querySelector('.att-a').checked, posEl = r.querySelector('.att-pos'), pos = posEl ? posEl.value : '';
-                if((s1||s2||s3) && (pos === 'Sorter' || pos === 'DW')) totalMpp++; if(s1||s2||s3||dOff||cuti||i||s||a) totalFilled++; 
-                attData.push({ userId: r.querySelector('.att-id').value, nama: r.querySelector('.att-name').value, pos: pos, s1, s2, s3, do: dOff, c: cuti, i, s, a, ket: r.querySelector('.att-ket').value });
-            }
-            const g = window.parseFormattedNumber(document.getElementById('lap-gateway').value), st = window.parseFormattedNumber(document.getElementById('lap-staging').value), j = window.parseFormattedNumber(document.getElementById('lap-jne').value), sa = window.parseFormattedNumber(document.getElementById('lap-sap').value), totalPaket = g+st+j+sa;
-            if (totalPaket <= 0 || totalMpp <= 0) { let msg = 'Gagal Simpan: '; if(totalPaket <= 0 && totalMpp <= 0) msg += 'Paket & MPP masih kosong'; else if(totalPaket <= 0) msg += 'Total Paket tidak boleh 0'; else if(totalMpp <= 0) msg += 'Total MPP (Absen Hadir) tidak boleh 0'; return window.notify(msg, 'error'); }
+            e.preventDefault();
             window.notify('Menyimpan Laporan...', 'loading');
             
-            const data = { id: docId, tanggal: tanggal, hub: hub, gateway: g, staging: st, jne: j, sap: sa, total_paket: totalPaket, total_mpp: totalMpp, productivity: totalMpp>0 ? totalPaket/totalMpp : 0, attendance_data: attData, last_updated: new Date().toISOString(), updated_by: currentUser.name, catatan: document.getElementById('lap-catatan').value };
-            try {
-                if (editId && editId !== docId && isMovingData) { 
-                    await supa.from('laporan').delete().eq('id', editId); 
+            const id = document.getElementById('edit-laporan-id').value || 'LAP_' + Date.now();
+            const tgl = document.getElementById('lap-tanggal').value;
+            const hub = currentUser.role === 'admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value;
+            
+            if(!hub) return window.notify('Pilih HUB', 'warning');
+            
+            const attData = [];
+            document.getElementById('attendance-tbody').querySelectorAll('tr').forEach(tr => {
+                const uid = tr.getAttribute('data-id');
+                if(!uid) return;
+                
+                let nama = '';
+                if(uid.startsWith('manual_')) {
+                    nama = tr.querySelector('.manual-name').value;
+                    if(!nama) return;
+                } else {
+                    const u = appData.users.find(x => x.id === uid);
+                    if(u) nama = u.nama;
                 }
-                await supa.from('laporan').upsert(data); await fetchAllData(); window.closeLaporanModal(); window.notify('Data Tersimpan', 'success'); 
-                const r = await Swal.fire({ title: '', html: `<div class="flex flex-col items-center"><div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-3 text-emerald-500 shadow-sm border border-emerald-100"><i class="fas fa-check-circle text-3xl animate-bounce"></i></div><h3 class="text-lg font-extrabold text-slate-800">Berhasil!</h3><p class="text-xs text-slate-500 mt-2 text-center">Laporan tersimpan di database.</p></div>`, width: '18rem', showCancelButton: true, confirmButtonText: '<i class="fab fa-whatsapp mr-1"></i> Salin', cancelButtonText: 'Tutup', reverseButtons: true, buttonsStyling: false, customClass: { popup: 'rounded-2xl border border-slate-100 shadow-2xl p-5 font-sans', confirmButton: 'bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-green-600 transition transform active:scale-95 uppercase tracking-wide flex-1 mx-1', cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1', actions: 'flex gap-2 w-full justify-center mt-4' } });
-                if (r.isConfirmed) { window.copyReportToClipboard(data); }
-            } catch(err) { console.error(err); window.notify('Gagal menyimpan', 'error'); }
+                
+                const s1 = tr.querySelector('.chk-s1')?.checked;
+                const s2 = tr.querySelector('.chk-s2')?.checked;
+                const s3 = tr.querySelector('.chk-s3')?.checked;
+                const dOff = tr.querySelector('.chk-do')?.checked;
+                const c = tr.querySelector('.chk-c')?.checked;
+                const i = tr.querySelector('.chk-i')?.checked;
+                const s = tr.querySelector('.chk-s')?.checked;
+                const a = tr.querySelector('.chk-a')?.checked;
+                const ket = tr.querySelector('.inp-ket')?.value;
+                const pos = tr.getAttribute('data-pos');
+                
+                if(s1||s2||s3||dOff||c||i||s||a||ket) {
+                    attData.push({userId: uid, nama, pos, s1, s2, s3, do:dOff, c, i, s, a, ket});
+                }
+            });
+            
+            const totPkt = parseInt(document.getElementById('val-total-paket').value) || 0;
+            const totMpp = parseInt(document.getElementById('disp-total-mpp').innerText) || 0;
+            const prod = totMpp > 0 ? totPkt / totMpp : 0;
+            
+            const payload = {
+                id,
+                tanggal: tgl,
+                hub,
+                gateway: window.parseFormattedNumber(document.getElementById('lap-gateway').value),
+                staging: window.parseFormattedNumber(document.getElementById('lap-staging').value),
+                jne: window.parseFormattedNumber(document.getElementById('lap-jne').value),
+                sap: window.parseFormattedNumber(document.getElementById('lap-sap').value),
+                total_paket: totPkt,
+                total_mpp: totMpp,
+                productivity: prod,
+                attendance_data: attData,
+                catatan: document.getElementById('lap-catatan').value,
+                updated_by: currentUser.name,
+                last_updated: new Date().toISOString()
+            };
+            
+            try {
+                await supa.from('laporan').upsert(payload);
+                await fetchAllData();
+                window.closeLaporanModal();
+                window.notify('Laporan Disimpan', 'success');
+            } catch(err) {
+                console.error(err);
+                window.notify('Gagal menyimpan laporan', 'error');
+            }
         };
-
     </script>
 </body>
 </html>

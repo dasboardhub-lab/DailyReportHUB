@@ -165,7 +165,7 @@
                     <h3 class="text-lg font-bold text-slate-800">Basic</h3>
                     <div class="text-3xl font-extrabold text-slate-800 my-4">Rp 100k<span class="text-xs text-slate-400 font-medium">/bulan</span></div>
                     <ul class="text-xs text-slate-600 space-y-3 flex-1 mb-6 text-left">
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Akses 3-4 HUB Utama</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Akses 3 HUB Utama</li>
                         <li><i class="fas fa-check text-green-500 mr-2"></i> Laporan Harian Standar</li>
                         <li><i class="fas fa-check text-green-500 mr-2"></i> Support Email Harian</li>
                     </ul>
@@ -336,7 +336,7 @@
                         <p class="text-[10px] text-slate-400 font-medium ml-1">Team Dashboard</p>
                     </div>
                     <div class="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
-                        <p class="text-[9px] text-slate-500 font-mono">v5 Hub KALSUL</p>
+                        <p class="text-[9px] text-slate-500 font-mono">v5 KalSul</p>
                         <i class="fas fa-shield-alt text-slate-600 text-xs"></i>
                     </div>
                 </div>
@@ -2999,7 +2999,7 @@
             const map = {}; existingData.forEach(x => map[x.userId] = x);
             users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'||u.posisi==='Visitor'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,do:0,c:0,i:0,s:0,a:0,ket:''}, false); });
             existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
-            window.calcMetrics();
+            window.updateTotalMPP();
         };
 
         window.deleteLaporan = async (id) => {
@@ -3141,6 +3141,9 @@
             const tb = document.getElementById('attendance-tbody');
             let mpp = 0;
             tb.querySelectorAll('tr').forEach(tr => {
+                const pos = (tr.getAttribute('data-pos') || '').toUpperCase();
+                if(pos === 'LEADER' || pos === 'ADMIN' || pos === 'VISITOR') return;
+
                 const s1 = tr.querySelector('.chk-s1')?.checked;
                 const s2 = tr.querySelector('.chk-s2')?.checked;
                 const s3 = tr.querySelector('.chk-s3')?.checked;

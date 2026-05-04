@@ -1214,55 +1214,48 @@
         };
 
         async function callGeminiAPI(promptText) {
-            const storedKey = appData.geminiKey;
-
-            if (!storedKey) {
-                window.Swal.fire({
-                    title: 'API Key Dibutuhkan',
-                    text: 'Fitur AI belum dikonfigurasi oleh Admin. Hubungi Admin untuk input API Key.',
-                    icon: 'warning',
-                    confirmButtonText: 'Ke Pengaturan'
-                }).then((result) => {
-                   if(result.isConfirmed) {
-                       window.navigate('pengaturan');
-                       window.switchSettingsTab('general');
-                   }
-                });
-                throw new Error("API Key Missing");
-            }
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${storedKey}`;
+            const apiKey = ""; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: promptText }] }] };
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            let retries = 5;
+            let delay = 1000;
+            
+            while(retries > 0) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-            const data = await response.json().catch(() => ({}));
-            
-            if (!response.ok) {
-                 console.error("Detail Error API AI:", data);
-                 if (response.status === 400 || response.status === 403) {
-                     window.notify('API Key Invalid atau Kuota Habis', 'error');
-                 } else {
-                     window.notify('Server AI Sedang Sibuk', 'error');
-                 }
-                 throw new Error('Gagal menghubungi layanan AI');
-            }
-            
-            if (data.promptFeedback && data.promptFeedback.blockReason) {
-                window.notify('Teks diblokir oleh keamanan Google', 'error');
-                throw new Error('Blocked by Google Safety');
-            }
-            
-            if (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'SAFETY') {
-                window.notify('Teks mengandung kata sensitif', 'error');
-                throw new Error('Safety block');
-            }
+                    if (!response.ok) {
+                        throw new Error('API Error');
+                    }
 
-            return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    const data = await response.json();
+                    
+                    if (data.promptFeedback && data.promptFeedback.blockReason) {
+                        window.notify('Teks diblokir oleh keamanan Google', 'error');
+                        return null;
+                    }
+                    
+                    if (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'SAFETY') {
+                        window.notify('Teks mengandung kata sensitif', 'error');
+                        return null;
+                    }
+
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (error) {
+                    retries--;
+                    if (retries === 0) {
+                        window.notify('Gagal menghubungi layanan AI', 'error');
+                        throw new Error('Gagal menghubungi layanan AI setelah percobaan berulang');
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
         }
 
         window.saveAIKey = async () => {
@@ -1282,7 +1275,7 @@
 
         window.testAIKey = async () => {
             try {
-                window.notify('Testing Key...', 'loading');
+                window.notify('Testing API AI...', 'loading');
                 const res = await callGeminiAPI("Jawab dengan satu kata: 'Berhasil'");
                 if(res) window.Swal.fire('Sukses', `Koneksi AI Berhasil! Respon: ${res}`, 'success');
             } catch(e) {

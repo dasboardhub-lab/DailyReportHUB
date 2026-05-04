@@ -1217,12 +1217,11 @@
             const storedKey = appData.geminiKey;
 
             if (!storedKey) {
-                Swal.fire({
+                window.Swal.fire({
                     title: 'API Key Dibutuhkan',
                     text: 'Fitur AI belum dikonfigurasi oleh Admin. Hubungi Admin untuk input API Key.',
                     icon: 'warning',
-                    confirmButtonText: 'Ke Pengaturan',
-                    customClass: window.Swal.getCustomClass()
+                    confirmButtonText: 'Ke Pengaturan'
                 }).then((result) => {
                    if(result.isConfirmed) {
                        window.navigate('pengaturan');
@@ -1232,7 +1231,7 @@
                 throw new Error("API Key Missing");
             }
             
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${storedKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${storedKey}`;
             const payload = { contents: [{ parts: [{ text: promptText }] }] };
 
             const response = await fetch(url, {
@@ -1242,8 +1241,12 @@
             });
 
             if (!response.ok) {
+                 const errData = await response.json().catch(() => ({}));
+                 console.error("Detail Error API AI:", errData);
                  if (response.status === 400 || response.status === 403) {
-                     window.notify('API Key Tidak Valid', 'error');
+                     window.notify('API Key Invalid atau Kuota Habis', 'error');
+                 } else {
+                     window.notify('Server AI Sedang Sibuk', 'error');
                  }
                  throw new Error('Gagal menghubungi layanan AI');
             }
@@ -1270,7 +1273,7 @@
             try {
                 window.notify('Testing Key...', 'loading');
                 const res = await callGeminiAPI("Jawab dengan satu kata: 'Berhasil'");
-                if(res) Swal.fire('Sukses', `Koneksi AI Berhasil! Respon: ${res}`, 'success');
+                if(res) window.Swal.fire('Sukses', `Koneksi AI Berhasil! Respon: ${res}`, 'success');
             } catch(e) {
                 console.error(e);
             }
@@ -2717,7 +2720,7 @@
         };
 
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
-        window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
+        window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return window.Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
         
         window.saveCosts = async () => { 
@@ -2912,6 +2915,7 @@
                 document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; 
                 document.getElementById('edit-laporan-id').value = id;
                 document.getElementById('lap-tanggal').value = d.tanggal; 
+                document.getElementById('lap-tanggal').setAttribute('data-original', d.tanggal);
                 if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
                 document.getElementById('lap-gateway').value=window.formatNumber(d.gateway); 
                 document.getElementById('lap-staging').value=window.formatNumber(d.staging); 
@@ -2968,6 +2972,7 @@
         window.openLaporanModal = () => {
             const m=document.getElementById('laporan-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
             document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText='Buat Laporan Baru'; document.getElementById('edit-laporan-id').value=''; document.getElementById('lap-tanggal').valueAsDate=new Date();
+            document.getElementById('lap-tanggal').removeAttribute('data-original');
             document.getElementById('lap-catatan').value = ''; 
             const s=document.getElementById('lap-hub-select'), t=document.getElementById('lap-hub-text');
             if(currentUser.role==='admin') { s.classList.remove('hidden'); t.classList.add('hidden'); s.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>s.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="11" class="p-8 text-center text-slate-400">Pilih HUB dulu.</td></tr>'; }
@@ -3198,13 +3203,98 @@
 
         document.getElementById('laporan-form').onsubmit = async (e) => {
             e.preventDefault();
-            window.notify('Menyimpan Laporan...', 'loading');
             
-            const id = document.getElementById('edit-laporan-id').value || 'LAP_' + Date.now();
+            const editId = document.getElementById('edit-laporan-id').value;
+            const id = editId || 'LAP_' + Date.now();
             const tgl = document.getElementById('lap-tanggal').value;
             const hub = currentUser.role === 'admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value;
             
             if(!hub) return window.notify('Pilih HUB', 'warning');
+
+            const totPkt = parseInt(document.getElementById('val-total-paket').value) || 0;
+            const totMpp = parseInt(document.getElementById('disp-total-mpp').innerText) || 0;
+
+            if (totPkt === 0 || totMpp === 0) {
+                window.Swal.fire({
+                    title: '',
+                    html: `
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-3 text-amber-500 shadow-sm border border-amber-100">
+                                <i class="fas fa-exclamation-triangle text-2xl"></i>
+                            </div>
+                            <h3 class="text-base font-extrabold text-slate-800">Data Belum Lengkap</h3>
+                            <p class="text-xs text-slate-500 mt-1 text-center">Total Paket dan Total MPP wajib terisi dan tidak boleh 0.</p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Mengerti',
+                    width: '18rem',
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
+                        confirmButton: 'bg-amber-500 text-white px-5 py-2.5 rounded-xl font-bold text-[10px] shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition active:scale-95 uppercase tracking-wide w-full mt-2',
+                        actions: 'w-full'
+                    },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
+            const isDuplicate = appData.laporan.some(l => l.tanggal === tgl && l.hub === hub && l.id !== id);
+            if (isDuplicate) {
+                window.Swal.fire({
+                    title: '',
+                    html: `
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mb-3 text-rose-500 shadow-sm border border-rose-100">
+                                <i class="fas fa-copy text-2xl"></i>
+                            </div>
+                            <h3 class="text-base font-extrabold text-slate-800">Data Ganda</h3>
+                            <p class="text-xs text-slate-500 mt-1 text-center">Laporan HUB ${hub} pada tanggal ${tgl} sudah ada. Silakan edit laporan yang sudah ada.</p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Kembali',
+                    width: '18rem',
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
+                        confirmButton: 'bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold text-[10px] shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide w-full mt-2',
+                        actions: 'w-full'
+                    },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
+            if (editId) {
+                const origDate = document.getElementById('lap-tanggal').getAttribute('data-original');
+                if (origDate && origDate !== tgl) {
+                    const confirm = await window.Swal.fire({
+                        title: '',
+                        html: `
+                            <div class="flex flex-col items-center">
+                                <div class="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mb-3 text-indigo-500 shadow-sm border border-indigo-100">
+                                    <i class="far fa-calendar-alt text-2xl"></i>
+                                </div>
+                                <h3 class="text-base font-extrabold text-slate-800">Ubah Tanggal?</h3>
+                                <p class="text-xs text-slate-500 mt-1 text-center">Kamu memindahkan laporan dari ${origDate} ke ${tgl}. Lanjutkan?</p>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Pindahkan',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                        width: '18rem',
+                        customClass: {
+                            popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
+                            confirmButton: 'bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-bold text-[10px] shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                            cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2.5 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                            actions: 'flex gap-2 w-full justify-center mt-2'
+                        },
+                        buttonsStyling: false
+                    });
+                    if (!confirm.isConfirmed) return;
+                }
+            }
+
+            window.notify('Menyimpan Laporan...', 'loading');
             
             const attData = [];
             document.getElementById('attendance-tbody').querySelectorAll('tr').forEach(tr => {
@@ -3236,8 +3326,6 @@
                 }
             });
             
-            const totPkt = parseInt(document.getElementById('val-total-paket').value) || 0;
-            const totMpp = parseInt(document.getElementById('disp-total-mpp').innerText) || 0;
             const prod = totMpp > 0 ? totPkt / totMpp : 0;
             
             const payload = {
@@ -3261,7 +3349,37 @@
                 await supa.from('laporan').upsert(payload);
                 await fetchAllData();
                 window.closeLaporanModal();
-                window.notify('Laporan Disimpan', 'success');
+                
+                const result = await window.Swal.fire({
+                    title: '',
+                    html: `
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 text-emerald-500 shadow-sm border border-emerald-100">
+                                <i class="fas fa-check-circle text-3xl animate-pulse"></i>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-slate-800">Laporan Tersimpan!</h3>
+                            <p class="text-xs text-slate-500 mt-2 text-center">Anda ingin menyalin format teks laporan ini?</p>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-copy mr-1"></i> Salin Laporan',
+                    cancelButtonText: 'Kembali',
+                    reverseButtons: true,
+                    width: '20rem',
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
+                        confirmButton: 'bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-[10px] shadow-lg shadow-blue-500/30 hover:bg-blue-600 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        cancelButton: 'bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                        actions: 'flex gap-2 w-full justify-center mt-4'
+                    },
+                    buttonsStyling: false
+                });
+
+                if (result.isConfirmed) {
+                    window.copyReportToClipboard(payload);
+                } else {
+                    window.notify('Laporan Disimpan', 'success');
+                }
             } catch(err) {
                 console.error(err);
                 window.notify('Gagal menyimpan laporan', 'error');

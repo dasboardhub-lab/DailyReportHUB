@@ -1055,7 +1055,7 @@
                     supa.from('settings').select('*').eq('id', 'main').maybeSingle(),
                     supa.from('users').select('*'),
                     supa.from('costs').select('*'),
-                    supa.from('laporan').select('*')
+                    supa.from('laporan').select('*').order('tanggal', { ascending: false })
                 ]);
 
                 if(setRes.data) {
@@ -1086,7 +1086,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchAllData().then(() => {
-                const trialEndDate = new Date(appData.trialEndDate);
+                const trialEndDate = new Date(appData.trialEndDate + 'T00:00:00');
                 const now = new Date();
                 
                 if (!appData.isUnlocked) {
@@ -1174,7 +1174,7 @@
                     window.notify('Aktivasi Berhasil', 'success');
                     
                     setTimeout(() => {
-                        Swal.fire({
+                        window.Swal.fire({
                             html: `
                                 <div class="flex flex-col items-center text-center mt-2">
                                     <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 text-emerald-500 shadow-inner border border-emerald-100">
@@ -1240,9 +1240,10 @@
                 body: JSON.stringify(payload)
             });
 
+            const data = await response.json().catch(() => ({}));
+            
             if (!response.ok) {
-                 const errData = await response.json().catch(() => ({}));
-                 console.error("Detail Error API AI:", errData);
+                 console.error("Detail Error API AI:", data);
                  if (response.status === 400 || response.status === 403) {
                      window.notify('API Key Invalid atau Kuota Habis', 'error');
                  } else {
@@ -1250,7 +1251,17 @@
                  }
                  throw new Error('Gagal menghubungi layanan AI');
             }
-            const data = await response.json();
+            
+            if (data.promptFeedback && data.promptFeedback.blockReason) {
+                window.notify('Teks diblokir oleh keamanan Google', 'error');
+                throw new Error('Blocked by Google Safety');
+            }
+            
+            if (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'SAFETY') {
+                window.notify('Teks mengandung kata sensitif', 'error');
+                throw new Error('Safety block');
+            }
+
             return data.candidates?.[0]?.content?.parts?.[0]?.text;
         }
 
@@ -1320,9 +1331,22 @@
         };
 
         window.Chart.register(ChartDataLabels);
+        
         window.formatNumber = (n) => (!n && n!==0)?'':n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        window.parseFormattedNumber = (s) => { if(!s)return 0; return parseInt(s.toString().replace(/[^0-9]/g,''),10)||0; };
-        window.formatCostInput = (e) => { let v=e.value.replace(/[^0-9]/g,''); e.value=window.formatNumber(v); };
+        
+        window.formatCostInput = (e) => {
+            let isNeg = e.value.startsWith('-');
+            let v = e.value.replace(/[^0-9]/g, '');
+            e.value = isNeg ? (v ? '-' + window.formatNumber(v) : '-') : window.formatNumber(v);
+        };
+        
+        window.parseFormattedNumber = (s) => {
+            if(!s) return 0;
+            let isNeg = s.toString().startsWith('-');
+            let v = parseInt(s.toString().replace(/[^0-9]/g, ''), 10) || 0;
+            return isNeg ? -v : v;
+        };
+
         window.formatRupiah = (n) => n==null?'': 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         
         window.safeId = (id) => {
@@ -1391,7 +1415,7 @@
         };
         
         window.doLogout = async () => {
-            const result = await Swal.fire({
+            const result = await window.Swal.fire({
                 title: '',
                 html: `
                     <div class="flex flex-col items-center">
@@ -1531,22 +1555,22 @@
             const eEl = document.getElementById('dash-end-date');
             if(!sEl || !eEl) return;
 
-            const s = new Date(sEl.value);
-            const e = new Date(eEl.value);
+            const s = new Date(sEl.value + 'T00:00:00');
+            const e = new Date(eEl.value + 'T23:59:59');
             const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
             
             const data = appData.laporan.filter(l => { 
-                const d = new Date(l.tanggal); 
+                const d = new Date(l.tanggal + 'T12:00:00'); 
                 return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); 
-            }).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+            }).sort((a,b)=>new Date(b.tanggal + 'T12:00:00')-new Date(a.tanggal + 'T12:00:00'));
 
             const diffTime = Math.abs(e - s);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
             const prevEnd = new Date(s); prevEnd.setDate(prevEnd.getDate() - 1);
             const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - diffDays + 1);
             
             const prevData = appData.laporan.filter(l => { 
-                const d = new Date(l.tanggal); 
+                const d = new Date(l.tanggal + 'T12:00:00'); 
                 return d>=prevStart && d<=prevEnd && (hubs.length===0 || hubs.includes(l.hub)); 
             });
 
@@ -1625,7 +1649,7 @@
                 container.classList.remove('hidden');
 
                 notesData.forEach(l => {
-                    const d = new Date(l.tanggal);
+                    const d = new Date(l.tanggal + 'T12:00:00');
                     const dayName = d.toLocaleDateString('id-ID', { weekday: 'long' });
                     const dateStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -1690,11 +1714,11 @@
             const silentHubs = activeHubs.filter(h => !hubsWithIssues.has(h)).sort();
 
             const issues = [];
-            const sortedLogs = [...currData].sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+            const sortedLogs = [...currData].sort((a,b) => new Date(a.tanggal + 'T12:00:00') - new Date(b.tanggal + 'T12:00:00'));
             
             sortedLogs.forEach(r => {
                 if (r.catatan && r.catatan.trim().length > 0) {
-                     const dObj = new Date(r.tanggal);
+                     const dObj = new Date(r.tanggal + 'T12:00:00');
                      const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
                      const issueStr = `[${dStr}] [${r.hub}] ${r.catatan}`;
                      if (!issues.includes(issueStr)) issues.push(issueStr);
@@ -1812,7 +1836,7 @@
             const dailyLoad = {};
             currData.forEach(r => { if(!dailyLoad[r.tanggal]) dailyLoad[r.tanggal]=0; dailyLoad[r.tanggal]+=r.total_paket; });
             const dates = Object.keys(dailyLoad).sort();
-            const fmtD = (dStr) => { const _d = new Date(dStr); return `${_d.getDate()}/${_d.getMonth()+1}`; };
+            const fmtD = (dStr) => { const _d = new Date(dStr + 'T12:00:00'); return `${_d.getDate()}/${_d.getMonth()+1}`; };
 
             if(dates.length > 0) {
                  let maxVal = -1, maxDate = ''; let minVal = Infinity, minDate = '';
@@ -2155,9 +2179,9 @@
                 document.getElementById('chart-icon').className = 'fas fa-chart-area';
 
                 const cy = new Date().getFullYear(), mD = Array(12).fill(0).map(()=>({p:0,m:0}));
-                let yrData = appData.laporan.filter(l=>new Date(l.tanggal).getFullYear()===cy);
+                let yrData = appData.laporan.filter(l=>new Date(l.tanggal + 'T12:00:00').getFullYear()===cy);
                 if(hubs.length) yrData=yrData.filter(l=>hubs.includes(l.hub));
-                yrData.forEach(l=>{ const m=new Date(l.tanggal).getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
+                yrData.forEach(l=>{ const m=new Date(l.tanggal + 'T12:00:00').getMonth(); mD[m].p+=l.total_paket; mD[m].m+=l.total_mpp; });
 
                 labels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
                 dataset1 = mD.map(d=>d.p);
@@ -2169,8 +2193,8 @@
                 document.getElementById('chart-icon').className = 'fas fa-chart-line';
 
                 const agg={}; data.forEach(l=>{ if(!agg[l.tanggal])agg[l.tanggal]={p:0,m:0}; agg[l.tanggal].p+=l.total_paket; agg[l.tanggal].m+=l.total_mpp; });
-                const sD=Object.keys(agg).sort((a,b)=>new Date(a)-new Date(b));
-                labels = sD.map(d=>{const x=new Date(d);return `${x.getDate()}/${x.getMonth()+1}`});
+                const sD=Object.keys(agg).sort((a,b)=>new Date(a + 'T12:00:00')-new Date(b + 'T12:00:00'));
+                labels = sD.map(d=>{const x=new Date(d + 'T12:00:00');return `${x.getDate()}/${x.getMonth()+1}`});
                 dataset1 = sD.map(d=>agg[d].p);
                 dataset2 = sD.map(d=>agg[d].m?Math.round(agg[d].p/agg[d].m):0);
                 colors2 = sD.map(d=>(agg[d].m && Math.round(agg[d].p/agg[d].m)<600)?'#ef4444':'#10b981');
@@ -2207,7 +2231,25 @@
             });
         };
 
-        window.exportTableToCSV = (id, n) => { const t=document.getElementById(id); let c=[]; t.querySelectorAll('tr').forEach(r=>{ let row=[]; r.querySelectorAll('td,th').forEach(z=>row.push(z.innerText)); c.push(row.join(',')); }); const b=new Blob([c.join('\n')],{type:'text/csv'}), a=document.createElement('a'); a.download=n; a.href=window.URL.createObjectURL(b); a.click(); };
+        window.exportTableToCSV = (id, n) => { 
+            const t=document.getElementById(id); 
+            let c=[]; 
+            t.querySelectorAll('tr').forEach(r=>{ 
+                let row=[]; 
+                r.querySelectorAll('td,th').forEach(z=>{
+                    let clone = z.cloneNode(true);
+                    clone.querySelectorAll('.hidden, i, svg').forEach(el => el.remove());
+                    let text = clone.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+                    row.push('"' + text + '"');
+                }); 
+                c.push(row.join(',')); 
+            }); 
+            const b=new Blob([c.join('\n')],{type:'text/csv;charset=utf-8;'}); 
+            const a=document.createElement('a'); 
+            a.download=n; 
+            a.href=window.URL.createObjectURL(b); 
+            a.click(); 
+        };
 
         window.initAbsensiFilters = () => {
              const d = new Date(); document.getElementById('abs-end-date').valueAsDate = d;
@@ -2254,11 +2296,11 @@
             const hubRecapBody = document.getElementById('hub-recap-tbody');
             
             if(!startStr || !endStr) return;
-            const sDate = new Date(startStr), eDate = new Date(endStr);
+            const sDate = new Date(startStr + 'T00:00:00'), eDate = new Date(endStr + 'T23:59:59');
             const dateRange = window.getDatesInRange(sDate, eDate).reverse();
 
             const reports = appData.laporan.filter(l => {
-                const d = new Date(l.tanggal);
+                const d = new Date(l.tanggal + 'T12:00:00');
                 return d >= sDate && d <= eDate && (hubFilter === 'ALL' || l.hub === hubFilter);
             });
             
@@ -2290,7 +2332,7 @@
                          
                          if(!userSummary[summaryKey]) userSummary[summaryKey] = { name: rawName, hub: r.hub, pos: pos, h:0, do:0, c:0, i:0, s:0, a:0, details: [] };
                          if(['1','2','3'].includes(status)) { userSummary[summaryKey].h++; hubStats[r.hub].h++; } else if(status==='DO') { userSummary[summaryKey].do++; hubStats[r.hub].do++; } else if(status==='C') { userSummary[summaryKey].c++; hubStats[r.hub].c++; } else if (status === 'I') { userSummary[summaryKey].i++; hubStats[r.hub].i++; } else if (status === 'S') { userSummary[summaryKey].s++; hubStats[r.hub].s++; } else if (status === 'A') { userSummary[summaryKey].a++; hubStats[r.hub].a++; }
-                         if (['I','S','A','DO','C'].includes(status)) { const reason = a.ket ? `(${a.ket})` : '', label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : (status === 'A' ? 'Alfa' : (status === 'DO' ? 'Day Off' : 'Cuti'))), dObj = new Date(r.tanggal), dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; userSummary[summaryKey].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`); }
+                         if (['I','S','A','DO','C'].includes(status)) { const reason = a.ket ? `(${a.ket})` : '', label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : (status === 'A' ? 'Alfa' : (status === 'DO' ? 'Day Off' : 'Cuti'))), dObj = new Date(r.tanggal + 'T12:00:00'), dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; userSummary[summaryKey].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`); }
                          if(status) { if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama }; attMap[r.hub][a.userId][r.tanggal] = status; if(['1','2','3'].includes(status)) { if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0; colTotals[r.tanggal]++; } }
                     });
                 }
@@ -2305,11 +2347,16 @@
             hubsToShow.forEach(h => {
                 let rawHubUsers = appData.users.filter(u => {
                     if (u.kode_hub !== h) return false;
-                    if (u.is_resign) {
-                        if (!u.tanggal_resign) return false; 
-                        const rDate = new Date(u.tanggal_resign); rDate.setHours(0,0,0,0);
-                        const fStart = new Date(sDate); fStart.setHours(0,0,0,0);
-                        return rDate >= fStart; 
+                    if (u.is_resign === true) {
+                        const inHistory = reports.some(r => r.hub === h && r.attendance_data && r.attendance_data.some(a => a.userId === u.id));
+                        const lapDate = document.getElementById('lap-tanggal')?.value;
+                        let beforeResign = false;
+                        if (lapDate && u.tanggal_resign) {
+                            if (new Date(lapDate + 'T12:00:00') <= new Date(u.tanggal_resign + 'T12:00:00')) {
+                                beforeResign = true;
+                            }
+                        }
+                        if (!inHistory && !beforeResign) return false;
                     }
                     return true;
                 }).map(u => ({...u, source: 'master'}));
@@ -2719,6 +2766,46 @@
             } catch(err){ window.notify('Gagal', 'error'); } 
         };
 
+        window.deleteUser = async (id) => {
+            const u = appData.users.find(x => x.id === id);
+            if (!u) return;
+            const confirm = await window.Swal.fire({
+                title: '',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-rose-50 rounded-full flex items-center justify-center mb-3 text-rose-500 shadow-sm border border-rose-100">
+                            <i class="fas fa-trash-alt text-2xl animate-pulse"></i>
+                        </div>
+                        <h3 class="text-base font-extrabold text-slate-800">Hapus Pengguna?</h3>
+                        <p class="text-xs text-slate-500 mt-1 text-center">Anda yakin ingin menghapus <b>${u.nama}</b> secara permanen?</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                width: '18rem',
+                customClass: {
+                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
+                    confirmButton: 'bg-rose-500 text-white px-4 py-2.5 rounded-xl font-bold text-[10px] shadow-lg shadow-rose-500/30 hover:bg-rose-600 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                    cancelButton: 'bg-slate-100 text-slate-500 px-4 py-2.5 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1',
+                    actions: 'flex gap-2 w-full justify-center mt-2'
+                },
+                buttonsStyling: false
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            window.notify('Menghapus...', 'loading');
+            try {
+                await supa.from('users').delete().eq('id', id);
+                await fetchAllData();
+                window.notify('Pengguna Dihapus', 'success');
+            } catch(e) {
+                window.notify('Gagal Hapus', 'error');
+            }
+        };
+
         window.renderCostInputs = () => { const c=document.getElementById('cost-container'); c.innerHTML=''; appData.costs.forEach((x,i)=>c.innerHTML+=`<div class="flex gap-3 items-center mb-3 bg-slate-50 p-2 rounded-xl border border-slate-100"><input type="text" id="cost-hub-${i}" value="${x.hub}" class="w-1/3 border-none p-2 rounded-lg text-sm bg-transparent font-bold text-slate-700" readonly><input type="text" id="cost-val-${i}" value="${window.formatRupiah(x.cost)}" class="w-1/3 border border-slate-200 p-2 rounded-lg text-sm text-right font-mono focus:ring-1 focus:ring-primary outline-none" onkeyup="window.formatCostInput(this)"><button onclick="window.removeCostRow(${i})" class="text-rose-400 hover:text-rose-600 px-3 transition"><i class="fas fa-trash"></i></button></div>`); };
         window.addHubToTable = () => { const n=document.getElementById('new-hub-name').value.toUpperCase(), c=window.parseFormattedNumber(document.getElementById('new-hub-cost').value); if(!n) return window.Swal.fire('Info','Isi HUB','warning'); appData.costs.push({hub:n, cost:c}); window.renderCostInputs(); document.getElementById('new-hub-name').value=''; document.getElementById('new-hub-cost').value=''; };
         window.removeCostRow = (i) => { appData.costs.splice(i,1); window.renderCostInputs(); };
@@ -2746,7 +2833,7 @@
         };
 
         window.copyReportToClipboard = (laporan) => {
-            const d = new Date(laporan.tanggal);
+            const d = new Date(laporan.tanggal + 'T12:00:00');
             const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
             const prod = Math.round(laporan.productivity);
             
@@ -2867,9 +2954,9 @@
             const sDateVal = document.getElementById('lap-start-date').value;
             const eDateVal = document.getElementById('lap-end-date').value;
             if(sDateVal && eDateVal) {
-                const s = new Date(sDateVal); s.setHours(0,0,0,0);
-                const e = new Date(eDateVal); e.setHours(23,59,59,999);
-                d = d.filter(l => { const x = new Date(l.tanggal); return x >= s && x <= e; });
+                const s = new Date(sDateVal + 'T00:00:00');
+                const e = new Date(eDateVal + 'T23:59:59');
+                d = d.filter(l => { const x = new Date(l.tanggal + 'T12:00:00'); return x >= s && x <= e; });
             }
 
             if(currentUser.role !== 'admin' && currentUser.role !== 'visitor') {
@@ -2882,7 +2969,7 @@
             if(d.length === 0) document.getElementById('empty-laporan-msg').classList.remove('hidden');
             else {
                 document.getElementById('empty-laporan-msg').classList.add('hidden');
-                d.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+                d.sort((a,b)=>new Date(b.tanggal + 'T12:00:00')-new Date(a.tanggal + 'T12:00:00'));
                 d.forEach(l => {
                     const hasEditAccess = (currentUser.role === 'admin') || (currentUser.role === 'pic') || (currentUser.akses_laporan === 'YA' && l.hub === currentUser.kode_hub);
                     const shareBtn = `<button onclick='window.copyReportHandler("${safeId(l.id)}")' class="text-green-600 bg-green-50 hover:bg-green-100 p-2 rounded-lg transition" title="Salin Laporan"><i class="fab fa-whatsapp"></i></button>`;
@@ -2908,108 +2995,16 @@
             }
         };
 
-        window.editLaporan = async (id) => {
-            const processEdit = () => {
-                const d = appData.laporan.find(x => x.id === id); 
-                window.openLaporanModal(); 
-                document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; 
-                document.getElementById('edit-laporan-id').value = id;
-                document.getElementById('lap-tanggal').value = d.tanggal; 
-                document.getElementById('lap-tanggal').setAttribute('data-original', d.tanggal);
-                if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
-                document.getElementById('lap-gateway').value=window.formatNumber(d.gateway); 
-                document.getElementById('lap-staging').value=window.formatNumber(d.staging); 
-                document.getElementById('lap-jne').value=window.formatNumber(d.jne); 
-                document.getElementById('lap-sap').value=window.formatNumber(d.sap);
-                document.getElementById('lap-catatan').value = d.catatan || ''; 
-                window.loadHubUsersForAttendance(d.hub, d.attendance_data); 
-                window.calcMetrics();
-            };
-
-            if (currentUser.role === 'admin') {
-                processEdit();
-            } else {
-            const { value: code } = await Swal.fire({
-                title: '',
-                html: `
-                    <div class="flex flex-col items-center">
-                        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
-                            <i class="fas fa-lock-open text-xl animate-bounce"></i>
-                        </div>
-                        <h3 class="text-sm font-extrabold text-slate-800">Verifikasi</h3>
-                        <p class="text-[10px] text-slate-500 mt-0.5 font-medium text-center">Masukkan kode akses</p>
-                    </div>
-                `,
-                input: 'password',
-                inputPlaceholder: '••••••',
-                inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric' },
-                width: '18rem',
-                showCancelButton: true,
-                reverseButtons: true,
-                buttonsStyling: false,
-                confirmButtonText: 'Buka',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    popup: 'rounded-2xl border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
-                    input: `w-32 mx-auto bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm mt-3`,
-                    confirmButton: `bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    cancelButton: `bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    actions: 'flex gap-2 w-full justify-center mt-3'
-                }
-            });
-
-                if (code) {
-                    if (code === appData.accessCode) {
-                        window.notify('Akses Diberikan', 'success');
-                        processEdit();
-                    } else {
-                        window.notify('Kode Akses Salah', 'error');
-                    }
-                }
-            }
-        };
-
-        window.openLaporanModal = () => {
-            const m=document.getElementById('laporan-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
-            document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText='Buat Laporan Baru'; document.getElementById('edit-laporan-id').value=''; document.getElementById('lap-tanggal').valueAsDate=new Date();
-            document.getElementById('lap-tanggal').removeAttribute('data-original');
-            document.getElementById('lap-catatan').value = ''; 
-            const s=document.getElementById('lap-hub-select'), t=document.getElementById('lap-hub-text');
-            if(currentUser.role==='admin') { s.classList.remove('hidden'); t.classList.add('hidden'); s.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>s.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="11" class="p-8 text-center text-slate-400">Pilih HUB dulu.</td></tr>'; }
-            else { s.classList.add('hidden'); t.classList.remove('hidden'); t.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
-            ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id=>document.getElementById(id).innerText='0');
-        };
-        window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
-        
-        window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
-            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; 
-            const tb = document.getElementById('attendance-tbody'); 
-            tb.innerHTML = ''; 
-            if(!h) return;
-            
-            const users = appData.users.filter(u => {
-                if(u.kode_hub !== h) return false;
-                
-                if(u.is_resign === true) {
-                    const inHistory = existingData && existingData.some(ed => ed.userId === u.id);
-                    if(!inHistory) return false; 
-                }
-                return true;
-            }).sort((a,b) => { 
-                const rA=(a.posisi==='LEADER'||a.posisi==='Admin'||a.posisi==='Visitor')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin'||b.posisi==='Visitor')?0:1; 
-                if(rA!==rB)return rA-rB; 
-                return a.id.localeCompare(b.id); 
-            });
-
-            const map = {}; existingData.forEach(x => map[x.userId] = x);
-            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'||u.posisi==='Visitor'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,do:0,c:0,i:0,s:0,a:0,ket:''}, false); });
-            existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
-            window.updateTotalMPP();
-        };
-
         window.deleteLaporan = async (id) => {
+            const l = appData.laporan.find(x => x.id === id);
+            if (!l) return window.notify('Laporan tidak ditemukan', 'error');
+            
+            if (currentUser.role !== 'admin' && currentUser.kode_hub !== l.hub) {
+                return window.notify('Akses Ditolak: Beda HUB', 'error');
+            }
+
             const processDelete = async () => {
-                const r = await Swal.fire({
+                const r = await window.Swal.fire({
                     title: '',
                     html: `
                         <div class="flex flex-col items-center">
@@ -3052,7 +3047,7 @@
 
             if (currentUser.role === 'admin') { await processDelete(); return; }
 
-            const { value: code } = await Swal.fire({
+            const { value: code } = await window.Swal.fire({
                 title: '',
                 html: `
                     <div class="flex flex-col items-center">
@@ -3086,20 +3081,111 @@
             if (code === appData.accessCode) { window.notify('Akses Diberikan', 'success'); await processDelete(); } else { window.notify('Kode Akses Salah', 'error'); }
         };
 
-        window.saveAdminPass = async () => { 
-            const p = document.getElementById('new-admin-pass').value; 
-            if(p.length<4) return window.notify('Min 4 Char', 'error'); 
-            await supa.from('settings').upsert({ id: 'main', adminPass: p });
-            await fetchAllData();
-            window.notify('Password Updated', 'success');
+        window.editLaporan = async (id) => {
+            const processEdit = () => {
+                const d = appData.laporan.find(x => x.id === id); 
+                window.openLaporanModal(); 
+                document.getElementById('laporan-modal-title').innerText = 'Edit Laporan'; 
+                document.getElementById('edit-laporan-id').value = id;
+                document.getElementById('lap-tanggal').value = d.tanggal; 
+                document.getElementById('lap-tanggal').setAttribute('data-original', d.tanggal);
+                if(currentUser.role==='admin') document.getElementById('lap-hub-select').value = d.hub;
+                document.getElementById('lap-gateway').value=window.formatNumber(d.gateway); 
+                document.getElementById('lap-staging').value=window.formatNumber(d.staging); 
+                document.getElementById('lap-jne').value=window.formatNumber(d.jne); 
+                document.getElementById('lap-sap').value=window.formatNumber(d.sap);
+                document.getElementById('lap-catatan').value = d.catatan || ''; 
+                window.loadHubUsersForAttendance(d.hub, d.attendance_data); 
+                window.calcMetrics();
+            };
+
+            if (currentUser.role === 'admin') {
+                processEdit();
+            } else {
+                window.Swal.fire({
+                    title: '',
+                    html: `
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
+                                <i class="fas fa-lock-open text-xl animate-bounce"></i>
+                            </div>
+                            <h3 class="text-sm font-extrabold text-slate-800">Verifikasi</h3>
+                            <p class="text-[10px] text-slate-500 mt-0.5 font-medium text-center">Masukkan kode akses</p>
+                        </div>
+                    `,
+                    input: 'password',
+                    inputPlaceholder: '••••••',
+                    inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric' },
+                    width: '18rem',
+                    showCancelButton: true,
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    confirmButtonText: 'Buka',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-2xl border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
+                        input: `w-32 mx-auto bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm mt-3`,
+                        confirmButton: `bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
+                        cancelButton: `bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
+                        actions: 'flex gap-2 w-full justify-center mt-3'
+                    }
+                }).then(({ value: code }) => {
+                    if (code) {
+                        if (code === appData.accessCode) {
+                            window.notify('Akses Diberikan', 'success');
+                            processEdit();
+                        } else {
+                            window.notify('Kode Akses Salah', 'error');
+                        }
+                    }
+                });
+            }
         };
 
-        window.saveAccessCode = async () => {
-            const c = document.getElementById('access-code-input').value.trim();
-            if(!c) return window.notify('Kode Kosong', 'error');
-            await supa.from('settings').upsert({ id: 'main', accessCode: c });
-            await fetchAllData();
-            window.notify('Kode Akses Disimpan', 'success');
+        window.openLaporanModal = () => {
+            const m=document.getElementById('laporan-modal'); m.classList.remove('hidden'); setTimeout(()=>m.children[0].classList.remove('scale-95','opacity-0'), 10);
+            document.getElementById('laporan-form').reset(); document.getElementById('laporan-modal-title').innerText='Buat Laporan Baru'; document.getElementById('edit-laporan-id').value=''; document.getElementById('lap-tanggal').valueAsDate=new Date();
+            document.getElementById('lap-tanggal').removeAttribute('data-original');
+            document.getElementById('lap-catatan').value = ''; 
+            const s=document.getElementById('lap-hub-select'), t=document.getElementById('lap-hub-text');
+            if(currentUser.role==='admin') { s.classList.remove('hidden'); t.classList.add('hidden'); s.innerHTML='<option value="">-- Pilih HUB --</option>'; appData.costs.forEach(c=>s.innerHTML+=`<option value="${c.hub}">${c.hub}</option>`); document.getElementById('attendance-tbody').innerHTML='<tr><td colspan="11" class="p-8 text-center text-slate-400">Pilih HUB dulu.</td></tr>'; }
+            else { s.classList.add('hidden'); t.classList.remove('hidden'); t.value=currentUser.kode_hub; window.loadHubUsersForAttendance(currentUser.kode_hub); }
+            ['disp-total-paket','disp-total-mpp','disp-productivity'].forEach(id=>document.getElementById(id).innerText='0');
+        };
+
+        window.closeLaporanModal = () => { const m=document.getElementById('laporan-modal'); m.children[0].classList.add('scale-95','opacity-0'); setTimeout(()=>m.classList.add('hidden'), 300); };
+
+        window.loadHubUsersForAttendance = (hName=null, existingData=[]) => {
+            const h = hName || document.getElementById('lap-hub-select').value || document.getElementById('lap-hub-text').value; 
+            const tb = document.getElementById('attendance-tbody'); 
+            tb.innerHTML = ''; 
+            if(!h) return;
+            
+            const users = appData.users.filter(u => {
+                if(u.kode_hub !== h) return false;
+                
+                if(u.is_resign === true) {
+                    const inHistory = existingData && existingData.some(ed => ed.userId === u.id);
+                    const lapDate = document.getElementById('lap-tanggal').value;
+                    let beforeResign = false;
+                    if (lapDate && u.tanggal_resign) {
+                        if (new Date(lapDate + 'T12:00:00') <= new Date(u.tanggal_resign + 'T12:00:00')) {
+                            beforeResign = true;
+                        }
+                    }
+                    if(!inHistory && !beforeResign) return false; 
+                }
+                return true;
+            }).sort((a,b) => { 
+                const rA=(a.posisi==='LEADER'||a.posisi==='Admin'||a.posisi==='Visitor')?0:1, rB=(b.posisi==='LEADER'||b.posisi==='Admin'||b.posisi==='Visitor')?0:1; 
+                if(rA!==rB)return rA-rB; 
+                return a.id.localeCompare(b.id, undefined, {numeric: true}); 
+            });
+
+            const map = {}; existingData.forEach(x => map[x.userId] = x);
+            users.forEach(u => { const isL = u.posisi==='LEADER'||u.posisi==='Admin'||u.posisi==='Visitor'; window.renderRow(tb, u.id, u.nama, u.posisi, isL, map[u.id]||{s1:0,s2:0,s3:0,do:0,c:0,i:0,s:0,a:0,ket:''}, false); });
+            existingData.forEach(x => { if(x.userId.startsWith('manual_')) window.renderRow(tb, x.userId, x.nama, 'DW', false, map[x.userId], true); });
+            window.updateTotalMPP();
         };
 
         window.calcMetrics = () => {
@@ -3186,18 +3272,10 @@
 
         window.handleCheck = (el) => {
             const tr = el.closest('tr');
-            const isAtt = el.classList.contains('chk-s1') || el.classList.contains('chk-s2') || el.classList.contains('chk-s3');
             if(el.checked) {
-                if(isAtt) {
-                    ['chk-do','chk-c','chk-i','chk-s','chk-a'].forEach(c => {
-                        const box = tr.querySelector('.'+c);
-                        if(box && box !== el) box.checked = false;
-                    });
-                } else {
-                    tr.querySelectorAll('input[type="checkbox"]').forEach(box => {
-                        if(box !== el) box.checked = false;
-                    });
-                }
+                tr.querySelectorAll('input[type="checkbox"]').forEach(box => {
+                    if(box !== el) box.checked = false;
+                });
             }
         };
 

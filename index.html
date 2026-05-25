@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v6</title>
+    <title>DailyReport v5</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1214,7 +1214,23 @@
         };
 
         async function callGeminiAPI(promptText) {
-            const apiKey = ""; 
+            const apiKey = appData.geminiKey || ""; 
+            
+            if (!apiKey) {
+                window.Swal.fire({
+                    title: 'API Key Dibutuhkan',
+                    text: 'Fitur AI belum dikonfigurasi. Hubungi Admin untuk input API Key di menu Pengaturan.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ke Pengaturan'
+                }).then((result) => {
+                   if(result.isConfirmed && currentUser && currentUser.role === 'admin') {
+                       window.navigate('pengaturan');
+                       window.switchSettingsTab('general');
+                   }
+                });
+                throw new Error("API Key Missing");
+            }
+
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: promptText }] }] };
 
@@ -1280,6 +1296,35 @@
                 if(res) window.Swal.fire('Sukses', `Koneksi AI Berhasil! Respon: ${res}`, 'success');
             } catch(e) {
                 console.error(e);
+            }
+        };
+
+        window.saveAdminPass = async () => {
+            const pass = document.getElementById('new-admin-pass').value.trim();
+            if(!pass) return window.notify('Password baru kosong', 'warning');
+            try {
+                window.notify('Menyimpan ke Database...', 'loading');
+                await supa.from('settings').upsert({ id: 'main', adminPass: pass });
+                appData.adminPass = pass;
+                document.getElementById('new-admin-pass').value = '';
+                window.notify('Password Admin Diperbarui', 'success');
+            } catch(e) {
+                console.error(e);
+                window.notify('Gagal Simpan', 'error');
+            }
+        };
+
+        window.saveAccessCode = async () => {
+            const code = document.getElementById('access-code-input').value.trim();
+            if(!code) return window.notify('Kode akses kosong', 'warning');
+            try {
+                window.notify('Menyimpan ke Database...', 'loading');
+                await supa.from('settings').upsert({ id: 'main', accessCode: code });
+                appData.accessCode = code;
+                window.notify('Kode Akses Diperbarui', 'success');
+            } catch(e) {
+                console.error(e);
+                window.notify('Gagal Simpan', 'error');
             }
         };
 

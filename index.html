@@ -133,12 +133,13 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
 
-    <div id="trial-warning-banner" class="hidden bg-rose-500 hover:bg-rose-600 transition cursor-pointer text-white text-center py-2 px-4 text-xs font-bold tracking-wide z-[9999] relative flex-shrink-0 shadow-md" onclick="window.openSubscriptionModal()">
-        PERHATIAN: Masa trial aplikasi berakhir pada <span id="trial-warning-date"></span>. Klik di sini untuk aktivasi paket.
+    <div id="trial-warning-banner" class="hidden bg-rose-500 hover:bg-rose-600 transition cursor-pointer text-white text-center py-2 px-4 text-xs font-bold tracking-wide z-[9999] relative flex-shrink-0 shadow-md" onclick="window.openActivationModal()">
+        PERHATIAN: Masa trial aplikasi berakhir pada <span id="trial-warning-date"></span>. Klik di sini untuk aktivasi.
     </div>
 
     <div id="trial-lock-overlay" class="fixed inset-0 z-[99999] bg-slate-900 hidden flex-col items-center justify-center p-6 text-center">
-        <div class="bg-white p-8 rounded-[2rem] max-w-md w-full shadow-2xl border border-white/20">
+        <div class="bg-white p-8 rounded-[2rem] max-w-md w-full shadow-2xl border border-white/20 relative">
+            <button id="close-activation-btn" onclick="window.closeActivationModal()" class="absolute top-6 right-6 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-rose-100 hover:text-rose-500 transition hidden"><i class="fas fa-times"></i></button>
             <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-5 text-rose-500 shadow-inner">
                 <i class="fas fa-lock text-3xl"></i>
             </div>
@@ -1091,21 +1092,18 @@
                 
                 if (!appData.isUnlocked) {
                     if (now > trialEndDate) {
-                        document.getElementById('trial-lock-overlay').classList.remove('hidden');
-                        document.getElementById('trial-lock-overlay').classList.add('flex');
+                        window.openActivationModal(true);
                         const overlay = document.getElementById('loading-overlay');
                         if(overlay) overlay.remove();
                         return;
                     } else {
                         const diffTime = trialEndDate - now;
                         const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (daysLeft <= 30) {
-                            const banner = document.getElementById('trial-warning-banner');
-                            if (banner) {
-                                banner.classList.remove('hidden');
-                                const dateStr = trialEndDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                                document.getElementById('trial-warning-date').innerText = `${dateStr} (${daysLeft} hari lagi)`;
-                            }
+                        const banner = document.getElementById('trial-warning-banner');
+                        if (banner) {
+                            banner.classList.remove('hidden');
+                            const dateStr = trialEndDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                            document.getElementById('trial-warning-date').innerText = `${dateStr} (${daysLeft} hari lagi)`;
                         }
                     }
                 }
@@ -1131,6 +1129,24 @@
             const loginSec = document.getElementById('login-section');
             if(loginSec) loginSec.classList.remove('hidden');
         }
+
+        window.openActivationModal = (isExpired = false) => {
+            const overlay = document.getElementById('trial-lock-overlay');
+            const closeBtn = document.getElementById('close-activation-btn');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            if (isExpired) {
+                closeBtn.classList.add('hidden');
+            } else {
+                closeBtn.classList.remove('hidden');
+            }
+        };
+
+        window.closeActivationModal = () => {
+            const overlay = document.getElementById('trial-lock-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        };
 
         window.openSubscriptionModal = () => {
             const m = document.getElementById('subscription-modal');
@@ -1198,6 +1214,9 @@
                             const lockOverlay = document.getElementById('trial-lock-overlay');
                             lockOverlay.style.transition = 'opacity 0.5s ease';
                             lockOverlay.style.opacity = '0';
+                            
+                            const warningBanner = document.getElementById('trial-warning-banner');
+                            if (warningBanner) warningBanner.classList.add('hidden');
                             
                             setTimeout(() => {
                                 lockOverlay.classList.add('hidden');

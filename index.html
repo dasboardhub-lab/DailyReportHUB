@@ -764,6 +764,7 @@
                                 <thead class="text-slate-400 bg-slate-50/50 uppercase font-bold sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                     <tr>
                                         <th class="px-6 py-4">Nama Personil</th>
+                                        <th class="px-4 py-4 text-center">NIK</th>
                                         <th class="px-4 py-4 text-center">Posisi</th>
                                         <th class="px-2 py-4 text-center text-blue-600" title="Hadir">H</th>
                                         <th class="px-2 py-4 text-center text-slate-500" title="Day Off">DO</th>
@@ -879,8 +880,8 @@
                         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                             <h3 class="font-bold text-slate-800 mb-6 text-sm flex items-center gap-2"><i class="fas fa-lock text-purple-500"></i> Kode Akses Leader</h3>
                             <div class="mb-5 relative group">
-                                <input type="text" id="access-code-input" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-purple-500 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-semibold shadow-sm" placeholder="Kode Baru">
-                                <label for="access-code-input" class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Kode Baru</label>
+                                <input type="password" id="access-code-input" maxlength="6" oninput="this.value=this.value.replace(/[^0-9]/g, '')" class="peer block px-4 py-3.5 w-full text-sm text-slate-900 bg-slate-50 rounded-xl border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-purple-500 focus:bg-white appearance-none focus:outline-none transition-all placeholder-transparent font-bold shadow-sm text-center tracking-[0.5em]" placeholder="123456">
+                                <label for="access-code-input" class="absolute text-xs font-bold text-slate-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-transparent px-2 peer-focus:px-2 peer-focus:text-purple-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:left-4 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-4 cursor-text">Kode Baru (6 Angka)</label>
                             </div>
                             <button onclick="window.saveAccessCode()" class="w-full bg-purple-600 text-white px-4 py-3.5 rounded-xl text-xs font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-500/20 tracking-wide uppercase">Simpan Kode</button>
                         </div>
@@ -1044,7 +1045,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0c2plaHFkYWt2bW1tbnl1emRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDc4NzksImV4cCI6MjA5MDYyMzg3OX0.zeWEZw4Pw3dWqZpwRZFXnUHvDd_sMamSI9jRQquQPB8';
         const supa = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let appData = { adminPass: '123456', accessCode: 'SUPERHUB', costDW: 120000, users: [], costs: [], laporan: [], isUnlocked: false, unlockCode: 'tes', trialEndDate: '2026-04-27' };
+        let appData = { adminPass: '123456', accessCode: '123456', costDW: 120000, users: [], costs: [], laporan: [], isUnlocked: false, unlockCode: 'tes', trialEndDate: '2026-04-27' };
         let currentUser = null, annualChart = null, dailyChart = null;
         let isLoggingOut = false;
         let currentChartMode = 'annual'; 
@@ -1061,7 +1062,7 @@
 
                 if(setRes.data) {
                     appData.adminPass = setRes.data.adminPass || '123456';
-                    appData.accessCode = setRes.data.accessCode || 'SUPERHUB';
+                    appData.accessCode = setRes.data.accessCode || '123456';
                     appData.costDW = setRes.data.costDW || 120000;
                     appData.geminiKey = setRes.data.geminiKey || '';
                     appData.isUnlocked = setRes.data.isUnlocked || false;
@@ -1335,7 +1336,7 @@
 
         window.saveAccessCode = async () => {
             const code = document.getElementById('access-code-input').value.trim();
-            if(!code) return window.notify('Kode akses kosong', 'warning');
+            if(!code || code.length !== 6) return window.notify('Kode akses harus 6 angka', 'warning');
             try {
                 window.notify('Menyimpan ke Database...', 'loading');
                 await supa.from('settings').upsert({ id: 'main', accessCode: code });
@@ -1359,6 +1360,85 @@
             buttonsStyling: false
         });
         window.Swal = SwalTheme; 
+
+        window.promptLeaderAccess = async (titleText, descText, iconClass, theme = 'indigo') => {
+            const isBlue = theme === 'blue';
+            const bgLight = isBlue ? 'bg-blue-50' : 'bg-indigo-50';
+            const textDark = isBlue ? 'text-blue-600' : 'text-indigo-500';
+            const borderLight = isBlue ? 'border-blue-100' : 'border-indigo-100';
+            const ringColor = isBlue ? 'focus:ring-blue-500 focus:border-blue-500' : 'focus:ring-indigo-500 focus:border-indigo-500';
+            const btnConfirm = isBlue ? 'bg-blue-600 shadow-blue-500/30 hover:bg-blue-700' : 'bg-indigo-600 shadow-indigo-500/30 hover:bg-indigo-700';
+
+            return await window.Swal.fire({
+                title: '',
+                html: `
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 ${bgLight} rounded-2xl flex items-center justify-center mb-3 ${textDark} shadow-sm border ${borderLight}">
+                            <i class="${iconClass} text-xl animate-bounce"></i>
+                        </div>
+                        <h3 class="text-base font-extrabold text-slate-800">${titleText}</h3>
+                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">${descText}</p>
+                        
+                        <div class="flex gap-2 justify-center mt-5 w-full px-2" id="otp-container">
+                            ${Array(6).fill(0).map(() => `<input type="password" inputmode="numeric" maxlength="1" class="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 ${ringColor} outline-none transition shadow-sm otp-box">`).join('')}
+                        </div>
+                    </div>
+                `,
+                width: '20rem',
+                showCancelButton: true,
+                confirmButtonText: 'Verifikasi',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
+                    confirmButton: `${btnConfirm} text-white px-5 py-2.5 rounded-xl font-bold text-[10px] shadow-lg transition active:scale-95 uppercase tracking-wide flex-1 mx-1`,
+                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2.5 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1 mx-1`,
+                    actions: 'flex gap-2 w-full justify-center mt-6'
+                },
+                didOpen: () => {
+                    const inputs = document.querySelectorAll('.otp-box');
+                    if(inputs.length > 0) setTimeout(() => inputs[0].focus(), 100);
+                    
+                    inputs.forEach((input, index) => {
+                        input.addEventListener('input', (e) => {
+                            input.value = input.value.replace(/[^0-9]/g, '');
+                            if (input.value && index < inputs.length - 1) {
+                                inputs[index + 1].focus();
+                            }
+                        });
+                        
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Backspace' && !input.value && index > 0) {
+                                inputs[index - 1].focus();
+                                inputs[index - 1].value = ''; 
+                            }
+                        });
+
+                        input.addEventListener('paste', (e) => {
+                            e.preventDefault();
+                            const pasted = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                            for (let i = 0; i < pasted.length; i++) {
+                                if (inputs[index + i]) {
+                                    inputs[index + i].value = pasted[i];
+                                    if (index + i < inputs.length - 1) inputs[index + i + 1].focus();
+                                }
+                            }
+                        });
+                    });
+                },
+                preConfirm: () => {
+                    const inputs = document.querySelectorAll('.otp-box');
+                    let code = '';
+                    inputs.forEach(input => code += input.value);
+                    if (code.length !== 6) {
+                        Swal.showValidationMessage('Masukkan 6 angka kode akses');
+                        return false;
+                    }
+                    return code;
+                }
+            });
+        };
 
         const island = document.getElementById('dynamic-island');
         const islandContent = document.getElementById('island-content');
@@ -2387,7 +2467,7 @@
                          const rawName = (a.nama || a.name || '').trim().toUpperCase(); 
                          const summaryKey = `${rawName}_${r.hub}`;
                          
-                         if(!userSummary[summaryKey]) userSummary[summaryKey] = { name: rawName, hub: r.hub, pos: pos, h:0, do:0, c:0, i:0, s:0, a:0, details: [] };
+                         if(!userSummary[summaryKey]) userSummary[summaryKey] = { name: rawName, hub: r.hub, pos: pos, id: a.userId, h:0, do:0, c:0, i:0, s:0, a:0, details: [] };
                          if(['1','2','3'].includes(status)) { userSummary[summaryKey].h++; hubStats[r.hub].h++; } else if(status==='DO') { userSummary[summaryKey].do++; hubStats[r.hub].do++; } else if(status==='C') { userSummary[summaryKey].c++; hubStats[r.hub].c++; } else if (status === 'I') { userSummary[summaryKey].i++; hubStats[r.hub].i++; } else if (status === 'S') { userSummary[summaryKey].s++; hubStats[r.hub].s++; } else if (status === 'A') { userSummary[summaryKey].a++; hubStats[r.hub].a++; }
                          if (['I','S','A','DO','C'].includes(status)) { const reason = a.ket ? `(${a.ket})` : '', label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : (status === 'A' ? 'Alfa' : (status === 'DO' ? 'Day Off' : 'Cuti'))), dObj = new Date(r.tanggal + 'T12:00:00'), dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; userSummary[summaryKey].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`); }
                          if(status) { if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama }; attMap[r.hub][a.userId][r.tanggal] = status; if(['1','2','3'].includes(status)) { if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0; colTotals[r.tanggal]++; } }
@@ -2473,8 +2553,9 @@
             let html = `<table class="w-full text-xs border-separate border-spacing-0">`;
             
             html += `<thead class="abs-header sticky top-0 z-40 shadow-sm bg-slate-50"><tr>
-                        <th class="p-3 border-b border-r bg-slate-50 text-left w-[180px] min-w-[180px] max-w-[180px] sticky left-0 z-50 font-bold text-slate-600 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Nama Personil</th>
-                        <th class="p-3 border-b border-r bg-slate-50 text-center w-[80px] min-w-[80px] max-w-[80px] sticky left-[180px] z-50 font-bold text-slate-600 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)]">Posisi</th>`;
+                        <th class="p-3 border-b border-r bg-slate-50 text-left w-[160px] min-w-[160px] max-w-[160px] sticky left-0 z-50 font-bold text-slate-600 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Nama Personil</th>
+                        <th class="p-3 border-b border-r bg-slate-50 text-center w-[100px] min-w-[100px] max-w-[100px] sticky left-[160px] z-50 font-bold text-slate-600 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">NIK</th>
+                        <th class="p-3 border-b border-r bg-slate-50 text-center w-[80px] min-w-[80px] max-w-[80px] sticky left-[260px] z-50 font-bold text-slate-600 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)]">Posisi</th>`;
             
             dateRange.forEach(d => {
                 const dStr = d.toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'});
@@ -2490,7 +2571,7 @@
 
                 html += `
                     <tr class="bg-slate-100/80 border-b border-slate-200">
-                        <td class="p-2.5 font-extrabold text-slate-700 sticky left-0 z-30 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-left pl-4" colspan="2">
+                        <td class="p-2.5 font-extrabold text-slate-700 sticky left-0 z-30 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-left pl-4" colspan="3">
                             <span class="bg-slate-200/50 px-2 py-0.5 rounded border border-slate-300/50 mr-2"><i class="fas fa-building text-slate-500 text-[10px]"></i></span> ${h}
                         </td>
                         <td class="bg-slate-50" colspan="${dateRange.length}"></td>
@@ -2504,9 +2585,13 @@
                     else if(u.posisi === 'Visitor') { posStyle = 'text-purple-600 font-bold bg-purple-50/50 rounded px-1'; posText = 'VISITOR'; }
                     else if(u.posisi === 'DW' || u.source === 'history') { posStyle = 'text-slate-400 italic'; }
 
+                    let displayId = u.id || '-';
+                    if (u.posisi === 'DW' || posText === 'DW' || (u.id && u.id.startsWith('manual_'))) displayId = '';
+
                     html += `<tr class="hover:bg-slate-50 transition group">
-                        <td class="p-2 border-b border-r bg-white font-medium text-slate-700 text-[10px] sticky left-0 z-30 truncate max-w-[180px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] pl-4" title="${u.nama}">${u.nama}</td>
-                        <td class="p-2 border-b border-r bg-white text-[9px] sticky left-[180px] z-30 text-center shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)]"><span class="${posStyle}">${posText}</span></td>`;
+                        <td class="p-2 border-b border-r bg-white font-medium text-slate-700 text-[10px] sticky left-0 z-30 truncate max-w-[160px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] pl-4" title="${u.nama}">${u.nama}</td>
+                        <td class="p-2 border-b border-r bg-white text-slate-500 text-[9px] font-mono sticky left-[160px] z-30 text-center truncate max-w-[100px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">${displayId}</td>
+                        <td class="p-2 border-b border-r bg-white text-[9px] sticky left-[260px] z-30 text-center shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)]"><span class="${posStyle}">${posText}</span></td>`;
                     
                     dateRange.forEach(d => {
                         const y = d.getFullYear();
@@ -2547,11 +2632,11 @@
             });
 
             if (!hasData) {
-                html += `<tr><td colspan="${dateRange.length + 2}" class="p-8 text-center text-slate-400">Tidak ada data personil untuk filter ini.</td></tr>`;
+                html += `<tr><td colspan="${dateRange.length + 3}" class="p-8 text-center text-slate-400">Tidak ada data personil untuk filter ini.</td></tr>`;
             }
             
             html += `<tr class="bg-slate-50 font-bold sticky bottom-0 z-50 shadow-[0_-4px_10px_-4px_rgba(0,0,0,0.1)]">
-                        <td class="p-3 border-t text-right sticky left-0 z-50 bg-slate-100 text-slate-700 border-r" colspan="2">Total Hadir:</td>`;
+                        <td class="p-3 border-t text-right sticky left-0 z-50 bg-slate-100 text-slate-700 border-r" colspan="3">Total Hadir:</td>`;
             dateRange.forEach(d => {
                  const y = d.getFullYear();
                  const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -2589,18 +2674,22 @@
                 if(rA !== rB) return rA - rB;
                 return uA.name.localeCompare(uB.name);
             });
-            if (sortedUserKeys.length === 0) { summaryBody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`; } else {
+            if (sortedUserKeys.length === 0) { summaryBody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400 italic">Tidak ada data absensi pada periode ini.</td></tr>`; } else {
                 let currHub = '';
                 sortedUserKeys.forEach(key => {
                     const u = userSummary[key]; if (u.h === 0 && u.do === 0 && u.c === 0 && u.i === 0 && u.s === 0 && u.a === 0 && u.details.length === 0) return; 
-                    if (currHub !== u.hub) { currHub = u.hub; summaryBody.innerHTML += `<tr class="bg-slate-100/80 border-b border-slate-200"><td colspan="9" class="p-2.5 font-extrabold text-slate-700 pl-6"><span class="bg-slate-200/50 px-2 py-0.5 rounded border border-slate-300/50 mr-2"><i class="fas fa-building text-slate-500 text-[10px]"></i></span> ${u.hub}</td></tr>`; }
+                    if (currHub !== u.hub) { currHub = u.hub; summaryBody.innerHTML += `<tr class="bg-slate-100/80 border-b border-slate-200"><td colspan="10" class="p-2.5 font-extrabold text-slate-700 pl-6"><span class="bg-slate-200/50 px-2 py-0.5 rounded border border-slate-300/50 mr-2"><i class="fas fa-building text-slate-500 text-[10px]"></i></span> ${u.hub}</td></tr>`; }
                     const detailsHtml = u.details.length > 0 ? u.details.join('') : '<span class="text-slate-300">-</span>';
                     let posStyle = 'text-slate-400 font-medium', posText = (u.pos||'DW').toUpperCase();
                     if(posText==='ADMIN') posText='LEADER';
                     if(posText==='LEADER'||posText==='VISITOR') posStyle = 'text-blue-600 font-bold bg-blue-50/50 rounded px-1.5 py-0.5';
                     else if(posText==='DW'||posText==='HISTORY') posStyle = 'text-slate-400 italic bg-slate-50 rounded px-1.5 py-0.5 border border-slate-200';
                     else posStyle = 'text-slate-500 font-bold bg-slate-100 rounded px-1.5 py-0.5 border border-slate-200';
-                    summaryBody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700 text-[11px] uppercase">${window.safeId(u.name)}</td><td class="px-4 py-4 text-center"><span class="${posStyle} text-[9px]">${posText}</span></td><td class="px-2 py-4 text-center font-bold text-emerald-600 bg-emerald-50/30 rounded">${u.h}</td><td class="px-2 py-4 text-center font-bold text-slate-500">${u.do}</td><td class="px-2 py-4 text-center font-bold text-purple-500">${u.c}</td><td class="px-2 py-4 text-center font-bold text-amber-500">${u.i}</td><td class="px-2 py-4 text-center font-bold text-yellow-500">${u.s}</td><td class="px-2 py-4 text-center font-bold text-rose-500">${u.a}</td><td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td></tr>`;
+                    
+                    let displayId = u.id || '-';
+                    if (u.pos === 'DW' || posText === 'DW' || (u.id && u.id.startsWith('manual_'))) displayId = '';
+                    
+                    summaryBody.innerHTML += `<tr class="hover:bg-slate-50 transition border-b border-slate-50"><td class="px-6 py-4 font-bold text-slate-700 text-[11px] uppercase">${window.safeId(u.name)}</td><td class="px-4 py-4 text-center font-mono text-slate-500 text-[10px]">${displayId}</td><td class="px-4 py-4 text-center"><span class="${posStyle} text-[9px]">${posText}</span></td><td class="px-2 py-4 text-center font-bold text-emerald-600 bg-emerald-50/30 rounded">${u.h}</td><td class="px-2 py-4 text-center font-bold text-slate-500">${u.do}</td><td class="px-2 py-4 text-center font-bold text-purple-500">${u.c}</td><td class="px-2 py-4 text-center font-bold text-amber-500">${u.i}</td><td class="px-2 py-4 text-center font-bold text-yellow-500">${u.s}</td><td class="px-2 py-4 text-center font-bold text-rose-500">${u.a}</td><td class="px-6 py-4 text-xs leading-relaxed text-slate-600">${detailsHtml}</td></tr>`;
                 });
             }
         };
@@ -3104,34 +3193,12 @@
 
             if (currentUser.role === 'admin') { await processDelete(); return; }
 
-            const { value: code } = await window.Swal.fire({
-                title: '',
-                html: `
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-3 text-indigo-500 shadow-sm border border-indigo-100">
-                            <i class="fas fa-user-shield text-xl animate-bounce"></i>
-                        </div>
-                        <h3 class="text-base font-extrabold text-slate-800">Verifikasi Leader</h3>
-                        <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">Masukkan kode akses untuk menghapus</p>
-                    </div>
-                `,
-                input: 'password',
-                inputPlaceholder: '••••••',
-                inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric', pattern: '[0-9A-Za-z]{6,10}' },
-                width: '18rem',
-                showCancelButton: true,
-                confirmButtonText: 'Verifikasi',
-                cancelButtonText: 'Batal',
-                reverseButtons: true,
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'rounded-[2rem] border border-slate-100 shadow-2xl px-6 pt-6 pb-5 font-sans',
-                    input: `w-40 mx-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition shadow-sm mt-4`,
-                    confirmButton: `bg-indigo-600 text-white px-5 py-2 rounded-xl font-bold text-[10px] shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    cancelButton: `bg-slate-100 text-slate-500 px-5 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
-                    actions: 'flex gap-2 w-full justify-center mt-4'
-                }
-            });
+            const { value: code } = await window.promptLeaderAccess(
+                'Verifikasi Leader', 
+                'Masukkan 6 angka kode akses untuk menghapus', 
+                'fas fa-user-shield', 
+                'indigo'
+            );
 
             if (!code) return;
 
@@ -3159,34 +3226,12 @@
             if (currentUser.role === 'admin') {
                 processEdit();
             } else {
-                window.Swal.fire({
-                    title: '',
-                    html: `
-                        <div class="flex flex-col items-center">
-                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-3 text-blue-600 shadow-sm border border-blue-100">
-                                <i class="fas fa-lock-open text-xl animate-bounce"></i>
-                            </div>
-                            <h3 class="text-sm font-extrabold text-slate-800">Verifikasi</h3>
-                            <p class="text-[10px] text-slate-500 mt-0.5 font-medium text-center">Masukkan kode akses</p>
-                        </div>
-                    `,
-                    input: 'password',
-                    inputPlaceholder: '••••••',
-                    inputAttributes: { autocapitalize: 'off', autocorrect: 'off', maxlength: 10, inputmode: 'numeric' },
-                    width: '18rem',
-                    showCancelButton: true,
-                    reverseButtons: true,
-                    buttonsStyling: false,
-                    confirmButtonText: 'Buka',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        popup: 'rounded-2xl border border-slate-100 shadow-2xl px-5 pt-5 pb-4 font-sans',
-                        input: `w-32 mx-auto bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-center tracking-[0.3em] focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm mt-3`,
-                        confirmButton: `bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] shadow-sm hover:bg-blue-700 transition active:scale-95 uppercase tracking-wide flex-1`,
-                        cancelButton: `bg-slate-100 text-slate-500 px-4 py-2 rounded-xl font-bold text-[10px] hover:bg-slate-200 transition active:scale-95 uppercase tracking-wide flex-1`,
-                        actions: 'flex gap-2 w-full justify-center mt-3'
-                    }
-                }).then(({ value: code }) => {
+                window.promptLeaderAccess(
+                    'Verifikasi', 
+                    'Masukkan 6 angka kode akses', 
+                    'fas fa-lock-open', 
+                    'blue'
+                ).then(({ value: code }) => {
                     if (code) {
                         if (code === appData.accessCode) {
                             window.notify('Akses Diberikan', 'success');

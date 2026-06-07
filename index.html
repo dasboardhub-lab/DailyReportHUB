@@ -129,6 +129,25 @@
         button:active { transform: scale(0.96); }
         .kpi-card { transition: all 0.3s ease; border: 1px solid transparent; }
         .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08); border-color: rgba(67, 97, 238, 0.2); }
+
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-4px); }
+        }
+        .shake-error {
+            animation: shakeError 0.4s ease-in-out;
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            color: #ef4444 !important;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.5s ease-out forwards; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
@@ -1361,7 +1380,7 @@
         });
         window.Swal = SwalTheme; 
 
-        window.promptLeaderAccess = async (titleText, descText, iconClass, theme = 'indigo') => {
+        window.promptLeaderAccess = async (titleText, descText, iconClass, theme = 'indigo', expectedCode) => {
             const isBlue = theme === 'blue';
             const bgLight = isBlue ? 'bg-blue-50' : 'bg-indigo-50';
             const textDark = isBlue ? 'text-blue-600' : 'text-indigo-500';
@@ -1379,12 +1398,12 @@
                         <h3 class="text-base font-extrabold text-slate-800">${titleText}</h3>
                         <p class="text-[11px] text-slate-500 mt-1 font-medium text-center">${descText}</p>
                         
-                        <div class="flex gap-2 justify-center mt-5 w-full px-2" id="otp-container">
-                            ${Array(6).fill(0).map(() => `<input type="text" inputmode="numeric" maxlength="1" class="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 ${ringColor} outline-none transition shadow-sm otp-box">`).join('')}
+                        <div class="flex gap-1.5 sm:gap-2 justify-center mt-5 w-full relative min-h-[50px]" id="otp-container">
+                            ${Array(6).fill(0).map(() => `<input type="text" inputmode="numeric" maxlength="1" class="w-8 h-10 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 ${ringColor} outline-none transition-all shadow-sm otp-box px-0">`).join('')}
                         </div>
                     </div>
                 `,
-                width: '20rem',
+                width: '22rem',
                 showCancelButton: true,
                 confirmButtonText: 'Verifikasi',
                 cancelButtonText: 'Batal',
@@ -1403,6 +1422,7 @@
                     inputs.forEach((input, index) => {
                         input.addEventListener('input', (e) => {
                             input.value = input.value.replace(/[^0-9]/g, '');
+                            input.classList.remove('shake-error');
                             if (input.value && index < inputs.length - 1) {
                                 inputs[index + 1].focus();
                             }
@@ -1421,6 +1441,7 @@
                             for (let i = 0; i < pasted.length; i++) {
                                 if (inputs[index + i]) {
                                     inputs[index + i].value = pasted[i];
+                                    inputs[index + i].classList.remove('shake-error');
                                     if (index + i < inputs.length - 1) inputs[index + i + 1].focus();
                                 }
                             }
@@ -1431,11 +1452,57 @@
                     const inputs = document.querySelectorAll('.otp-box');
                     let code = '';
                     inputs.forEach(input => code += input.value);
+                    
                     if (code.length !== 6) {
                         Swal.showValidationMessage('Masukkan 6 angka kode akses');
+                        inputs.forEach(inp => { if(!inp.value) inp.classList.add('shake-error'); });
                         return false;
                     }
-                    return code;
+                    
+                    if (code !== expectedCode) {
+                        Swal.showValidationMessage('Kode Akses Salah');
+                        inputs.forEach(inp => {
+                            inp.classList.add('shake-error');
+                            setTimeout(() => inp.classList.remove('shake-error'), 400);
+                        });
+                        return false;
+                    }
+
+                    return new Promise((resolve) => {
+                        Swal.resetValidationMessage();
+                        Swal.getConfirmButton().style.display = 'none';
+                        Swal.getCancelButton().style.display = 'none';
+                        
+                        const container = document.getElementById('otp-container');
+                        const containerRect = container.getBoundingClientRect();
+                        const centerX = containerRect.left + containerRect.width / 2;
+
+                        inputs.forEach((input) => {
+                            const inputRect = input.getBoundingClientRect();
+                            const inputCenterX = inputRect.left + inputRect.width / 2;
+                            const tx = centerX - inputCenterX;
+                            
+                            input.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                            input.style.transform = `translateX(${tx}px) rotate(720deg) scale(0)`;
+                            input.style.opacity = '0';
+                            input.style.pointerEvents = 'none';
+                        });
+
+                        setTimeout(() => {
+                            container.innerHTML = `
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-[0_4px_15px_rgba(16,185,129,0.4)] pop-in">
+                                        <i class="fas fa-check text-2xl"></i>
+                                    </div>
+                                </div>
+                            `;
+                        }, 800);
+
+                        // Tunggu 3 detik sesuai permintaan
+                        setTimeout(() => {
+                            resolve(code);
+                        }, 3000);
+                    });
                 }
             });
         };
@@ -3197,12 +3264,13 @@
                 'Verifikasi Leader', 
                 'Masukkan 6 angka kode akses untuk menghapus', 
                 'fas fa-user-shield', 
-                'indigo'
+                'indigo',
+                appData.accessCode
             );
 
             if (!code) return;
-
-            if (code === appData.accessCode) { window.notify('Akses Diberikan', 'success'); await processDelete(); } else { window.notify('Kode Akses Salah', 'error'); }
+            window.notify('Akses Diberikan', 'success'); 
+            await processDelete();
         };
 
         window.editLaporan = async (id) => {
@@ -3230,15 +3298,12 @@
                     'Verifikasi', 
                     'Masukkan 6 angka kode akses', 
                     'fas fa-lock-open', 
-                    'blue'
+                    'blue',
+                    appData.accessCode
                 ).then(({ value: code }) => {
                     if (code) {
-                        if (code === appData.accessCode) {
-                            window.notify('Akses Diberikan', 'success');
-                            processEdit();
-                        } else {
-                            window.notify('Kode Akses Salah', 'error');
-                        }
+                        window.notify('Akses Diberikan', 'success');
+                        processEdit();
                     }
                 });
             }

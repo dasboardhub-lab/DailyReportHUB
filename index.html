@@ -1668,6 +1668,8 @@
             e.preventDefault(); 
             const u = appData.users.find(x => x.id === document.getElementById('login-id').value);
             if(!u) return window.notify('ID Tidak Ditemukan', 'error');
+            if(u.is_resign) return window.notify('Akun Dinonaktifkan (Resign)', 'error');
+            
             const isLeader = document.getElementById('is-pic-checkbox').checked;
 
             if(u.posisi === 'Visitor') {

@@ -1961,7 +1961,8 @@
                 if (r.catatan && r.catatan.trim().length > 0) {
                      const dObj = new Date(r.tanggal + 'T12:00:00');
                      const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
-                     const issueStr = `[${dStr}] [${r.hub}] ${r.catatan}`;
+                     const cleanNotes = r.catatan.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0).join(' | ');
+                     const issueStr = `[${dStr}] [${r.hub}] ${cleanNotes}`;
                      if (!issues.includes(issueStr)) issues.push(issueStr);
                 }
             });
@@ -2223,7 +2224,8 @@
                         if (a.case) {
                             const dObj = new Date(r.tanggal + 'T12:00:00');
                             const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
-                            caseList.push(`[${dStr}] [${r.hub}] ${a.nama || a.name} ${a.ket ? '('+a.ket+')' : ''}`);
+                            const cleanKet = (a.ket || '').replace(/\r?\n/g, ' ').trim();
+                            caseList.push(`[${dStr}] [${r.hub}] ${a.nama || a.name} ${cleanKet ? '('+cleanKet+')' : ''}`);
                         }
                     });
                 }
@@ -3210,7 +3212,13 @@
 
             if (laporan.catatan && laporan.catatan.trim().length > 0) {
                 text += `\n*Catatan Kendala:*\n`;
-                text += `${laporan.catatan}\n`;
+                const lines = laporan.catatan.split(/\r?\n/);
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (trimmed.length > 0) {
+                        text += `${trimmed}\n`;
+                    }
+                });
             }
 
             if (laporan.attendance_data && laporan.attendance_data.length > 0) {
@@ -3232,17 +3240,18 @@
                     if (pos === 'Visitor') pos = 'VISITOR';
                     
                     const nameDisplay = pos ? `${p.nama} (${pos})` : p.nama;
+                    const ketClean = (p.ket || '-').replace(/\r?\n/g, ' ').trim();
 
                     if (p.s1) s1.push(nameDisplay);
                     if (p.s2) s2.push(nameDisplay);
                     if (p.s3) s3.push(nameDisplay);
                     
-                    if (p.do) dOff.push(`${p.nama} (${p.ket || '-'})`);
-                    if (p.c) cuti.push(`${p.nama} (${p.ket || '-'})`);
-                    if (p.i) ijin.push(`${p.nama} (${p.ket || '-'})`);
-                    if (p.s) sakit.push(`${p.nama} (${p.ket || '-'})`);
-                    if (p.a) alfa.push(`${p.nama} (${p.ket || '-'})`);
-                    if (p.case) caseTeam.push(`${p.nama} (${p.ket || '-'})`);
+                    if (p.do) dOff.push(`${p.nama} (${ketClean})`);
+                    if (p.c) cuti.push(`${p.nama} (${ketClean})`);
+                    if (p.i) ijin.push(`${p.nama} (${ketClean})`);
+                    if (p.s) sakit.push(`${p.nama} (${ketClean})`);
+                    if (p.a) alfa.push(`${p.nama} (${ketClean})`);
+                    if (p.case) caseTeam.push(`${p.nama} (${ketClean})`);
                 });
 
                 text += `\n*Detail Kehadiran:*\n`;

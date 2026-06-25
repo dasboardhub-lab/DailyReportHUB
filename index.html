@@ -3572,9 +3572,12 @@
         };
 
         window.renderRow = (tb, id, nama, pos, isL, dat, isDW) => {
+            let displayId = id;
+            if (isDW || (id && id.startsWith('manual_'))) displayId = '-';
+
             const nameHtml = isDW 
                 ? `<input type="text" class="manual-name w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs" placeholder="Nama DW" value="${nama}">` 
-                : `<span class="font-bold text-slate-700">${nama}</span><br><span class="text-[9px] ${isL?'text-blue-500':'text-slate-400'}">${pos}</span>`;
+                : `<span class="font-bold text-slate-700">${nama}</span><br><span class="text-[9px] ${isL?'text-blue-500':'text-slate-400'}">${displayId} | ${pos}</span>`;
             
             const delBtn = isDW ? `<button type="button" onclick="this.closest('tr').remove(); window.updateTotalMPP();" class="text-rose-400 hover:text-rose-600"><i class="fas fa-times"></i></button>` : '';
 

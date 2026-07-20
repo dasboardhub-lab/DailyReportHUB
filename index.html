@@ -2224,7 +2224,7 @@
                         if (a.case) {
                             const dObj = new Date(r.tanggal + 'T12:00:00');
                             const dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`;
-                            const cleanKet = (a.ket || '').replace(/\r?\n/g, ' ').trim();
+                            const cleanKet = (a.ket || '').trim();
                             caseList.push(`[${dStr}] [${r.hub}] ${a.nama || a.name} ${cleanKet ? '('+cleanKet+')' : ''}`);
                         }
                     });
@@ -2602,7 +2602,7 @@
                              caseMapAbs[r.hub][a.userId][r.tanggal] = true;
                          }
 
-                         if (['I','S','A','DO','C'].includes(status)) { const reason = a.ket ? `(${a.ket})` : '', label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : (status === 'A' ? 'Alfa' : (status === 'DO' ? 'Day Off' : 'Cuti'))), dObj = new Date(r.tanggal + 'T12:00:00'), dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; userSummary[summaryKey].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200"><b>${dStr} ${label}</b> ${reason}</span>`); }
+                         if (['I','S','A','DO','C'].includes(status)) { const reason = a.ket ? `(<span class="whitespace-pre-line">${a.ket}</span>)` : '', label = status === 'I' ? 'Ijin' : (status === 'S' ? 'Sakit' : (status === 'A' ? 'Alfa' : (status === 'DO' ? 'Day Off' : 'Cuti'))), dObj = new Date(r.tanggal + 'T12:00:00'), dStr = `${dObj.getDate()}/${dObj.getMonth()+1}`; userSummary[summaryKey].details.push(`<span class="inline-block bg-slate-100 rounded px-1.5 py-0.5 text-[10px] mr-1 mb-1 border border-slate-200 align-top"><b>${dStr} ${label}</b> ${reason}</span>`); }
                          if(status) { if(!attMap[r.hub][a.userId]) attMap[r.hub][a.userId] = { name: a.nama }; attMap[r.hub][a.userId][r.tanggal] = status; if(['1','2','3'].includes(status)) { if(!colTotals[r.tanggal]) colTotals[r.tanggal] = 0; colTotals[r.tanggal]++; } }
                     });
                 }
@@ -2900,7 +2900,7 @@
                             <td class="px-4 py-3 font-medium text-slate-600 text-xs pl-6 align-top">${dStr}</td>
                             <td class="px-4 py-3 align-top"><span class="bg-slate-100 border border-slate-200/60 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">${c.hub}</span></td>
                             <td class="px-4 py-3 font-bold text-slate-700 text-xs align-top">${c.nama}</td>
-                            <td class="px-4 py-3 text-xs text-rose-600 leading-relaxed font-medium max-w-[250px] truncate cursor-pointer hover:text-rose-800 transition-colors" title="Klik untuk lihat/tutup detail" onclick="this.classList.toggle('truncate'); this.classList.toggle('whitespace-normal');">${c.ket}</td>
+                            <td class="px-4 py-3 text-xs text-rose-600 leading-relaxed font-medium max-w-[250px] truncate cursor-pointer hover:text-rose-800 transition-colors" title="Klik untuk lihat/tutup detail" onclick="this.classList.toggle('truncate'); this.classList.toggle('whitespace-pre-line');">${c.ket}</td>
                         </tr>
                     `;
                 });
@@ -3240,7 +3240,7 @@
                     if (pos === 'Visitor') pos = 'VISITOR';
                     
                     const nameDisplay = pos ? `${p.nama} (${pos})` : p.nama;
-                    const ketClean = (p.ket || '-').replace(/\r?\n/g, ' ').trim();
+                    const ketClean = (p.ket || '-').trim();
 
                     if (p.s1) s1.push(nameDisplay);
                     if (p.s2) s2.push(nameDisplay);
@@ -3595,7 +3595,7 @@
                     <td class="p-2 text-center bg-yellow-50/30">${chk('chk-s', dat.s)}</td>
                     <td class="p-2 text-center">${chk('chk-a', dat.a)}</td>
                     <td class="p-2 text-center bg-rose-50/50">${chk('chk-case', dat.case)}</td>
-                    <td class="p-2"><input type="text" class="inp-ket w-full bg-transparent border-b border-dashed border-slate-300 focus:border-primary outline-none text-[10px] px-1" placeholder="Ket..." value="${dat.ket||''}"></td>
+                    <td class="p-2"><textarea class="inp-ket w-full bg-transparent border-b border-dashed border-slate-300 focus:border-primary outline-none text-[10px] px-1 py-1 resize-y min-h-[28px]" placeholder="Ket..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${dat.ket||''}</textarea></td>
                     <td class="p-2 text-center">${delBtn}</td>
                 </tr>
             `;

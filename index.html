@@ -1881,7 +1881,7 @@
             const chartHubs = hubs.length > 0 ? hubs : appData.costs.map(c => c.hub);
 
             window.updateCharts(data, chartHubs); 
-            window.updateDashboardTables(data);
+            window.updateDashboardTables(data, prevData);
             window.renderDashboardNotes(data);
             window.renderManagerBrief(data, prevData);
         };
@@ -2486,7 +2486,7 @@
             });
         };
 
-        window.updateDashboardTables = (data) => {
+        window.updateDashboardTables = (data, prevData) => {
             const tb1 = document.getElementById('tbody-daily-detail'); tb1.innerHTML='';
             data.forEach(l => { 
                 const prod = Math.round(l.productivity);
@@ -2495,12 +2495,34 @@
             });
             
             const hAg={}; data.forEach(l=>{ if(!hAg[l.hub])hAg[l.hub]={m:0,o:0,c:0}; hAg[l.hub].m+=l.total_mpp; hAg[l.hub].o+=l.total_paket; hAg[l.hub].c+=window.calculateReportCost(l); });
+            const hPrev={}; if(prevData) prevData.forEach(l=>{ if(!hPrev[l.hub])hPrev[l.hub]={o:0, m:0}; hPrev[l.hub].o+=l.total_paket; hPrev[l.hub].m+=l.total_mpp; });
+            
             const tb2 = document.getElementById('tbody-hub-breakdown'); tb2.innerHTML='';
+            
+            const getPctBadge = (curr, prev) => {
+                if (prev > 0) {
+                    const pct = Math.round(((curr - prev) / prev) * 100);
+                    if (pct > 0) return `<span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50">↑ ${pct}%</span>`;
+                    if (pct < 0) return `<span class="text-[9px] text-rose-500 font-bold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100/50">↓ ${Math.abs(pct)}%</span>`;
+                    return `<span class="text-[9px] text-slate-400 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100/50">- 0%</span>`;
+                }
+                return curr > 0 ? `<span class="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50">↑ 100%</span>` : '';
+            };
+
             Object.keys(hAg).sort((a,b)=>hAg[b].o-hAg[a].o).forEach(h=>{ 
                 const d=hAg[h]; 
-                const prod = d.m?Math.round(d.o/d.m):0;
+                const prevO = hPrev[h] ? hPrev[h].o : 0;
+                const prevM = hPrev[h] ? hPrev[h].m : 0;
+                
+                const prod = d.m ? Math.round(d.o/d.m) : 0;
+                const prevProd = prevM ? Math.round(prevO/prevM) : 0;
+                
+                const pctOut = getPctBadge(d.o, prevO);
+                const pctMpp = getPctBadge(d.m, prevM);
+                const pctProd = getPctBadge(prod, prevProd);
+                
                 const prodClass = window.getProdColorClass(prod);
-                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-3 py-3 text-primary font-medium">${d.m}</td><td class="px-4 py-3 font-bold text-slate-700">${window.formatNumber(d.o)}</td><td class="px-3 py-3 font-medium"><span class="${prodClass}">${window.formatNumber(prod)}</span></td><td class="px-4 py-3 text-right text-slate-400 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
+                tb2.innerHTML+=`<tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0"><td class="px-4 py-3 text-left font-bold text-slate-800">${h}</td><td class="px-4 py-2"><div class="font-bold text-primary leading-none">${d.m}</div><div class="mt-1.5">${pctMpp}</div></td><td class="px-4 py-2"><div class="font-bold text-slate-700 leading-none">${window.formatNumber(d.o)}</div><div class="mt-1.5">${pctOut}</div></td><td class="px-4 py-2"><div class="font-bold leading-none"><span class="${prodClass}">${window.formatNumber(prod)}</span></div><div class="mt-1.5">${pctProd}</div></td><td class="px-4 py-3 text-right text-slate-400 font-medium">${window.formatRupiah(d.c)}</td></tr>`; 
             });
         };
 

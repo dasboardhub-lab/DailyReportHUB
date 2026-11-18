@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
@@ -148,6 +149,68 @@
             100% { transform: scale(1); opacity: 1; }
         }
         .pop-in { animation: popIn 0.5s ease-out forwards; }
+
+        /* Manager Summary thermal-receipt preview and PNG export */
+        #manager-receipt {
+            width: 760px;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 34px 38px 30px;
+            color: #172033;
+            background: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 8px 35px rgba(15, 23, 42, .12);
+            overflow: hidden;
+        }
+        #manager-receipt * { box-sizing: border-box; }
+        .receipt-top-accent { height: 8px; margin: -34px -38px 24px; background: linear-gradient(90deg, #d72678 0%, #e83e8c 65%, #f59e0b 100%); }
+        .receipt-brand { display:flex; align-items:center; justify-content:center; gap:12px; text-align:left; }
+        .receipt-logo { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; font-weight:900; background:linear-gradient(135deg,#d72678,#f59e0b); box-shadow:0 5px 12px rgba(215,38,120,.18); }
+        .receipt-brand-title { font-size:22px; line-height:1.1; font-weight:900; letter-spacing:-.7px; color:#172033; }
+        .receipt-brand-sub { margin-top:4px; font-size:10px; font-weight:800; letter-spacing:1.7px; color:#64748b; }
+        .receipt-kicker { text-align:center; font-size:10px; font-weight:800; letter-spacing:2px; color:#d72678; margin-top:22px; }
+        .receipt-title { text-align:center; font-size:20px; line-height:1.25; font-weight:900; letter-spacing:.2px; margin-top:5px; color:#172033; }
+        .receipt-meta { margin:18px 0 15px; padding:12px 14px; background:#f8fafc; border:1px solid #e8edf4; border-radius:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; }
+        .receipt-meta-label { font-size:9px; font-weight:800; letter-spacing:1px; color:#94a3b8; text-transform:uppercase; }
+        .receipt-meta-value { font-size:12px; font-weight:800; color:#263247; margin-top:3px; }
+        .receipt-dash { border:0; border-top:2px dashed #cbd5e1; margin:17px 0; }
+        .receipt-insight { border:1px solid #f3c4da; border-left:5px solid #d72678; border-radius:12px; background:#fff7fb; padding:13px 15px; margin:14px 0 18px; }
+        .receipt-insight-title { font-size:10px; letter-spacing:1px; font-weight:900; color:#c11c67; margin-bottom:7px; text-transform:uppercase; }
+        .receipt-insight-text { font-size:12px; line-height:1.65; color:#354155; font-weight:500; }
+        .receipt-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:15px 0 20px; }
+        .receipt-kpi { border:1px solid #e8edf4; border-radius:11px; padding:11px 12px; background:#fff; min-width:0; }
+        .receipt-kpi-label { font-size:9px; color:#8894a7; font-weight:900; letter-spacing:.9px; text-transform:uppercase; }
+        .receipt-kpi-value { font-size:20px; color:#172033; font-weight:900; line-height:1.25; margin-top:5px; overflow-wrap:anywhere; }
+        .receipt-kpi-compare { font-size:9px; color:#64748b; margin-top:6px; line-height:1.45; }
+        .receipt-section { margin-top:17px; }
+        .receipt-section-title { display:flex; align-items:center; gap:8px; padding-bottom:8px; margin-bottom:9px; border-bottom:1px solid #e8edf4; color:#172033; font-size:12px; line-height:1.35; font-weight:900; letter-spacing:.2px; }
+        .receipt-section-title:before { content:''; display:block; width:4px; height:17px; border-radius:4px; background:#d72678; flex:0 0 auto; }
+        .receipt-subtitle { font-size:11px; color:#4b5870; font-weight:900; margin:13px 0 7px; }
+        .receipt-table-wrap { width:100%; overflow:visible; }
+        .receipt-table { width:100%; border-collapse:collapse; table-layout:auto; font-size:10px; color:#334155; }
+        .receipt-table th { background:#f1f5f9; color:#64748b; font-size:9px; text-transform:uppercase; letter-spacing:.5px; font-weight:900; padding:8px 7px; text-align:left; border-bottom:1px solid #dbe3ed; }
+        .receipt-table td { padding:7px; border-bottom:1px dashed #e2e8f0; line-height:1.4; vertical-align:top; overflow-wrap:anywhere; }
+        .receipt-table tr:last-child td { border-bottom:1px solid #dbe3ed; }
+        .receipt-table th:not(:first-child), .receipt-table td:not(:first-child) { text-align:right; }
+        .receipt-bullet { display:flex; align-items:flex-start; gap:8px; font-size:11px; line-height:1.6; color:#354155; margin:7px 0; }
+        .receipt-bullet:before { content:'•'; color:#d72678; font-weight:900; flex:0 0 auto; }
+        .receipt-paragraph { font-size:11px; color:#354155; line-height:1.65; margin:6px 0; overflow-wrap:anywhere; }
+        .receipt-note { font-size:10px; color:#8a96a8; line-height:1.5; font-style:italic; margin:5px 0; }
+        .receipt-empty { font-size:11px; color:#64748b; font-style:italic; padding:8px 0; }
+        .receipt-footer { margin-top:25px; padding-top:15px; border-top:2px dashed #cbd5e1; text-align:center; }
+        .receipt-footer-main { font-size:10px; font-weight:900; letter-spacing:1.2px; color:#64748b; }
+        .receipt-footer-sub { margin-top:5px; font-size:9px; letter-spacing:1.4px; color:#a0aaba; }
+        @media (max-width:640px) {
+            #manager-receipt { padding:25px 18px 22px; }
+            .receipt-top-accent { margin:-25px -18px 20px; }
+            .receipt-brand-title { font-size:19px; }
+            .receipt-kpi-value { font-size:18px; }
+            .receipt-table { font-size:9px; }
+            .receipt-table th { font-size:8px; padding:7px 4px; }
+            .receipt-table td { padding:6px 4px; }
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
@@ -640,8 +703,8 @@
                                 <button onclick="window.refineManagerLog()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/10 active:scale-95 group backdrop-blur-sm shadow-sm">
                                     <i class="fas fa-tools text-amber-400 group-hover:rotate-12 transition"></i> Perbaiki Log
                                 </button>
-                                <button onclick="window.copyManagerSummary()" class="bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-blue-500 active:scale-95 group shadow-lg shadow-blue-500/30">
-                                    <i class="fas fa-copy group-hover:scale-110 transition"></i> Salin Laporan
+                                <button onclick="window.openManagerReceipt()" class="bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-blue-500 active:scale-95 group shadow-lg shadow-blue-500/30">
+                                    <i class="fas fa-receipt group-hover:scale-110 transition"></i> Buat Struk
                                 </button>
                             </div>
                         </div>
@@ -1294,89 +1357,229 @@
             }
         };
 
-        async function callGeminiAPI(promptText) {
-            const apiKey = appData.geminiKey || ""; 
-            
+        async function callGeminiAPI(promptText, keyOverride = '') {
+            const apiKey = String(keyOverride || appData.geminiKey || '').trim();
+
             if (!apiKey) {
-                window.Swal.fire({
-                    title: 'API Key Dibutuhkan',
-                    text: 'Fitur AI belum dikonfigurasi. Hubungi Admin untuk input API Key di menu Pengaturan.',
-                    icon: 'warning',
-                    confirmButtonText: 'Ke Pengaturan'
-                }).then((result) => {
-                   if(result.isConfirmed && currentUser && currentUser.role === 'admin') {
-                       window.navigate('pengaturan');
-                       window.switchSettingsTab('general');
-                   }
-                });
-                throw new Error("API Key Missing");
+                const message = 'API Key Gemini belum tersimpan. Masukkan API Key pada Pengaturan > Konfigurasi AI (Gemini), lalu simpan.';
+                window.Swal.fire({ title: 'API Key Dibutuhkan', text: message, icon: 'warning' });
+                const error = new Error(message);
+                error.code = 'MISSING_API_KEY';
+                throw error;
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: promptText }] }] };
+            // Urutan fallback memakai model stabil yang tercantum pada katalog resmi Gemini.
+            // Jika model utama sedang penuh (503), sistem mencoba model Flash stabil lainnya.
+            const models = [
+                'gemini-3.8-flash',
+                'gemini-3.7-flash',
+                'gemini-3.6-flash',
+                'gemini-3.5-flash-lite'
+            ];
+            const payload = {
+                contents: [{ role: 'user', parts: [{ text: String(promptText || '') }] }],
+                generationConfig: { maxOutputTokens: 1200 }
+            };
+            const retryableStatuses = [429, 500, 502, 503, 504];
+            let lastError = null;
+            const failures = [];
 
-            let retries = 5;
-            let delay = 1000;
-            
-            while(retries > 0) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+            for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
+                const model = models[modelIndex];
+                const attemptsForModel = modelIndex === 0 ? 2 : 1;
+                let moveToNextModel = false;
 
-                    if (!response.ok) {
-                        throw new Error('API Error');
-                    }
+                for (let attempt = 1; attempt <= attemptsForModel; attempt++) {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 18000);
+                    try {
+                        const response = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-goog-api-key': apiKey
+                                },
+                                body: JSON.stringify(payload),
+                                signal: controller.signal
+                            }
+                        );
 
-                    const data = await response.json();
-                    
-                    if (data.promptFeedback && data.promptFeedback.blockReason) {
-                        window.notify('Teks diblokir oleh keamanan Google', 'error');
-                        return null;
-                    }
-                    
-                    if (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'SAFETY') {
-                        window.notify('Teks mengandung kata sensitif', 'error');
-                        return null;
-                    }
+                        let data = {};
+                        try { data = await response.json(); } catch (_) { data = {}; }
 
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
-                } catch (error) {
-                    retries--;
-                    if (retries === 0) {
-                        window.notify('Gagal menghubungi layanan AI', 'error');
-                        throw new Error('Gagal menghubungi layanan AI setelah percobaan berulang');
+                        if (!response.ok) {
+                            const apiMessage = data?.error?.message || `HTTP ${response.status}`;
+                            const error = new Error(`${model}: ${apiMessage}`);
+                            error.status = response.status;
+                            error.model = model;
+                            error.retryable = retryableStatuses.includes(response.status);
+                            lastError = error;
+
+                            // API key/permission dan payload error tidak akan disamarkan sebagai error 503.
+                            if ([400, 401, 403].includes(response.status)) throw error;
+                            // Model yang tidak tersedia pada project dilewati, lalu coba model lain.
+                            if (response.status === 404) {
+                                moveToNextModel = true;
+                                break;
+                            }
+                            // 429/5xx dapat dicoba ulang sebentar atau dialihkan ke model berikutnya.
+                            if (error.retryable) {
+                                if (attempt < attemptsForModel) {
+                                    await new Promise(resolve => setTimeout(resolve, 900 * attempt));
+                                    continue;
+                                }
+                                moveToNextModel = true;
+                                break;
+                            }
+                            throw error;
+                        }
+
+                        if (data?.promptFeedback?.blockReason) {
+                            const error = new Error(`Permintaan diblokir oleh sistem keamanan Google (${data.promptFeedback.blockReason}).`);
+                            error.code = 'PROMPT_BLOCKED';
+                            throw error;
+                        }
+
+                        const candidate = data?.candidates?.[0];
+                        const resultText = candidate?.content?.parts
+                            ?.map(part => part.text || '')
+                            .join('\n')
+                            .trim();
+                        if (!resultText) {
+                            const error = new Error(`Gemini ${model} tidak mengembalikan teks. Status: ${candidate?.finishReason || 'UNKNOWN'}.`);
+                            error.code = 'EMPTY_RESPONSE';
+                            throw error;
+                        }
+
+                        window.lastGeminiModelUsed = model;
+                        return resultText;
+                    } catch (error) {
+                        lastError = error;
+                        if ([400, 401, 403].includes(error.status) || error.code === 'PROMPT_BLOCKED' || error.code === 'EMPTY_RESPONSE') {
+                            throw error;
+                        }
+
+                        const transient = error.retryable === true || error.name === 'AbortError' || error instanceof TypeError;
+                        if (transient) {
+                            failures.push(`${model} (${error.status || (error.name === 'AbortError' ? 'timeout' : 'network')})`);
+                            if (attempt < attemptsForModel) {
+                                await new Promise(resolve => setTimeout(resolve, 900 * attempt));
+                                continue;
+                            }
+                            moveToNextModel = true;
+                            break;
+                        }
+                        throw error;
+                    } finally {
+                        clearTimeout(timeoutId);
                     }
-                    await new Promise(res => setTimeout(res, delay));
-                    delay *= 2;
                 }
+
+                if (!moveToNextModel && lastError) break;
             }
+
+            const reason = lastError?.message || 'Tidak ada model yang berhasil merespons.';
+            const combined = new Error(
+                `Gemini belum dapat digunakan. Sistem telah mencoba beberapa model (${failures.join(', ') || 'tanpa respons'}). ` +
+                `Silakan coba lagi beberapa saat. Detail terakhir: ${reason}`
+            );
+            combined.status = lastError?.status || 503;
+            combined.retryable = lastError?.retryable !== false;
+            combined.modelFailures = failures;
+            throw combined;
+        }
+
+        function isTemporaryGeminiFailure(error) {
+            return !!error && (
+                error.retryable === true ||
+                [429, 500, 502, 503, 504].includes(Number(error.status)) ||
+                error.name === 'AbortError' ||
+                error instanceof TypeError
+            );
+        }
+
+        function buildLocalExecutiveInsight(stats) {
+            const curr = stats.curr || {};
+            const prev = stats.prev || {};
+            const load = Number(curr.pkt) || 0;
+            const previousLoad = Number(prev.pkt) || 0;
+            const productivity = Number(curr.prod) || 0;
+            const manpower = Number(curr.mpp) || 0;
+            const parts = [];
+
+            const hasPreviousRows = Number(stats.prevDataCount) > 0;
+            if (hasPreviousRows && previousLoad > 0) {
+                const delta = load - previousLoad;
+                const percentage = Math.round(Math.abs(delta / previousLoad) * 100);
+                parts.push(`Total load ${window.formatNumber(load)} paket, ${delta > 0 ? 'naik' : delta < 0 ? 'turun' : 'stabil'} ${percentage}% dibanding periode sebelumnya (${window.formatNumber(previousLoad)} paket)`);
+            } else if (hasPreviousRows) {
+                parts.push(`Total load periode ini ${window.formatNumber(load)} paket; data periode sebelumnya tersedia sebanyak ${stats.prevDataCount} laporan, dengan total load ${window.formatNumber(previousLoad)} paket sehingga persentase perubahan tidak dapat dihitung`);
+            } else {
+                parts.push(`Total load periode ini ${window.formatNumber(load)} paket; belum ditemukan laporan pada rentang pembanding sebelumnya`);
+            }
+            parts.push(`dengan rata-rata produktivitas ${window.formatNumber(productivity)} paket per orang dari ${window.formatNumber(manpower)} manpower`);
+            if (stats.topHub && stats.topHub !== '-') parts.push(`HUB dengan load tertinggi adalah ${stats.topHub}`);
+            if (Array.isArray(stats.issues) && stats.issues.length) {
+                parts.push(`terdapat ${stats.issues.length} catatan kendala operasional yang perlu ditindaklanjuti`);
+            } else {
+                parts.push('tidak terdapat catatan kendala pada periode ini');
+            }
+            return parts.join('. ') + '.';
+        }
+
+        function buildLocalRefinedLog(issues) {
+            // Fallback lokal hanya merapikan spasi/baris; tidak mengubah fakta atau angka.
+            return (issues || [])
+                .map(item => String(item || '').replace(/[\\t ]+/g, ' ').trim())
+                .filter(Boolean)
+                .map(item => `• ${item}`)
+                .join('\n');
         }
 
         window.saveAIKey = async () => {
-            const k = document.getElementById('gemini-api-key-input').value.trim();
-            if(!k) return window.notify('Key kosong', 'error');
-            
+            const input = document.getElementById('gemini-api-key-input');
+            const k = input ? input.value.trim() : '';
+            if (!k) return window.notify('API Key kosong', 'error');
+
             try {
-                window.notify('Menyimpan ke Database...', 'loading');
-                await supa.from('settings').upsert({ id: 'main', geminiKey: k });
-                await fetchAllData();
-                window.notify('API Key Tersimpan (Shared)', 'success');
-            } catch(e) {
-                console.error(e);
-                window.notify('Gagal Simpan', 'error');
+                window.notify('Menyimpan API Key...', 'loading');
+                const { error } = await supa.from('settings').upsert({ id: 'main', geminiKey: k });
+                if (error) throw error;
+
+                appData.geminiKey = k;
+                window.notify('API Key berhasil disimpan', 'success');
+            } catch (e) {
+                console.error('Gagal menyimpan Gemini API Key:', e);
+                window.Swal.fire({
+                    title: 'Gagal Menyimpan API Key',
+                    text: e.message || 'Periksa koneksi Supabase dan izin tabel settings.',
+                    icon: 'error'
+                });
             }
         };
 
         window.testAIKey = async () => {
+            const input = document.getElementById('gemini-api-key-input');
+            const typedKey = input ? input.value.trim() : '';
+            const keyToTest = typedKey || appData.geminiKey || '';
+
             try {
-                window.notify('Testing API AI...', 'loading');
-                const res = await callGeminiAPI("Jawab dengan satu kata: 'Berhasil'");
-                if(res) window.Swal.fire('Sukses', `Koneksi AI Berhasil! Respon: ${res}`, 'success');
-            } catch(e) {
-                console.error(e);
+                window.notify('Menguji koneksi Gemini...', 'loading');
+                const result = await callGeminiAPI("Balas tepat dengan satu kata: BERHASIL", keyToTest);
+                window.Swal.fire({
+                    title: 'Koneksi AI Berhasil',
+                    text: result,
+                    icon: 'success'
+                });
+            } catch (e) {
+                console.error('Tes Gemini gagal:', e);
+                window.Swal.fire({
+                    title: 'Tes Gemini Gagal',
+                    text: e.message || 'Terjadi kesalahan saat menghubungi Gemini API.',
+                    icon: 'error'
+                });
             }
         };
 
@@ -1807,24 +2010,44 @@
             const eEl = document.getElementById('dash-end-date');
             if(!sEl || !eEl) return;
 
-            const s = new Date(sEl.value + 'T00:00:00');
-            const e = new Date(eEl.value + 'T23:59:59');
+            const startKey = sEl.value;
+            const endKey = eEl.value;
+            if (!startKey || !endKey || startKey > endKey) {
+                window.notify('Rentang tanggal tidak valid. Periksa tanggal awal dan akhir.', 'warning');
+                return;
+            }
+            const s = new Date(startKey + 'T12:00:00');
+            const e = new Date(endKey + 'T12:00:00');
             const hubs = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(c=>c.value);
-            
-            const data = appData.laporan.filter(l => { 
-                const d = new Date(l.tanggal + 'T12:00:00'); 
-                return d>=s && d<=e && (hubs.length===0 || hubs.includes(l.hub)); 
-            }).sort((a,b)=>new Date(b.tanggal + 'T12:00:00')-new Date(a.tanggal + 'T12:00:00'));
 
-            const diffTime = Math.abs(e - s);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            const prevEnd = new Date(s); prevEnd.setDate(prevEnd.getDate() - 1);
-            const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - diffDays + 1);
-            
-            const prevData = appData.laporan.filter(l => { 
-                const d = new Date(l.tanggal + 'T12:00:00'); 
-                return d>=prevStart && d<=prevEnd && (hubs.length===0 || hubs.includes(l.hub)); 
-            });
+            // Gunakan date key YYYY-MM-DD agar perbandingan tidak terpengaruh jam.
+            const data = appData.laporan.filter(l =>
+                String(l.tanggal || '') >= startKey && String(l.tanggal || '') <= endKey &&
+                (hubs.length === 0 || hubs.includes(l.hub))
+            ).sort((a,b) => String(b.tanggal).localeCompare(String(a.tanggal)));
+
+            // Periode pembanding harus sama panjang dan berakhir tepat sehari sebelum periode aktif.
+            // Bug sebelumnya membandingkan timestamp tengah hari dengan prevEnd pukul 00:00,
+            // akibatnya data pada hari terakhir periode sebelumnya selalu terbuang.
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            const diffDays = Math.round((e.getTime() - s.getTime()) / oneDayMs) + 1;
+            const prevEnd = new Date(s);
+            prevEnd.setDate(prevEnd.getDate() - 1);
+            const prevStart = new Date(prevEnd);
+            prevStart.setDate(prevStart.getDate() - diffDays + 1);
+            const toDateKey = date => {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            };
+            const prevStartKey = toDateKey(prevStart);
+            const prevEndKey = toDateKey(prevEnd);
+
+            const prevData = appData.laporan.filter(l =>
+                String(l.tanggal || '') >= prevStartKey && String(l.tanggal || '') <= prevEndKey &&
+                (hubs.length === 0 || hubs.includes(l.hub))
+            ).sort((a,b) => String(b.tanggal).localeCompare(String(a.tanggal)));
 
             const sum = (arr, key) => arr.reduce((acc, curr) => acc + (curr[key]||0), 0);
             const sumCost = (arr) => arr.reduce((acc, curr) => acc + window.calculateReportCost(curr), 0);
@@ -1978,9 +2201,25 @@
                 }
             });
 
-            window.lastDashStats = { curr, prev, issues, topHub: topLoadHubName, silentHubs }; 
-            window.lastAIInsight = null; 
-            window.lastRefinedLog = null; 
+            const activeStartKey = document.getElementById('dash-start-date').value;
+            const activeEndKey = document.getElementById('dash-end-date').value;
+            const rangeDays = Math.round((new Date(activeEndKey + 'T12:00:00') - new Date(activeStartKey + 'T12:00:00')) / (24 * 60 * 60 * 1000)) + 1;
+            const previousEndDate = new Date(activeStartKey + 'T12:00:00');
+            previousEndDate.setDate(previousEndDate.getDate() - 1);
+            const previousStartDate = new Date(previousEndDate);
+            previousStartDate.setDate(previousStartDate.getDate() - rangeDays + 1);
+            const dateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+            window.lastDashStats = {
+                curr, prev, issues, topHub: topLoadHubName, silentHubs,
+                currDataCount: currData.length,
+                prevDataCount: prevData.length,
+                currentPeriod: { start: activeStartKey, end: activeEndKey },
+                previousPeriod: { start: dateKey(previousStartDate), end: dateKey(previousEndDate) }
+            };
+            window.lastAIInsight = null;
+            window.lastAIInsightSource = null;
+            window.lastRefinedLog = null;
+            window.lastRefinedLogSource = null; 
             document.getElementById('ai-insight-container').classList.add('hidden'); 
 
             container.innerHTML = `
@@ -2047,7 +2286,13 @@
             const padStart = (s, l) => s.toString().padStart(l);
             
             let txt = `*SUMMARY REPORT HUB KALSULAMP*\n`;
-            txt += `Periode: ${dateDisplay}\n\n`;
+            txt += `Periode: ${dateDisplay}\n`;
+            const comparisonRange = window.lastDashStats?.previousPeriod;
+            if (comparisonRange) {
+                const compareStatus = prevData.length > 0 ? `(${prevData.length} laporan)` : '(tidak ada laporan pada rentang ini)';
+                txt += `Pembanding: ${comparisonRange.start} s/d ${comparisonRange.end} ${compareStatus}\n`;
+            }
+            txt += `\n`;
             txt += `__AI_INSIGHT_PLACEHOLDER__`;
             
             txt += `*1. Global Performance:*\n`;
@@ -2057,11 +2302,11 @@
             
             const addRow = (label, vCurr, vPrev, isRp=false) => {
                 const diff = vCurr - vPrev;
-                const pct = vPrev === 0 ? (vCurr === 0 ? 0 : 100) : Math.round((diff / vPrev) * 100);
-                const icon = diff > 0 ? '+' : ''; 
+                const pct = (!prevData.length || vPrev === 0) ? null : Math.round((diff / vPrev) * 100);
+                const icon = diff > 0 ? '+' : '';
                 let sCurr = isRp ? (vCurr/1000000).toFixed(1)+'M' : fmt(vCurr);
                 let sPrev = isRp ? (vPrev/1000000).toFixed(1)+'M' : fmt(vPrev);
-                let sPct = `${icon}${pct}%`;
+                let sPct = pct === null ? 'N/A' : `${icon}${pct}%`;
                 txt += padEnd(label, 10) + "|" + padStart(sCurr, 9) + "|" + padStart(sPrev, 9) + "|" + padStart(sPct, 6) + "\n";
             };
             
@@ -2170,9 +2415,9 @@
             
             const addVolRow = (label, vCurr, vPrev) => {
                 const diff = vCurr - vPrev;
-                const pct = vPrev === 0 ? (vCurr === 0 ? 0 : 100) : Math.round((diff / vPrev) * 100);
-                const icon = diff > 0 ? '+' : ''; 
-                let sPct = `${icon}${pct}%`;
+                const pct = (!prevData.length || vPrev === 0) ? null : Math.round((diff / vPrev) * 100);
+                const icon = diff > 0 ? '+' : '';
+                let sPct = pct === null ? 'N/A' : `${icon}${pct}%`;
                 txt += padEnd(label, 9) + "|" + padStart(fmt(vCurr), 8) + "|" + padStart(fmt(vPrev), 8) + "|" + padStart(sPct, 6) + "\n";
             };
             addVolRow("Staging", curr.stg, prev.stg);
@@ -2180,12 +2425,8 @@
             addVolRow("LastMile", curr.lastMile, prev.lastMile);
             txt += "```\n\n";
 
-            if (issues.length > 0) {
-                txt += `*4. Log Kendala / Isu:*\n`;
-                issues.forEach(i => txt += `- ${i}\n`);
-            } else {
-                 txt += `*4. Log Kendala:* Nihil\n`;
-            }
+            txt += `*4. Log Kendala / Isu:*\n`;
+            txt += `__ISSUES_PLACEHOLDER__\n\n`;
 
             txt += `\n*5. Karyawan Tidak Hadir (Ijin/Sakit/Alfa/Cuti/DO):*\n`;
             const absenteeMap = {};
@@ -2254,124 +2495,520 @@
 
         window.refineManagerLog = async () => {
             const stats = window.lastDashStats;
-            if(!stats || stats.issues.length === 0) return window.notify('Tidak ada kendala untuk diperbaiki', 'warning');
+            if (!stats) return window.notify('Data laporan belum siap', 'error');
+            if (!Array.isArray(stats.issues) || stats.issues.length === 0) {
+                window.notify('Tidak ada kendala untuk diperbaiki', 'warning');
+                return;
+            }
 
+            const btn = document.querySelector('button[onclick="window.refineManagerLog()"]');
+            const originalLabel = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                btn.classList.add('opacity-60', 'cursor-wait');
+            }
             window.notify('AI sedang merapikan log...', 'loading');
-            
-            const prompt = `
-                Bertindak sebagai editor laporan operasional. 
-                Tugas: Tulis ulang daftar kendala berikut agar menjadi poin-poin yang profesional, baku (Bahasa Indonesia), ringkas, dan jelas.
-                Format Output: Bullet points saja (diawali tanda "-"). 
-                Jangan ubah data [Tanggal] dan [HUB].
-                
-                Input:
-                ${stats.issues.join('\n')}
-            `;
+
+            const prompt = `Anda adalah editor laporan operasional HUB perusahaan logistik.
+Rapikan daftar kendala berikut menjadi Bahasa Indonesia profesional, jelas, ringkas, dan mudah dipahami pimpinan.
+Aturan wajib:
+1. Pertahankan tanggal dan kode HUB persis seperti sumber.
+2. Jangan mengubah angka, jumlah parcel, jumlah personel, status, atau fakta kejadian.
+3. Jangan menambah asumsi, penyebab, atau solusi yang tidak tertulis.
+4. Gabungkan kalimat berulang tanpa menghilangkan informasi penting.
+5. Kembalikan hanya daftar bullet, satu kendala per bullet, diawali tanda •.
+
+Daftar kendala:
+${stats.issues.join('\n')}`;
 
             try {
                 const result = await callGeminiAPI(prompt);
-                if (result) {
-                    window.lastRefinedLog = result.trim();
-                    window.notify('Log Kendala Diperbaiki! Klik Salin.', 'success');
-                }
+                window.lastRefinedLog = result.trim();
+                window.lastRefinedLogSource = 'gemini';
+                window.notify('Log kendala berhasil dirapikan oleh Gemini. Tekan Salin Laporan.', 'success');
             } catch (e) {
-                console.error(e);
-                window.notify('Gagal Memproses AI', 'error');
+                console.error('Perbaiki Log gagal:', e);
+                if (isTemporaryGeminiFailure(e)) {
+                    window.lastRefinedLog = buildLocalRefinedLog(stats.issues);
+                    window.lastRefinedLogSource = 'local-fallback';
+                    window.notify('Gemini sedang padat. Log dirapikan secara lokal tanpa mengubah isi.', 'warning');
+                } else {
+                    window.Swal.fire({
+                        title: 'Perbaiki Log Gagal',
+                        text: e.message || 'Terjadi kesalahan saat memproses log.',
+                        icon: 'error'
+                    });
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalLabel;
+                    btn.classList.remove('opacity-60', 'cursor-wait');
+                }
             }
         };
 
         window.generateManagerInsight = async () => {
             const stats = window.lastDashStats;
-            if(!stats) return window.notify('Data belum siap', 'error');
+            if (!stats) return window.notify('Data laporan belum siap. Muat ulang dashboard.', 'error');
 
             const container = document.getElementById('ai-insight-container');
             const txtEl = document.getElementById('ai-insight-text');
-            
+            const btn = document.querySelector('button[onclick="window.generateManagerInsight()"]');
+            const originalLabel = btn ? btn.innerHTML : '';
+
             container.classList.remove('hidden');
             container.classList.add('animate-pulse');
-            txtEl.innerText = "Sedang menganalisis data operasional dan menyusun narasi...";
-            
+            txtEl.innerText = 'Sedang menganalisis data operasional...';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menganalisis...';
+                btn.classList.add('opacity-60', 'cursor-wait');
+            }
+
             const pktDiff = stats.curr.pkt - stats.prev.pkt;
-            const pktPct = stats.prev.pkt===0 ? 0 : Math.round((pktDiff/stats.prev.pkt)*100);
+            const hasPreviousRows = Number(stats.prevDataCount) > 0;
+            const pktPct = stats.prev.pkt === 0 ? null : Math.round((pktDiff / stats.prev.pkt) * 100);
             const prodDiff = stats.curr.prod - stats.prev.prod;
-            const issueText = stats.issues.length > 0 ? stats.issues.join(". ") : "Tidak ada kendala berarti.";
-            
-            const prompt = `
-                Bertindak sebagai Manajer Operasional Logistik Senior.
-                Buatlah "Executive Summary" (maksimal 50 kata) dalam Bahasa Indonesia yang profesional untuk dilaporkan ke Top Management.
-                
-                Data:
-                - Total Load: ${window.formatNumber(stats.curr.pkt)} Paket (${pktDiff>0?'Naik':'Turun'} ${Math.abs(pktPct)}% dari periode lalu).
-                - Rata-rata Produktivitas: ${stats.curr.prod} Paket/Org (${prodDiff>0?'Naik':'Turun'} dari ${stats.prev.prod}).
-                - Top Hub: ${stats.topHub}.
-                - Kendala Lapangan: ${issueText}.
-                
-                Instruksi:
-                Buat 1 paragraf narasi yang padat. Fokus pada tren performa (naik/turun), hub yang menonjol, dan dampak kendala (jika ada). Gunakan bahasa bisnis yang lugas.
-            `;
+            const issueText = stats.issues.length > 0 ? stats.issues.join('\\n') : 'Tidak ada kendala tercatat.';
+            const previousRange = stats.previousPeriod
+                ? `${stats.previousPeriod.start} s/d ${stats.previousPeriod.end}`
+                : 'tidak diketahui';
+            const trendLoad = !hasPreviousRows
+                ? 'Tidak ada baris laporan pada periode pembanding'
+                : stats.prev.pkt === 0
+                    ? `Laporan tersedia (${stats.prevDataCount} baris), tetapi total load periode sebelumnya 0; persentase perubahan tidak dapat dihitung`
+                    : `${pktDiff >= 0 ? 'Naik' : 'Turun'} ${Math.abs(pktPct)}% dibanding ${window.formatNumber(stats.prev.pkt)} paket`;
+
+            const prompt = `Anda adalah Manajer Operasional Senior di perusahaan logistik.
+Buat executive insight untuk pimpinan berdasarkan data berikut.
+
+DATA OPERASIONAL:
+- Periode ini: ${stats.currentPeriod?.start || ''} s/d ${stats.currentPeriod?.end || ''} (${stats.currDataCount || 0} laporan).
+- Periode pembanding: ${previousRange} (${stats.prevDataCount || 0} laporan).
+- Total load periode ini: ${window.formatNumber(stats.curr.pkt)} paket.
+- Total load periode sebelumnya: ${window.formatNumber(stats.prev.pkt)} paket.
+- Status perbandingan load: ${trendLoad}.
+- Manpower periode ini: ${window.formatNumber(stats.curr.mpp)} orang.
+- Rata-rata produktivitas: ${window.formatNumber(stats.curr.prod)} paket/orang.
+- Produktivitas periode sebelumnya: ${window.formatNumber(stats.prev.prod)} paket/orang.
+- HUB dengan load tertinggi: ${stats.topHub}.
+- Catatan kendala: ${issueText}
+
+INSTRUKSI:
+- Tulis 1 paragraf Bahasa Indonesia profesional, maksimal 65 kata.
+- Sebutkan tren kinerja dan HUB yang menonjol.
+- Jelaskan dampak kendala hanya jika didukung data.
+- Jangan mengarang angka, penyebab, atau rekomendasi yang tidak didukung data.
+- Bedakan data pembanding yang benar-benar tidak memiliki baris laporan dengan data yang tersedia tetapi total load-nya nol.
+- Jangan menyatakan data pembanding belum tersedia jika jumlah laporan periode pembanding lebih dari nol.`;
 
             try {
                 const result = await callGeminiAPI(prompt);
-                if (result) {
-                    container.classList.remove('animate-pulse');
-                    txtEl.innerText = result.trim();
-                    window.lastAIInsight = result.trim();
-                    window.notify('Analisis Selesai', 'success');
-                } else {
-                    throw new Error('No Data');
-                }
+                window.lastAIInsight = result.trim();
+                window.lastAIInsightSource = 'gemini';
+                const heading = container.querySelector('h4');
+                if (heading) heading.innerHTML = '<i class="fas fa-robot text-base"></i> AI Executive Insight';
+                container.classList.remove('animate-pulse');
+                txtEl.innerText = window.lastAIInsight;
+                window.notify('Executive Insight berhasil dibuat', 'success');
             } catch (e) {
-                console.error(e);
-                container.classList.add('hidden');
-                window.notify('Gagal Analisis AI', 'error');
+                console.error('Generate Insight gagal:', e);
+                container.classList.remove('animate-pulse');
+
+                if (isTemporaryGeminiFailure(e)) {
+                    window.lastAIInsight = buildLocalExecutiveInsight(stats);
+                    window.lastAIInsightSource = 'local-fallback';
+                    txtEl.innerText = window.lastAIInsight;
+                    const heading = container.querySelector('h4');
+                    if (heading) heading.innerHTML = '<i class="fas fa-chart-line text-base"></i> Insight Otomatis (Gemini tidak tersedia)';
+                    window.notify('Gemini sedang padat. Insight otomatis dari data dashboard ditampilkan.', 'warning');
+                } else {
+                    window.lastAIInsight = null;
+                    window.lastAIInsightSource = null;
+                    txtEl.innerText = e.message || 'Insight belum berhasil dibuat.';
+                    window.Swal.fire({
+                        title: 'Generate Insight Gagal',
+                        text: e.message || 'Periksa API Key dan konfigurasi Gemini.',
+                        icon: 'error'
+                    });
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalLabel;
+                    btn.classList.remove('opacity-60', 'cursor-wait');
+                }
             }
         };
-        
-        window.copyManagerSummary = () => {
-            if (!window.managerSummaryText) return window.notify('Data belum siap', 'error');
-            
+
+        window.buildFinalManagerSummaryText = () => {
+            if (!window.managerSummaryText) return '';
             let finalTxt = window.managerSummaryText;
-            
+            let insightBlock = '';
             if (window.lastAIInsight) {
-                const insightBlock = `*Executive Insight:*\n"${window.lastAIInsight}"\n\n`;
-                finalTxt = finalTxt.replace('__AI_INSIGHT_PLACEHOLDER__', insightBlock);
-            } else {
-                finalTxt = finalTxt.replace('__AI_INSIGHT_PLACEHOLDER__', '');
+                const isFallback = window.lastAIInsightSource === 'local-fallback';
+                const heading = isFallback ? '*INSIGHT OTOMATIS (GEMINI SEDANG PADAT):*' : '*EXECUTIVE INSIGHT:*';
+                insightBlock = `${heading}\n${window.lastAIInsight.trim()}\n\n`;
             }
+            finalTxt = finalTxt.replace('__AI_INSIGHT_PLACEHOLDER__', insightBlock);
+
+            const sourceIssues = window.lastDashStats?.issues || [];
+            let issueBlock = sourceIssues.length
+                ? sourceIssues.map(item => `- ${item}`).join('\n')
+                : 'Nihil';
 
             if (window.lastRefinedLog) {
-                const headerMarker = "*4. Log Kendala / Isu:*";
-                const footerMarker = "_Generated by";
-                
-                const parts = finalTxt.split(headerMarker);
-                
-                if (parts.length > 1) {
-                    const prePart = parts[0];
-                    const contentAndFooter = parts[1];
-                    const footerIndex = contentAndFooter.lastIndexOf(footerMarker);
-                    
-                    if (footerIndex !== -1) {
-                        const postPart = contentAndFooter.substring(footerIndex); 
-                        finalTxt = prePart + 
-                                   "*4. Log Kendala / Isu (AI Refined):*\n" + 
-                                   window.lastRefinedLog + "\n\n" + 
-                                   postPart;
-                    }
+                issueBlock = window.lastRefinedLog
+                    .split(/\r?\n/)
+                    .map(line => line.trim())
+                    .filter(Boolean)
+                    .map(line => /^[•\-]/.test(line) ? line : `- ${line}`)
+                    .join('\n');
+                if (window.lastRefinedLogSource === 'local-fallback') {
+                    issueBlock = `_(Perapian dasar otomatis; Gemini sedang tidak tersedia)_\n${issueBlock}`;
+                } else {
+                    issueBlock = `_(Dirapikan dengan Gemini)_\n${issueBlock}`;
                 }
             }
-            
-            const el = document.createElement('textarea');
-            el.value = finalTxt;
-            el.setAttribute('readonly', '');
-            el.style.position = 'absolute';
-            el.style.left = '-9999px';
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            window.notify('Laporan Manager Disalin!', 'success');
+            finalTxt = finalTxt.replace('__ISSUES_PLACEHOLDER__', issueBlock);
+            return finalTxt;
         };
+
+        window.copyManagerSummaryText = async () => {
+            const finalTxt = window.buildFinalManagerSummaryText();
+            if (!finalTxt) return window.notify('Data belum siap. Muat ulang dashboard.', 'error');
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(finalTxt);
+                } else {
+                    const el = document.createElement('textarea');
+                    el.value = finalTxt;
+                    el.setAttribute('readonly', '');
+                    el.style.position = 'fixed';
+                    el.style.top = '0';
+                    el.style.left = '-9999px';
+                    document.body.appendChild(el);
+                    el.focus();
+                    el.select();
+                    const copied = document.execCommand('copy');
+                    document.body.removeChild(el);
+                    if (!copied) throw new Error('Browser tidak mengizinkan penyalinan otomatis.');
+                }
+                window.notify('Teks laporan berhasil disalin.', 'success');
+            } catch (e) {
+                console.error('Salin teks laporan gagal:', e);
+                window.Swal.fire({
+                    title: 'Gagal Menyalin Teks',
+                    text: 'Browser tidak mengizinkan penyalinan otomatis. Buka website melalui HTTPS lalu coba kembali.',
+                    icon: 'error'
+                });
+            }
+        };
+
+        function receiptFormatDate(dateKey) {
+            if (!dateKey) return '-';
+            const date = new Date(`${dateKey}T12:00:00`);
+            if (Number.isNaN(date.getTime())) return dateKey;
+            return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function receiptEscapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
+        function receiptMakeTable(lines) {
+            const parsed = lines
+                .map(line => line.split('|').map(cell => cell.trim()))
+                .filter(cells => cells.length > 1 && !/^[\s+\-|:]+$/.test(cells.join('')));
+            if (!parsed.length) return null;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'receipt-table-wrap';
+            const table = document.createElement('table');
+            table.className = 'receipt-table';
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            parsed[0].forEach(cell => {
+                const th = document.createElement('th');
+                th.textContent = cell;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            parsed.slice(1).forEach(row => {
+                const tr = document.createElement('tr');
+                parsed[0].forEach((_, index) => {
+                    const td = document.createElement('td');
+                    td.textContent = row[index] || '';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            wrapper.appendChild(table);
+            return wrapper;
+        }
+
+        window.renderManagerReceipt = (finalTxt) => {
+            const root = document.getElementById('manager-receipt');
+            if (!root) throw new Error('Area preview struk tidak ditemukan.');
+            root.innerHTML = '';
+
+            const stats = window.lastDashStats || {};
+            const curr = stats.curr || {};
+            const prev = stats.prev || {};
+            const currentPeriod = stats.currentPeriod || {};
+            const previousPeriod = stats.previousPeriod || {};
+            const prevCount = Number(stats.prevDataCount) || 0;
+            const create = (tag, className, textValue) => {
+                const node = document.createElement(tag);
+                if (className) node.className = className;
+                if (textValue !== undefined && textValue !== null) node.textContent = String(textValue);
+                return node;
+            };
+
+            root.appendChild(create('div', 'receipt-top-accent'));
+            const brand = create('div', 'receipt-brand');
+            brand.appendChild(create('div', 'receipt-logo', 'DR'));
+            const brandText = create('div');
+            brandText.appendChild(create('div', 'receipt-brand-title', 'DAILY REPORT'));
+            brandText.appendChild(create('div', 'receipt-brand-sub', 'HUB KALSULAMP'));
+            brand.appendChild(brandText);
+            root.appendChild(brand);
+            root.appendChild(create('div', 'receipt-kicker', 'OPERATIONAL PERFORMANCE RECEIPT'));
+            root.appendChild(create('div', 'receipt-title', 'MANAGER SUMMARY'));
+
+            const meta = create('div', 'receipt-meta');
+            const metaItems = [
+                ['PERIODE LAPORAN', `${receiptFormatDate(currentPeriod.start)} - ${receiptFormatDate(currentPeriod.end)}`],
+                ['PERIODE PEMBANDING', `${receiptFormatDate(previousPeriod.start)} - ${receiptFormatDate(previousPeriod.end)}`],
+                ['DATA LAPORAN SAAT INI', `${stats.currDataCount || 0} laporan`],
+                ['DATA PEMBANDING', prevCount > 0 ? `${prevCount} laporan ditemukan` : 'Tidak ditemukan']
+            ];
+            metaItems.forEach(([label, value]) => {
+                const item = create('div');
+                item.appendChild(create('div', 'receipt-meta-label', label));
+                item.appendChild(create('div', 'receipt-meta-value', value));
+                meta.appendChild(item);
+            });
+            root.appendChild(meta);
+
+            const insightMatch = finalTxt.match(/\*(?:EXECUTIVE INSIGHT|INSIGHT OTOMATIS \(GEMINI SEDANG PADAT\)):\*\s*\n([\s\S]*?)(?=\n\s*\n\*1\.|\n\*1\.)/i);
+            if (insightMatch && insightMatch[1]) {
+                const insight = create('div', 'receipt-insight');
+                const sourceTitle = /INSIGHT OTOMATIS/i.test(insightMatch[0]) ? 'INSIGHT OTOMATIS' : 'AI EXECUTIVE INSIGHT';
+                insight.appendChild(create('div', 'receipt-insight-title', sourceTitle));
+                insight.appendChild(create('div', 'receipt-insight-text', insightMatch[1].trim()));
+                root.appendChild(insight);
+            }
+
+            const kpis = create('div', 'receipt-kpis');
+            const kpiItems = [
+                { label: 'TOTAL LOAD', current: Number(curr.pkt) || 0, previous: Number(prev.pkt) || 0, suffix: ' paket', format: window.formatNumber },
+                { label: 'MANPOWER', current: Number(curr.mpp) || 0, previous: Number(prev.mpp) || 0, suffix: ' orang', format: window.formatNumber },
+                { label: 'AVG PRODUCTIVITY', current: Number(curr.prod) || 0, previous: Number(prev.prod) || 0, suffix: ' paket/orang', format: window.formatNumber },
+                { label: 'TOTAL COST', current: Number(curr.cost) || 0, previous: Number(prev.cost) || 0, suffix: '', format: window.formatRupiah }
+            ];
+            kpiItems.forEach(item => {
+                const card = create('div', 'receipt-kpi');
+                card.appendChild(create('div', 'receipt-kpi-label', item.label));
+                card.appendChild(create('div', 'receipt-kpi-value', `${item.format(item.current)}${item.suffix}`));
+                let compareText = 'Data pembanding tidak ditemukan';
+                if (prevCount > 0) {
+                    if (item.previous > 0) {
+                        const delta = item.current - item.previous;
+                        const pct = Math.round(Math.abs(delta / item.previous) * 100);
+                        const deltaLabel = `${delta > 0 ? '+' : delta < 0 ? '-' : ''}${item.format(Math.abs(delta))}`;
+                        compareText = `Sebelumnya ${item.format(item.previous)}${item.suffix} · ${deltaLabel} (${delta > 0 ? '+' : delta < 0 ? '-' : ''}${pct}%)`;
+                    } else {
+                        compareText = `Sebelumnya ${item.format(item.previous)}${item.suffix} · perubahan % N/A`;
+                    }
+                }
+                card.appendChild(create('div', 'receipt-kpi-compare', compareText));
+                kpis.appendChild(card);
+            });
+            root.appendChild(kpis);
+
+            const lines = String(finalTxt || '').split(/\r?\n/);
+            let inFence = false;
+            let tableLines = [];
+            let skipTable = false;
+            let skipTitle = false;
+            let skippingInsightText = false;
+            let sectionCount = 0;
+            const flushTable = () => {
+                if (!skipTable && tableLines.length) {
+                    const table = receiptMakeTable(tableLines);
+                    if (table) root.appendChild(table);
+                }
+                tableLines = [];
+                skipTable = false;
+            };
+
+            for (let i = 0; i < lines.length; i++) {
+                const raw = lines[i];
+                const line = raw.trim();
+                if (line === '```') {
+                    if (!inFence) {
+                        inFence = true;
+                        tableLines = [];
+                        skipTable = skipTitle;
+                    } else {
+                        inFence = false;
+                        flushTable();
+                        skipTitle = false;
+                    }
+                    continue;
+                }
+                if (inFence) {
+                    tableLines.push(raw);
+                    continue;
+                }
+                if (!line || line === '__AI_INSIGHT_PLACEHOLDER__' || line === '__ISSUES_PLACEHOLDER__') continue;
+                if (/^\*SUMMARY REPORT HUB KALSULAMP\*$/i.test(line) || /^Periode:/i.test(line) || /^Pembanding:/i.test(line)) continue;
+                if (/^_Generated by/i.test(line)) continue;
+
+                const heading = line.match(/^\*(.+)\*$/);
+                if (heading) {
+                    const title = heading[1].trim();
+                    if (/^EXECUTIVE INSIGHT|^INSIGHT OTOMATIS/i.test(title)) {
+                        skippingInsightText = true;
+                        continue;
+                    }
+                    skippingInsightText = false;
+                    sectionCount++;
+                    const section = create('section', 'receipt-section');
+                    section.appendChild(create('div', 'receipt-section-title', title.replace(/:$/, '')));
+                    root.appendChild(section);
+                    window._receiptCurrentSection = section;
+                    skipTitle = /^1\.\s*Global Performance/i.test(title);
+                    continue;
+                }
+                if (skippingInsightText) continue;
+
+                const currentSection = window._receiptCurrentSection || root;
+                if (/^_[\s\S]*_$/.test(line)) {
+                    currentSection.appendChild(create('div', 'receipt-note', line.replace(/^_|_$/g, '')));
+                } else if (/^[•\-]\s*/.test(line)) {
+                    currentSection.appendChild(create('div', 'receipt-bullet', line.replace(/^[•\-]\s*/, '')));
+                } else if (/^Nihil$/i.test(line)) {
+                    currentSection.appendChild(create('div', 'receipt-empty', 'Tidak ada data'));
+                } else {
+                    currentSection.appendChild(create('p', 'receipt-paragraph', line));
+                }
+            }
+            if (inFence) flushTable();
+            delete window._receiptCurrentSection;
+
+            const footer = create('div', 'receipt-footer');
+            footer.appendChild(create('div', 'receipt-footer-main', 'GENERATED BY DAILYREPORT SYSTEM'));
+            footer.appendChild(create('div', 'receipt-footer-sub', 'HUB KALSULAMP · END OF REPORT'));
+            root.appendChild(footer);
+        };
+
+        async function createManagerReceiptCanvas() {
+            if (!window.html2canvas) throw new Error('Library pembuat gambar belum termuat. Periksa koneksi internet lalu muat ulang halaman.');
+            const target = document.getElementById('manager-receipt');
+            if (!target) throw new Error('Preview struk tidak ditemukan.');
+            return await window.html2canvas(target, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                logging: false,
+                scrollX: 0,
+                scrollY: 0
+            });
+        }
+
+        function managerReceiptFileName() {
+            const period = window.lastDashStats?.currentPeriod || {};
+            const start = String(period.start || 'periode').replace(/[^0-9-]/g, '');
+            const end = String(period.end || '').replace(/[^0-9-]/g, '');
+            return `Manager_Summary_HUB_KALSULAMP_${start}${end ? '_' + end : ''}.png`;
+        }
+
+        window.openManagerReceipt = () => {
+            const finalTxt = window.buildFinalManagerSummaryText();
+            if (!finalTxt) return window.notify('Data laporan belum siap. Muat ulang dashboard.', 'error');
+            try {
+                window.renderManagerReceipt(finalTxt);
+                const modal = document.getElementById('manager-receipt-modal');
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } catch (error) {
+                console.error('Preview struk gagal:', error);
+                window.Swal.fire({ title: 'Preview Struk Gagal', text: error.message, icon: 'error' });
+            }
+        };
+
+        window.closeManagerReceipt = () => {
+            const modal = document.getElementById('manager-receipt-modal');
+            if (modal) modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        };
+
+        window.downloadManagerReceipt = async () => {
+            const button = document.getElementById('receipt-download-btn');
+            const original = button ? button.innerHTML : '';
+            try {
+                if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Membuat PNG...'; }
+                const canvas = await createManagerReceiptCanvas();
+                const link = document.createElement('a');
+                link.download = managerReceiptFileName();
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                window.notify('Gambar struk berhasil dibuat.', 'success');
+            } catch (error) {
+                console.error('Ekspor struk gagal:', error);
+                window.Swal.fire({ title: 'Gagal Membuat Gambar', text: error.message || 'Silakan coba kembali.', icon: 'error' });
+            } finally {
+                if (button) { button.disabled = false; button.innerHTML = original; }
+            }
+        };
+
+        window.shareManagerReceipt = async () => {
+            const button = document.getElementById('receipt-share-btn');
+            const original = button ? button.innerHTML : '';
+            try {
+                if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyiapkan...'; }
+                const canvas = await createManagerReceiptCanvas();
+                const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Browser gagal membuat file PNG.')), 'image/png'));
+                const file = new File([blob], managerReceiptFileName(), { type: 'image/png' });
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Manager Summary HUB Kalsulamp',
+                        text: 'Laporan operasional HUB Kalsulamp'
+                    });
+                    window.notify('Pilih WhatsApp pada menu berbagi perangkat.', 'success');
+                } else {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = managerReceiptFileName();
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    window.notify('PNG diunduh. Lampirkan gambar tersebut ke WhatsApp.', 'success');
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Bagikan struk gagal:', error);
+                    window.Swal.fire({ title: 'Gagal Membagikan Struk', text: error.message || 'Silakan unduh PNG lalu kirim manual ke WhatsApp.', icon: 'error' });
+                }
+            } finally {
+                if (button) { button.disabled = false; button.innerHTML = original; }
+            }
+        };
+
+        // Dipertahankan sebagai pintasan kompatibilitas bagi pemanggilan lama.
+        window.copyManagerSummary = () => window.openManagerReceipt();
 
         const getRate = (h) => (appData.costs.find(c=>c.hub===h)||{}).cost||0;
         window.calculateReportCost = (r) => {
@@ -3829,5 +4466,34 @@
             }
         };
     </script>
+
+    <div id="manager-receipt-modal" class="fixed inset-0 z-[120000] hidden bg-slate-950/80 backdrop-blur-sm p-2 sm:p-5">
+        <div class="w-full h-full max-w-5xl mx-auto bg-slate-100 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-slate-200 shrink-0">
+                <div class="min-w-0">
+                    <h3 class="font-extrabold text-slate-800 text-sm sm:text-base">Preview Manager Summary</h3>
+                    <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Format gambar struk · Siap dibagikan ke WhatsApp</p>
+                </div>
+                <button type="button" onclick="window.closeManagerReceipt()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 flex items-center justify-center shrink-0" aria-label="Tutup preview">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-auto p-2 sm:p-5" id="manager-receipt-preview-scroll">
+                <div id="manager-receipt"></div>
+            </div>
+            <div class="shrink-0 bg-white border-t border-slate-200 p-3 sm:p-4 flex flex-wrap items-center justify-end gap-2">
+                <button type="button" onclick="window.copyManagerSummaryText()" class="px-3 sm:px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                    <i class="fas fa-copy mr-1"></i> Salin Teks
+                </button>
+                <button type="button" id="receipt-download-btn" onclick="window.downloadManagerReceipt()" class="px-3 sm:px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition">
+                    <i class="fas fa-download mr-1"></i> Unduh PNG
+                </button>
+                <button type="button" id="receipt-share-btn" onclick="window.shareManagerReceipt()" class="px-4 sm:px-5 py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition">
+                    <i class="fas fa-share-alt mr-1"></i> Bagikan
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

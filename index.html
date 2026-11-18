@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DailyReport v5</title>
+    <title>DailyReport v5 · Operational Control Center</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -172,9 +172,7 @@
         .receipt-brand-sub { margin-top:4px; font-size:10px; font-weight:800; letter-spacing:1.7px; color:#64748b; }
         .receipt-kicker { text-align:center; font-size:10px; font-weight:800; letter-spacing:2px; color:#d72678; margin-top:22px; }
         .receipt-title { text-align:center; font-size:20px; line-height:1.25; font-weight:900; letter-spacing:.2px; margin-top:5px; color:#172033; }
-        .receipt-meta { margin:18px 0 15px; padding:12px 14px; background:#f8fafc; border:1px solid #e8edf4; border-radius:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; }
-        .receipt-meta-label { font-size:9px; font-weight:800; letter-spacing:1px; color:#94a3b8; text-transform:uppercase; }
-        .receipt-meta-value { font-size:12px; font-weight:800; color:#263247; margin-top:3px; }
+        .receipt-period { margin:15px 0 18px; padding:10px 12px; text-align:center; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; color:#475569; font-size:12px; font-weight:800; letter-spacing:.1px; }
         .receipt-dash { border:0; border-top:2px dashed #cbd5e1; margin:17px 0; }
         .receipt-insight { border:1px solid #f3c4da; border-left:5px solid #d72678; border-radius:12px; background:#fff7fb; padding:13px 15px; margin:14px 0 18px; }
         .receipt-insight-title { font-size:10px; letter-spacing:1px; font-weight:900; color:#c11c67; margin-bottom:7px; text-transform:uppercase; }
@@ -211,6 +209,27 @@
             .receipt-table th { font-size:8px; padding:7px 4px; }
             .receipt-table td { padding:6px 4px; }
         }
+
+        /* DailyReport Operational Control Center */
+        .ops-panel { background:#fff; border:1px solid #e2e8f0; border-radius:1.25rem; box-shadow:0 2px 10px rgba(15,23,42,.035); }
+        .ops-kpi { min-width:0; border:1px solid #e2e8f0; border-radius:1rem; background:#fff; padding:1rem; }
+        .ops-kpi-label { color:#64748b; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+        .ops-kpi-value { color:#0f172a; font-size:1.5rem; font-weight:900; line-height:1.2; margin-top:.45rem; font-variant-numeric:tabular-nums; }
+        .ops-pill { display:inline-flex; align-items:center; gap:.3rem; border-radius:999px; padding:.25rem .55rem; font-size:10px; line-height:1.2; font-weight:800; white-space:nowrap; }
+        .ops-pill-good { color:#047857; background:#d1fae5; }
+        .ops-pill-warn { color:#b45309; background:#fef3c7; }
+        .ops-pill-bad { color:#be123c; background:#ffe4e6; }
+        .ops-pill-neutral { color:#475569; background:#f1f5f9; }
+        .ops-table { width:100%; border-collapse:separate; border-spacing:0; font-size:11px; }
+        .ops-table th { position:sticky; top:0; background:#f8fafc; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:.05em; padding:11px 12px; text-align:left; white-space:nowrap; z-index:1; }
+        .ops-table td { padding:11px 12px; border-top:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+        .ops-input { width:100%; border:1px solid #dbe3ee; border-radius:.75rem; padding:.65rem .8rem; font-size:12px; color:#334155; background:#fff; outline:none; }
+        .ops-input:focus { border-color:#4361ee; box-shadow:0 0 0 3px rgba(67,97,238,.1); }
+        .ops-alert-item { border:1px solid #e2e8f0; border-left-width:4px; border-radius:.9rem; padding:.85rem 1rem; background:#fff; }
+        .ops-alert-danger { border-left-color:#e11d48; }
+        .ops-alert-warning { border-left-color:#f59e0b; }
+        .ops-alert-info { border-left-color:#4361ee; }
+        @media(max-width:640px){ .ops-kpi-value{font-size:1.25rem;} .ops-table th,.ops-table td{padding:9px 8px;} }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-700 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-700 bg-slate-50">
@@ -723,6 +742,75 @@
                         <div id="manager-silent-hubs" class="mt-8 transition-all duration-500"></div>
                     </div>
                 </div>
+
+                <!-- STAGE 1 + 2: Operational monitoring and analysis -->
+                <section id="ops-control-center" class="space-y-5">
+                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-[.18em] text-primary">Operational Intelligence</p>
+                            <h3 class="text-xl font-extrabold text-slate-800">HUB Operational Control Center</h3>
+                            <p class="text-xs text-slate-500 mt-1">Monitoring kelengkapan laporan, performa, biaya, dan manpower berdasarkan filter dashboard.</p>
+                        </div>
+                        <div class="text-[10px] text-slate-400" id="ops-period-label">Periode mengikuti filter dashboard</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3" id="ops-kpi-grid">
+                        <div class="ops-kpi"><div class="ops-kpi-label">Cakupan HUB</div><div class="ops-kpi-value" id="ops-kpi-coverage">-</div><div class="text-[10px] text-slate-400 mt-1" id="ops-kpi-coverage-sub">Menunggu data</div></div>
+                        <div class="ops-kpi"><div class="ops-kpi-label">Laporan Masuk</div><div class="ops-kpi-value" id="ops-kpi-report-count">-</div><div class="text-[10px] text-slate-400 mt-1" id="ops-kpi-report-sub">Menunggu data</div></div>
+                        <div class="ops-kpi"><div class="ops-kpi-label">Cost / 1.000 Paket</div><div class="ops-kpi-value" id="ops-kpi-cost-1k">-</div><div class="text-[10px] text-slate-400 mt-1">Indikator efisiensi biaya</div></div>
+                        <div class="ops-kpi"><div class="ops-kpi-label">Attendance Rate</div><div class="ops-kpi-value" id="ops-kpi-attendance">-</div><div class="text-[10px] text-slate-400 mt-1" id="ops-kpi-attendance-sub">Berdasarkan person-day</div></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+                        <div class="ops-panel xl:col-span-2 overflow-hidden">
+                            <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                                <div><h4 class="font-extrabold text-slate-800 text-sm">HUB Performance Ranking</h4><p class="text-[10px] text-slate-400 mt-1">Peringkat berdasarkan produktivitas periode terpilih</p></div>
+                                <span class="ops-pill ops-pill-neutral">Target diatur Admin</span>
+                            </div>
+                            <div class="overflow-auto max-h-[420px]">
+                                <table class="ops-table min-w-[680px]"><thead><tr><th>Rank / HUB</th><th>Load</th><th>MPP</th><th>Prod.</th><th>Target</th><th>Achv.</th><th>Status</th></tr></thead><tbody id="ops-ranking-body"><tr><td colspan="7" class="text-center text-slate-400 py-8">Menunggu data dashboard...</td></tr></tbody></table>
+                            </div>
+                        </div>
+                        <div class="ops-panel overflow-hidden">
+                            <div class="p-5 border-b border-slate-100"><h4 class="font-extrabold text-slate-800 text-sm">Operational Alert</h4><p class="text-[10px] text-slate-400 mt-1">Peringatan otomatis dari data dan target</p></div>
+                            <div id="ops-alert-list" class="p-4 space-y-2 max-h-[420px] overflow-auto"><div class="text-xs text-slate-400 text-center py-8">Belum ada analisis.</div></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                        <div class="ops-panel p-5">
+                            <div class="flex items-center justify-between gap-2 mb-4"><div><h4 class="font-extrabold text-slate-800 text-sm">Cost Efficiency Monitoring</h4><p class="text-[10px] text-slate-400 mt-1">Biaya operasional dibanding volume paket</p></div><i class="fas fa-coins text-amber-500 text-lg"></i></div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-slate-50 rounded-xl p-3"><div class="text-[9px] uppercase font-bold tracking-wide text-slate-400">Total Cost</div><div id="ops-cost-total" class="font-extrabold text-slate-800 text-sm mt-2">Rp 0</div></div>
+                                <div class="bg-slate-50 rounded-xl p-3"><div class="text-[9px] uppercase font-bold tracking-wide text-slate-400">Cost / Paket</div><div id="ops-cost-per-pkg" class="font-extrabold text-slate-800 text-sm mt-2">Rp 0</div></div>
+                                <div class="bg-slate-50 rounded-xl p-3"><div class="text-[9px] uppercase font-bold tracking-wide text-slate-400">Cost / 1K</div><div id="ops-cost-per-1k" class="font-extrabold text-slate-800 text-sm mt-2">Rp 0</div></div>
+                            </div>
+                            <div class="mt-4 text-[11px] text-slate-500" id="ops-cost-compare">Perbandingan periode sebelumnya akan ditampilkan di sini.</div>
+                        </div>
+                        <div class="ops-panel p-5">
+                            <div class="flex items-center justify-between gap-2 mb-4"><div><h4 class="font-extrabold text-slate-800 text-sm">Manpower Analytics</h4><p class="text-[10px] text-slate-400 mt-1">Akumulasi person-day berdasarkan absensi laporan</p></div><i class="fas fa-users text-indigo-500 text-lg"></i></div>
+                            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="ops-attendance-breakdown">
+                                <div class="bg-slate-50 rounded-xl p-2 text-center"><div class="text-[9px] text-slate-400 font-bold">H</div><div class="font-extrabold text-slate-800">-</div></div>
+                            </div>
+                            <div class="mt-4 text-[11px] text-slate-500" id="ops-attendance-compare">Rincian kehadiran akan dihitung dari data absensi.</div>
+                        </div>
+                    </div>
+
+                    <div class="ops-panel overflow-hidden">
+                        <div class="p-5 border-b border-slate-100"><h4 class="font-extrabold text-slate-800 text-sm">Perbandingan Periode</h4><p class="text-[10px] text-slate-400 mt-1">Periode aktif dibandingkan dengan periode berdurasi sama sebelumnya</p></div>
+                        <div class="overflow-x-auto"><table class="ops-table min-w-[580px]"><thead><tr><th>Indikator</th><th>Periode Ini</th><th>Periode Sebelumnya</th><th>Perubahan</th></tr></thead><tbody id="ops-compare-body"><tr><td colspan="4" class="text-center text-slate-400 py-6">Menunggu data...</td></tr></tbody></table></div>
+                    </div>
+
+                    <div id="ops-target-admin-panel" class="ops-panel overflow-hidden hidden">
+                        <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-extrabold text-slate-800 text-sm">Target Produktivitas per HUB</h4><p class="text-[10px] text-slate-400 mt-1">Masukkan target paket per manpower untuk masing-masing HUB.</p></div><button onclick="window.saveHubTargets()" class="px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-bold"><i class="fas fa-save mr-1"></i> Simpan Target</button></div>
+                        <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="ops-target-config"></div>
+                        <div class="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="bg-slate-50 border border-slate-200 rounded-xl p-3"><span class="text-[10px] font-extrabold text-slate-500 uppercase">Alert penurunan load (%)</span><input id="ops-alert-load-drop" type="number" min="1" max="100" class="ops-input mt-2" value="15"></label>
+                            <label class="bg-slate-50 border border-slate-200 rounded-xl p-3"><span class="text-[10px] font-extrabold text-slate-500 uppercase">Minimum attendance rate (%)</span><input id="ops-alert-attendance" type="number" min="1" max="100" class="ops-input mt-2" value="90"></label>
+                        </div>
+                        <div class="px-5 pb-5 text-[10px] text-slate-400">Target kosong berarti belum ditentukan dan tidak akan menghasilkan alert produktivitas. Cakupan laporan menggunakan asumsi satu laporan per HUB per hari kalender.</div>
+                    </div>
+                </section>
             </div>
 
              <div id="view-laporan" class="view-content hidden fade-in space-y-5">
@@ -1144,7 +1232,7 @@
                     </div>
 
                     <div>
-                        <div class="flex justify-between items-end mb-4"><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-4"><div><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4><p class="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2 leading-relaxed"><i class="fas fa-info-circle mr-1"></i>Status selain Shift 1, 2, atau 3 wajib dilengkapi keterangan.</p></div><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm shrink-0"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
                         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                             <table class="w-full text-xs text-center">
                                 <thead class="bg-slate-50 font-bold text-slate-500 uppercase border-b border-slate-200 tracking-wide">
@@ -1169,7 +1257,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0c2plaHFkYWt2bW1tbnl1emRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDc4NzksImV4cCI6MjA5MDYyMzg3OX0.zeWEZw4Pw3dWqZpwRZFXnUHvDd_sMamSI9jRQquQPB8';
         const supa = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let appData = { adminPass: '123456', accessCode: '123456', costDW: 120000, users: [], costs: [], laporan: [], isUnlocked: false, unlockCode: 'tes', trialEndDate: '2026-04-27' };
+        let appData = { adminPass: '123456', accessCode: '123456', costDW: 120000, users: [], costs: [], laporan: [], operationalData: { version: 1, hubTargets: {}, issues: [], activityLogs: [], thresholds: { loadDropPct: 15, minAttendancePct: 90 } }, operationalStorageReady: false, syncStatus: 'unknown', lastSyncAt: null, isUnlocked: false, unlockCode: 'tes', trialEndDate: '2026-04-27' };
         let currentUser = null, annualChart = null, dailyChart = null;
         let isLoggingOut = false;
         let currentChartMode = 'annual'; 
@@ -1192,6 +1280,16 @@
                     appData.isUnlocked = setRes.data.isUnlocked || false;
                     appData.unlockCode = setRes.data.unlockCode || 'tes';
                     appData.trialEndDate = setRes.data.trialEndDate || '2026-04-27';
+                    appData.operationalStorageReady = Object.prototype.hasOwnProperty.call(setRes.data, 'operational_data');
+                    appData.operationalData = normalizeOperationalData(setRes.data.operational_data);
+                }
+                const fetchErrors = [setRes.error, usrRes.error, costRes.error, lapRes.error].filter(Boolean);
+                if (fetchErrors.length) {
+                    appData.syncStatus = 'error';
+                    console.error('Sebagian data Supabase gagal dimuat:', fetchErrors);
+                } else {
+                    appData.syncStatus = 'connected';
+                    appData.lastSyncAt = new Date().toISOString();
                 }
                 if(usrRes.data) appData.users = usrRes.data;
                 if(costRes.data) appData.costs = costRes.data;
@@ -2107,6 +2205,7 @@
             window.updateDashboardTables(data, prevData);
             window.renderDashboardNotes(data);
             window.renderManagerBrief(data, prevData);
+            window.renderOperationalAnalytics(data, prevData);
         };
 
         window.renderDashboardNotes = (data) => {
@@ -2280,19 +2379,13 @@
             
             const sDate = document.getElementById('dash-start-date').value;
             const eDate = document.getElementById('dash-end-date').value;
-            const dateDisplay = (sDate === eDate) ? sDate : `${sDate} s/d ${eDate}`;
+            const dateDisplay = receiptFormatPeriod(sDate, eDate);
             const fmt = (n) => window.formatNumber(n);
             const padEnd = (s, l) => s.toString().padEnd(l);
             const padStart = (s, l) => s.toString().padStart(l);
             
             let txt = `*SUMMARY REPORT HUB KALSULAMP*\n`;
-            txt += `Periode: ${dateDisplay}\n`;
-            const comparisonRange = window.lastDashStats?.previousPeriod;
-            if (comparisonRange) {
-                const compareStatus = prevData.length > 0 ? `(${prevData.length} laporan)` : '(tidak ada laporan pada rentang ini)';
-                txt += `Pembanding: ${comparisonRange.start} s/d ${comparisonRange.end} ${compareStatus}\n`;
-            }
-            txt += `\n`;
+            txt += `Laporan tgl ${dateDisplay}\n\n`;
             txt += `__AI_INSIGHT_PLACEHOLDER__`;
             
             txt += `*1. Global Performance:*\n`;
@@ -2493,6 +2586,237 @@
             window.managerSummaryText = txt;
         };
 
+        // ---------------------------------------------------------------------
+        // OPERATIONAL CONTROL CENTER — Monitoring & Analisis (Stage 1–2)
+        // Uses a JSONB column on settings to fit the existing app data pattern.
+        // ---------------------------------------------------------------------
+        let operationalSaveQueue = Promise.resolve();
+        const OPS_DEFAULTS = { version: 1, hubTargets: {}, issues: [], activityLogs: [], thresholds: { loadDropPct: 15, minAttendancePct: 90 } };
+
+        function normalizeOperationalData(raw) {
+            const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+            return {
+                version: 1,
+                hubTargets: src.hubTargets && typeof src.hubTargets === 'object' ? src.hubTargets : {},
+                issues: Array.isArray(src.issues) ? src.issues : [],
+                activityLogs: Array.isArray(src.activityLogs) ? src.activityLogs : [],
+                thresholds: {
+                    loadDropPct: Number(src.thresholds?.loadDropPct ?? 15),
+                    minAttendancePct: Number(src.thresholds?.minAttendancePct ?? 90)
+                },
+                updatedAt: src.updatedAt || null
+            };
+        }
+
+        function opsEscape(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+        function opsMoney(value) {
+            return Number(value || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+        }
+        function opsDateLabel(value) {
+            if (!value) return '-';
+            const d = new Date(`${value}T12:00:00`);
+            return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+        }
+        function opsComparePct(current, previous) {
+            if (!Number(previous)) return Number(current) === 0 ? '0%' : 'N/A';
+            const pct = ((Number(current) - Number(previous)) / Number(previous)) * 100;
+            return `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
+        }
+
+        window.saveOperationalData = () => {
+            operationalSaveQueue = operationalSaveQueue.then(async () => {
+                if (!appData.operationalStorageReady) {
+                    throw new Error('Kolom operational_data belum tersedia. Jalankan SQL setup DailyReport terlebih dahulu.');
+                }
+                appData.operationalData = normalizeOperationalData(appData.operationalData);
+                appData.operationalData.updatedAt = new Date().toISOString();
+                const { data, error } = await supa.from('settings')
+                    .update({ operational_data: appData.operationalData })
+                    .eq('id', 'main')
+                    .select('operational_data')
+                    .maybeSingle();
+                if (error) throw error;
+                if (!data || !Object.prototype.hasOwnProperty.call(data, 'operational_data')) {
+                    throw new Error('Database tidak mengonfirmasi penyimpanan. Periksa row settings id=main dan kebijakan akses Supabase.');
+                }
+                appData.operationalData = normalizeOperationalData(data.operational_data);
+                return true;
+            });
+            return operationalSaveQueue;
+        };
+
+        window.renderHubTargetConfig = () => {
+            const panel = document.getElementById('ops-target-admin-panel');
+            const wrap = document.getElementById('ops-target-config');
+            if (!panel || !wrap) return;
+            const isAdmin = currentUser?.role === 'admin';
+            panel.classList.toggle('hidden', !isAdmin);
+            if (!isAdmin) return;
+            const operationalConfig = normalizeOperationalData(appData.operationalData);
+            const targets = operationalConfig.hubTargets;
+            const loadDropInput = document.getElementById('ops-alert-load-drop');
+            const attendanceInput = document.getElementById('ops-alert-attendance');
+            if (loadDropInput) loadDropInput.value = operationalConfig.thresholds.loadDropPct;
+            if (attendanceInput) attendanceInput.value = operationalConfig.thresholds.minAttendancePct;
+            const hubs = appData.costs.map(c => c.hub).filter(Boolean).sort();
+            wrap.innerHTML = hubs.map(hub => `
+                <label class="bg-slate-50 border border-slate-200 rounded-xl p-3 block">
+                    <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">${opsEscape(hub)}</span>
+                    <div class="flex items-center gap-2 mt-2"><input class="ops-input ops-target-input" type="number" min="1" step="1" data-hub="${opsEscape(hub)}" value="${targets[hub]?.productivity || ''}" placeholder="Target pkt / orang"><span class="text-[9px] text-slate-400 whitespace-nowrap">pkt/org</span></div>
+                </label>`).join('') || '<p class="text-xs text-slate-400">Belum ada daftar HUB di pengaturan Cost.</p>';
+        };
+
+        window.saveHubTargets = async () => {
+            if (currentUser?.role !== 'admin') return window.notify('Hanya Admin yang dapat mengubah target HUB.', 'error');
+            const next = { ...normalizeOperationalData(appData.operationalData).hubTargets };
+            document.querySelectorAll('.ops-target-input').forEach(input => {
+                const hub = input.dataset.hub;
+                const val = Number(input.value);
+                if (input.value.trim() && Number.isFinite(val) && val > 0) next[hub] = { ...(next[hub] || {}), productivity: val };
+                else if (next[hub]) delete next[hub].productivity;
+            });
+            appData.operationalData.hubTargets = next;
+            appData.operationalData.thresholds = {
+                loadDropPct: Math.max(1, Math.min(100, Number(document.getElementById('ops-alert-load-drop')?.value || 15))),
+                minAttendancePct: Math.max(1, Math.min(100, Number(document.getElementById('ops-alert-attendance')?.value || 90)))
+            };
+            try {
+                await window.saveOperationalData();
+                window.renderOperationalAnalytics(window.lastDashRows || [], window.lastPrevRows || []);
+                window.notify('Target produktivitas HUB tersimpan.', 'success');
+            } catch (e) {
+                console.error(e);
+                window.notify(e.message || 'Target gagal disimpan.', 'error');
+            }
+        };
+
+        window.renderOperationalAnalytics = (currentRows, previousRows) => {
+            window.lastDashRows = currentRows || [];
+            window.lastPrevRows = previousRows || [];
+            const state = normalizeOperationalData(appData.operationalData);
+            const start = document.getElementById('dash-start-date')?.value || '';
+            const end = document.getElementById('dash-end-date')?.value || '';
+            const selected = Array.from(document.querySelectorAll('.hub-checkbox:checked')).map(x => x.value);
+            const hubs = (selected.length ? selected : appData.costs.map(x => x.hub)).filter(Boolean);
+            const days = start && end ? Math.max(1, Math.round((new Date(`${end}T12:00:00`) - new Date(`${start}T12:00:00`)) / 86400000) + 1) : 1;
+            const hubRows = hubs.map(hub => {
+                const rows = currentRows.filter(r => r.hub === hub);
+                const prev = previousRows.filter(r => r.hub === hub);
+                const load = rows.reduce((a,r) => a + Number(r.total_paket || 0), 0);
+                const mpp = rows.reduce((a,r) => a + Number(r.total_mpp || 0), 0);
+                const cost = rows.reduce((a,r) => a + Number(window.calculateReportCost(r) || 0), 0);
+                const prevLoad = prev.reduce((a,r) => a + Number(r.total_paket || 0), 0);
+                const prevCost = prev.reduce((a,r) => a + Number(window.calculateReportCost(r) || 0), 0);
+                const prevMpp = prev.reduce((a,r) => a + Number(r.total_mpp || 0), 0);
+                const target = Number(state.hubTargets[hub]?.productivity || 0);
+                const prod = mpp > 0 ? Math.round(load / mpp) : 0;
+                const achievement = target > 0 ? (prod / target) * 100 : null;
+                const dates = new Set(rows.map(r => String(r.tanggal || '')));
+                const hasLastDay = rows.some(r => String(r.tanggal || '') === end);
+                return { hub, rows, load, mpp, cost, prevLoad, prevCost, prevMpp, prod, target, achievement, reportDays: dates.size, hasLastDay };
+            });
+            const totalExpected = hubs.length * days;
+            const totalReported = hubRows.reduce((a,h) => a + h.reportDays, 0);
+            const coverage = totalExpected ? Math.min(100, totalReported / totalExpected * 100) : 0;
+            const hubsReported = hubRows.filter(h => h.reportDays > 0).length;
+            const totalCost = currentRows.reduce((a,r) => a + Number(window.calculateReportCost(r) || 0), 0);
+            const totalLoad = currentRows.reduce((a,r) => a + Number(r.total_paket || 0), 0);
+            const costPerPackage = totalLoad > 0 ? totalCost / totalLoad : 0;
+            const costPer1k = totalLoad > 0 ? totalCost * 1000 / totalLoad : 0;
+            const attendance = { h:0, do:0, c:0, i:0, s:0, a:0 };
+            currentRows.forEach(row => (row.attendance_data || []).forEach(person => {
+                if (person.s1 || person.s2 || person.s3) attendance.h++;
+                else if (person.do) attendance.do++;
+                else if (person.c) attendance.c++;
+                else if (person.i) attendance.i++;
+                else if (person.s) attendance.s++;
+                else if (person.a) attendance.a++;
+            }));
+            const attendanceTotal = Object.values(attendance).reduce((a,v) => a+v,0);
+            const attendanceRate = attendanceTotal ? Math.round(attendance.h / attendanceTotal * 1000) / 10 : 0;
+            const prevLoad = previousRows.reduce((a,r) => a + Number(r.total_paket || 0), 0);
+            const prevMpp = previousRows.reduce((a,r) => a + Number(r.total_mpp || 0), 0);
+            const prevCost = previousRows.reduce((a,r) => a + Number(window.calculateReportCost(r) || 0), 0);
+            const prevCost1k = prevLoad > 0 ? prevCost * 1000 / prevLoad : 0;
+            const prevAttendance = { h:0, do:0, c:0, i:0, s:0, a:0 };
+            previousRows.forEach(row => (row.attendance_data || []).forEach(person => {
+                if (person.s1 || person.s2 || person.s3) prevAttendance.h++;
+                else if (person.do) prevAttendance.do++;
+                else if (person.c) prevAttendance.c++;
+                else if (person.i) prevAttendance.i++;
+                else if (person.s) prevAttendance.s++;
+                else if (person.a) prevAttendance.a++;
+            }));
+            const prevAttTotal = Object.values(prevAttendance).reduce((a,v) => a+v,0);
+            const prevAttRate = prevAttTotal ? prevAttendance.h / prevAttTotal * 100 : 0;
+
+            const rank = [...hubRows].sort((a,b) => b.prod - a.prod);
+            const alertList = [];
+            const dropLimit = Math.max(1, Number(state.thresholds.loadDropPct || 15));
+            const minAttendance = Math.max(1, Math.min(100, Number(state.thresholds.minAttendancePct || 90)));
+            hubRows.forEach(h => {
+                if (h.target > 0 && h.prod < h.target) alertList.push({ level: h.achievement < 80 ? 'danger' : 'warning', title: `${h.hub}: produktivitas di bawah target`, detail: `${window.formatNumber(h.prod)} dari target ${window.formatNumber(h.target)} pkt/org (${h.achievement.toFixed(1)}%).`, hub: h.hub });
+                if (!h.hasLastDay && end) alertList.push({ level: 'warning', title: `${h.hub}: laporan tanggal akhir belum masuk`, detail: `Tidak ditemukan laporan ${opsDateLabel(end)} pada filter saat ini.`, hub: h.hub });
+                if (h.prevLoad > 0) {
+                    const drop = (h.prevLoad - h.load) / h.prevLoad * 100;
+                    if (drop >= dropLimit) alertList.push({ level: 'warning', title: `${h.hub}: load turun ${drop.toFixed(1)}%`, detail: `${window.formatNumber(h.load)} paket dibanding ${window.formatNumber(h.prevLoad)} paket pada periode sebelumnya.`, hub: h.hub });
+                }
+                const hCost1k = h.load > 0 ? h.cost * 1000 / h.load : 0;
+                const hPrevCost1k = h.prevLoad > 0 ? h.prevCost * 1000 / h.prevLoad : 0;
+                if (hPrevCost1k > 0 && hCost1k > hPrevCost1k * 1.15) alertList.push({ level: 'info', title: `${h.hub}: biaya per 1.000 paket meningkat`, detail: `${opsMoney(hCost1k)} dibanding ${opsMoney(hPrevCost1k)} pada periode sebelumnya.`, hub: h.hub });
+            });
+            if (attendanceTotal && attendanceRate < minAttendance) alertList.push({ level: 'warning', title: 'Attendance rate di bawah ambang', detail: `${attendanceRate.toFixed(1)}%, ambang yang ditetapkan ${minAttendance}%.`, hub: 'ALL' });
+            if (!currentRows.length) alertList.push({ level: 'info', title: 'Belum ada laporan pada periode terpilih', detail: 'Ubah rentang tanggal atau filter HUB untuk melihat analisis.', hub: 'ALL' });
+
+            const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+            setText('ops-period-label', start && end ? `Periode ${opsDateLabel(start)} – ${opsDateLabel(end)}` : 'Periode mengikuti filter dashboard');
+            setText('ops-kpi-coverage', `${coverage.toFixed(1)}%`);
+            setText('ops-kpi-coverage-sub', `${totalReported}/${totalExpected} slot HUB-hari terisi · ${hubsReported}/${hubs.length} HUB melapor`);
+            setText('ops-kpi-report-count', String(currentRows.length));
+            setText('ops-kpi-report-sub', `Estimasi ${totalExpected} laporan · 1 laporan/HUB/hari kalender`);
+            setText('ops-kpi-cost-1k', opsMoney(costPer1k));
+            setText('ops-kpi-attendance', attendanceTotal ? `${attendanceRate.toFixed(1)}%` : 'N/A');
+            setText('ops-kpi-attendance-sub', `${attendance.h} hadir dari ${attendanceTotal} person-day`);
+            setText('ops-cost-total', opsMoney(totalCost));
+            setText('ops-cost-per-pkg', opsMoney(costPerPackage));
+            setText('ops-cost-per-1k', opsMoney(costPer1k));
+            setText('ops-cost-compare', prevLoad > 0 ? `Cost/1.000 paket periode sebelumnya ${opsMoney(prevCost1k)} · perubahan ${opsComparePct(costPer1k, prevCost1k)}` : 'Data pembanding biaya per paket belum tersedia.');
+            setText('ops-attendance-compare', prevAttTotal ? `Periode sebelumnya ${prevAttRate.toFixed(1)}% · perubahan ${(attendanceRate-prevAttRate).toFixed(1)} poin persentase.` : 'Data absensi periode pembanding belum tersedia.');
+
+            const attendanceWrap = document.getElementById('ops-attendance-breakdown');
+            if (attendanceWrap) attendanceWrap.innerHTML = [
+                ['H',attendance.h,'text-emerald-700'],['DO',attendance.do,'text-slate-600'],['C',attendance.c,'text-violet-700'],['I',attendance.i,'text-orange-700'],['S',attendance.s,'text-amber-700'],['A',attendance.a,'text-rose-700']
+            ].map(([label,val,color]) => `<div class="bg-slate-50 rounded-xl p-2 text-center"><div class="text-[9px] text-slate-400 font-extrabold">${label}</div><div class="font-extrabold ${color} text-lg">${val}</div></div>`).join('');
+
+            const rankingBody = document.getElementById('ops-ranking-body');
+            if (rankingBody) rankingBody.innerHTML = rank.length ? rank.map((h,i) => {
+                const status = h.target <= 0 ? ['Target belum diatur','ops-pill-neutral'] : h.achievement >= 100 ? ['Mencapai target','ops-pill-good'] : h.achievement >= 90 ? ['Mendekati target','ops-pill-warn'] : ['Di bawah target','ops-pill-bad'];
+                return `<tr><td><div class="font-extrabold text-slate-800">#${i+1} · ${opsEscape(h.hub)}</div><div class="text-[9px] text-slate-400">${h.reportDays}/${days} hari melapor</div></td><td class="font-bold">${window.formatNumber(h.load)}</td><td>${window.formatNumber(h.mpp)}</td><td class="font-extrabold">${window.formatNumber(h.prod)}</td><td>${h.target ? window.formatNumber(h.target) : '—'}</td><td>${h.achievement !== null ? `${h.achievement.toFixed(1)}%` : '—'}</td><td><span class="ops-pill ${status[1]}">${status[0]}</span></td></tr>`;
+            }).join('') : '<tr><td colspan="7" class="text-center text-slate-400 py-8">Belum ada data HUB pada periode ini.</td></tr>';
+
+            const alertWrap = document.getElementById('ops-alert-list');
+            if (alertWrap) alertWrap.innerHTML = alertList.length ? alertList.slice(0,15).map(a => `<div class="ops-alert-item ops-alert-${a.level}"><div class="flex items-start justify-between gap-2"><div class="text-xs font-extrabold text-slate-800">${opsEscape(a.title)}</div><span class="ops-pill ${a.level==='danger'?'ops-pill-bad':a.level==='warning'?'ops-pill-warn':'ops-pill-neutral'}">${a.level==='danger'?'Kritis':a.level==='warning'?'Perhatian':'Info'}</span></div><p class="text-[10px] text-slate-500 leading-relaxed mt-1">${opsEscape(a.detail)}</p></div>`).join('') : '<div class="text-xs text-emerald-700 bg-emerald-50 rounded-xl p-4"><i class="fas fa-check-circle mr-1"></i> Tidak ada alert berdasarkan target dan ambang yang aktif.</div>';
+
+            const compare = [
+                ['Total Load', totalLoad, prevLoad, 'paket'],
+                ['Total Manpower (person-day dari MPP)', currentRows.reduce((a,r)=>a+Number(r.total_mpp||0),0), prevMpp, 'org'],
+                ['Produktivitas', currentRows.reduce((a,r)=>a+Number(r.total_mpp||0),0) ? Math.round(totalLoad/currentRows.reduce((a,r)=>a+Number(r.total_mpp||0),0)) : 0, prevMpp ? Math.round(prevLoad/prevMpp) : 0, 'paket/org'],
+                ['Cost / 1.000 paket', costPer1k, prevCost1k, '']
+            ];
+            const compareBody = document.getElementById('ops-compare-body');
+            if (compareBody) compareBody.innerHTML = compare.map(([label,cur,prev,suffix]) => `<tr><td class="font-bold">${label}</td><td>${suffix ? window.formatNumber(cur) + ' ' + suffix : opsMoney(cur)}</td><td>${prev ? (suffix ? window.formatNumber(prev) + ' ' + suffix : opsMoney(prev)) : 'N/A'}</td><td class="font-extrabold">${opsComparePct(cur,prev)}</td></tr>`).join('');
+
+            const belowTargetHubs = hubRows.filter(h => h.target > 0 && h.prod < h.target).map(h => h.hub);
+            window.lastOperationalAnalytics = { coverage, totalExpected, totalReported, hubsReported, hubCount:hubs.length, costPerPackage, costPer1k, attendanceRate, attendance, alertList, alerts:alertList, belowTargetHubs, ranking:rank };
+            window.renderHubTargetConfig();
+        };
+
+        // ---------------------------------------------------------------------
+        // END OPERATIONAL CONTROL CENTER
+        // ---------------------------------------------------------------------
+
         window.refineManagerLog = async () => {
             const stats = window.lastDashStats;
             if (!stats) return window.notify('Data laporan belum siap', 'error');
@@ -2595,6 +2919,10 @@ DATA OPERASIONAL:
 - Produktivitas periode sebelumnya: ${window.formatNumber(stats.prev.prod)} paket/orang.
 - HUB dengan load tertinggi: ${stats.topHub}.
 - Catatan kendala: ${issueText}
+- Cost per 1.000 paket periode ini: ${window.lastOperationalAnalytics ? window.formatRupiah(window.lastOperationalAnalytics.costPer1k) : 'belum dihitung'}.
+- Attendance rate berbasis person-day: ${window.lastOperationalAnalytics ? window.lastOperationalAnalytics.attendanceRate + '%' : 'belum dihitung'}.
+- HUB di bawah target produktivitas: ${window.lastOperationalAnalytics?.belowTargetHubs?.join(', ') || 'tidak ada / target belum diatur'}.
+- Alert operasional: ${window.lastOperationalAnalytics?.alerts?.map(a => a.title).join('; ') || 'tidak ada'}.
 
 INSTRUKSI:
 - Tulis 1 paragraf Bahasa Indonesia profesional, maksimal 65 kata.
@@ -2707,11 +3035,29 @@ INSTRUKSI:
             }
         };
 
-        function receiptFormatDate(dateKey) {
-            if (!dateKey) return '-';
-            const date = new Date(`${dateKey}T12:00:00`);
-            if (Number.isNaN(date.getTime())) return dateKey;
-            return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        function receiptFormatPeriod(startKey, endKey) {
+            if (!startKey && !endKey) return '-';
+            const parse = (key) => {
+                if (!key) return null;
+                const date = new Date(`${key}T12:00:00`);
+                return Number.isNaN(date.getTime()) ? null : date;
+            };
+            const start = parse(startKey) || parse(endKey);
+            const end = parse(endKey) || start;
+            if (!start || !end) return startKey || endKey || '-';
+
+            const day = (date) => date.toLocaleDateString('id-ID', { day: 'numeric' });
+            const monthYear = (date) => date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            const full = (date) => date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            if (start.toDateString() === end.toDateString()) return full(start);
+            if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+                return `${day(start)}-${full(end)}`;
+            }
+            if (start.getFullYear() === end.getFullYear()) {
+                return `${day(start)} ${start.toLocaleDateString('id-ID', { month: 'long' })}-${full(end)}`;
+            }
+            return `${full(start)}-${full(end)}`;
         }
 
         function receiptEscapeHTML(value) {
@@ -2764,7 +3110,6 @@ INSTRUKSI:
             const curr = stats.curr || {};
             const prev = stats.prev || {};
             const currentPeriod = stats.currentPeriod || {};
-            const previousPeriod = stats.previousPeriod || {};
             const prevCount = Number(stats.prevDataCount) || 0;
             const create = (tag, className, textValue) => {
                 const node = document.createElement(tag);
@@ -2784,20 +3129,11 @@ INSTRUKSI:
             root.appendChild(create('div', 'receipt-kicker', 'OPERATIONAL PERFORMANCE RECEIPT'));
             root.appendChild(create('div', 'receipt-title', 'MANAGER SUMMARY'));
 
-            const meta = create('div', 'receipt-meta');
-            const metaItems = [
-                ['PERIODE LAPORAN', `${receiptFormatDate(currentPeriod.start)} - ${receiptFormatDate(currentPeriod.end)}`],
-                ['PERIODE PEMBANDING', `${receiptFormatDate(previousPeriod.start)} - ${receiptFormatDate(previousPeriod.end)}`],
-                ['DATA LAPORAN SAAT INI', `${stats.currDataCount || 0} laporan`],
-                ['DATA PEMBANDING', prevCount > 0 ? `${prevCount} laporan ditemukan` : 'Tidak ditemukan']
-            ];
-            metaItems.forEach(([label, value]) => {
-                const item = create('div');
-                item.appendChild(create('div', 'receipt-meta-label', label));
-                item.appendChild(create('div', 'receipt-meta-value', value));
-                meta.appendChild(item);
-            });
-            root.appendChild(meta);
+            root.appendChild(create(
+                'div',
+                'receipt-period',
+                `Laporan tgl ${receiptFormatPeriod(currentPeriod.start, currentPeriod.end)}`
+            ));
 
             const insightMatch = finalTxt.match(/\*(?:EXECUTIVE INSIGHT|INSIGHT OTOMATIS \(GEMINI SEDANG PADAT\)):\*\s*\n([\s\S]*?)(?=\n\s*\n\*1\.|\n\*1\.)/i);
             if (insightMatch && insightMatch[1]) {
@@ -2871,7 +3207,7 @@ INSTRUKSI:
                     continue;
                 }
                 if (!line || line === '__AI_INSIGHT_PLACEHOLDER__' || line === '__ISSUES_PLACEHOLDER__') continue;
-                if (/^\*SUMMARY REPORT HUB KALSULAMP\*$/i.test(line) || /^Periode:/i.test(line) || /^Pembanding:/i.test(line)) continue;
+                if (/^\*SUMMARY REPORT HUB KALSULAMP\*$/i.test(line) || /^Laporan tgl/i.test(line) || /^Periode:/i.test(line) || /^Pembanding:/i.test(line)) continue;
                 if (/^_Generated by/i.test(line)) continue;
 
                 const heading = line.match(/^\*(.+)\*$/);
@@ -4079,7 +4415,8 @@ INSTRUKSI:
                 if (!r.isConfirmed) return;
 
                 try { 
-                    await supa.from('laporan').delete().eq('id', id);
+                    const { error: deleteReportError } = await supa.from('laporan').delete().eq('id', id);
+                    if (deleteReportError) throw deleteReportError;
                     await fetchAllData();
                     window.notify('Laporan berhasil dihapus', 'success'); 
                 } catch (err) { 
@@ -4265,11 +4602,43 @@ INSTRUKSI:
                     <td class="p-2 text-center bg-yellow-50/30">${chk('chk-s', dat.s)}</td>
                     <td class="p-2 text-center">${chk('chk-a', dat.a)}</td>
                     <td class="p-2 text-center bg-rose-50/50">${chk('chk-case', dat.case)}</td>
-                    <td class="p-2"><textarea class="inp-ket w-full bg-transparent border-b border-dashed border-slate-300 focus:border-primary outline-none text-[10px] px-1 py-1 resize-y min-h-[28px]" placeholder="Ket..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${dat.ket||''}</textarea></td>
+                    <td class="p-2"><textarea class="inp-ket w-full bg-transparent border-b border-dashed border-slate-300 focus:border-primary outline-none text-[10px] px-1 py-1 resize-y min-h-[28px]" placeholder="Ket..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; window.syncAttendanceReasonHint(this.closest('tr'))">${dat.ket||''}</textarea></td>
                     <td class="p-2 text-center">${delBtn}</td>
                 </tr>
             `;
+            window.syncAttendanceReasonHint(tb.lastElementChild);
         };
+
+        // Keterangan wajib untuk status non-shift mulai 18 November 2026.
+        const ATTENDANCE_REASON_EFFECTIVE_DATE = '2026-11-18';
+
+        window.isAttendanceReasonRequired = (row) => {
+            const reportDate = document.getElementById('lap-tanggal')?.value || '';
+            if (!row || !reportDate || reportDate < ATTENDANCE_REASON_EFFECTIVE_DATE) return false;
+
+            const hasShift = ['.chk-s1', '.chk-s2', '.chk-s3'].some(selector => row.querySelector(selector)?.checked);
+            const hasNonShiftStatus = ['.chk-do', '.chk-c', '.chk-i', '.chk-s', '.chk-a'].some(selector => row.querySelector(selector)?.checked);
+            return hasNonShiftStatus && !hasShift;
+        };
+
+        window.syncAttendanceReasonHint = (row) => {
+            if (!row) return;
+            const field = row.querySelector('.inp-ket');
+            if (!field) return;
+            const required = window.isAttendanceReasonRequired(row);
+            const missing = required && !field.value.trim();
+            field.placeholder = required ? 'Wajib isi alasan...' : 'Ket...';
+            field.setAttribute('aria-required', required ? 'true' : 'false');
+            field.classList.toggle('border-rose-400', missing);
+            field.classList.toggle('bg-rose-50', missing);
+            field.classList.toggle('text-rose-700', missing);
+        };
+
+        window.syncAllAttendanceReasonHints = () => {
+            document.querySelectorAll('#attendance-tbody tr').forEach(row => window.syncAttendanceReasonHint(row));
+        };
+
+        document.getElementById('lap-tanggal')?.addEventListener('change', window.syncAllAttendanceReasonHints);
 
         window.handleCheck = (el) => {
             const tr = el.closest('tr');
@@ -4278,6 +4647,7 @@ INSTRUKSI:
                     if(box !== el && !box.classList.contains('chk-case')) box.checked = false;
                 });
             }
+            window.syncAttendanceReasonHint(tr);
         };
 
         document.getElementById('laporan-form').onsubmit = async (e) => {
@@ -4315,6 +4685,46 @@ INSTRUKSI:
                     buttonsStyling: false
                 });
                 return;
+            }
+
+            if (tgl >= ATTENDANCE_REASON_EFFECTIVE_DATE) {
+                const missingReasons = [];
+                document.querySelectorAll('#attendance-tbody tr').forEach(row => {
+                    if (!window.isAttendanceReasonRequired(row)) return;
+                    const reasonField = row.querySelector('.inp-ket');
+                    if (reasonField && !reasonField.value.trim()) {
+                        const userId = row.getAttribute('data-id') || '';
+                        const manualName = row.querySelector('.manual-name')?.value?.trim();
+                        const user = userId.startsWith('manual_') ? null : appData.users.find(item => String(item.id) === String(userId));
+                        const personName = manualName || user?.nama || 'Personil tanpa nama';
+                        const selectedStatus = [
+                            ['.chk-do', 'DO'], ['.chk-c', 'Cuti'], ['.chk-i', 'Izin'],
+                            ['.chk-s', 'Sakit'], ['.chk-a', 'Alfa']
+                        ].find(([selector]) => row.querySelector(selector)?.checked)?.[1] || 'Non-shift';
+                        missingReasons.push({ name: personName, status: selectedStatus, field: reasonField });
+                        window.syncAttendanceReasonHint(row);
+                    }
+                });
+
+                if (missingReasons.length) {
+                    const firstMissing = missingReasons[0].field;
+                    const details = missingReasons.slice(0, 8).map(item => `• ${item.name} — ${item.status}`).join('\n');
+                    const remaining = missingReasons.length > 8 ? `\n...dan ${missingReasons.length - 8} personil lainnya.` : '';
+                    await window.Swal.fire({
+                        title: 'Data Absensi Belum Lengkap',
+                        text: `Keterangan belum diisi untuk:\n${details}${remaining}\n\nLengkapi sebelum menyimpan laporan.`,
+                        icon: 'warning',
+                        confirmButtonText: 'Periksa Kembali',
+                        customClass: {
+                            popup: 'rounded-[2rem] border border-amber-100 shadow-2xl p-6 font-sans',
+                            confirmButton: 'bg-amber-500 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg hover:bg-amber-600 transition'
+                        },
+                        buttonsStyling: false
+                    });
+                    firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstMissing.focus({ preventScroll: true });
+                    return;
+                }
             }
 
             const isDuplicate = appData.laporan.some(l => l.tanggal === tgl && l.hub === hub && l.id !== id);
@@ -4426,7 +4836,8 @@ INSTRUKSI:
             };
             
             try {
-                await supa.from('laporan').upsert(payload);
+                const { error: saveReportError } = await supa.from('laporan').upsert(payload);
+                if (saveReportError) throw saveReportError;
                 await fetchAllData();
                 window.closeLaporanModal();
                 

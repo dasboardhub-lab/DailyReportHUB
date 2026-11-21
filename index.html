@@ -229,6 +229,8 @@
         .ops-alert-danger { border-left-color:#e11d48; }
         .ops-alert-warning { border-left-color:#f59e0b; }
         .ops-alert-info { border-left-color:#4361ee; }
+        .attendance-row-invalid > td { background-color:#fff1f2 !important; }
+        .attendance-row-invalid > td:first-child { box-shadow: inset 3px 0 0 #e11d48; }
         @media(max-width:640px){ .ops-kpi-value{font-size:1.25rem;} .ops-table th,.ops-table td{padding:9px 8px;} }
     </style>
 </head>
@@ -1232,7 +1234,7 @@
                     </div>
 
                     <div>
-                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-4"><div><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4><p class="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2 leading-relaxed"><i class="fas fa-info-circle mr-1"></i>Status selain Shift 1, 2, atau 3 wajib dilengkapi keterangan.</p></div><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm shrink-0"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-4"><div><h4 class="font-bold text-slate-700 text-sm flex items-center"><span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center mr-3"><i class="fas fa-users"></i></span>Absensi Tim</h4></div><div class="text-right bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm shrink-0"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total MPP:</span><span class="font-extrabold text-lg text-slate-800 ml-2" id="disp-total-mpp">0</span></div></div>
                         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                             <table class="w-full text-xs text-center">
                                 <thead class="bg-slate-50 font-bold text-slate-500 uppercase border-b border-slate-200 tracking-wide">
@@ -4583,7 +4585,7 @@ INSTRUKSI:
             if (isDW || (id && id.startsWith('manual_'))) displayId = '-';
 
             const nameHtml = isDW 
-                ? `<input type="text" class="manual-name w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs" placeholder="Nama DW" value="${nama}">` 
+                ? `<input type="text" class="manual-name w-full bg-slate-50 border border-slate-200 rounded px-2 py-1 text-xs" placeholder="Nama DW" value="${nama}" oninput="window.syncAttendanceRowValidation(this.closest('tr'))">` 
                 : `<span class="font-bold text-slate-700">${nama}</span><br><span class="text-[9px] ${isL?'text-blue-500':'text-slate-400'}">${displayId} | ${pos}</span>`;
             
             const delBtn = isDW ? `<button type="button" onclick="this.closest('tr').remove(); window.updateTotalMPP();" class="text-rose-400 hover:text-rose-600"><i class="fas fa-times"></i></button>` : '';
@@ -4606,7 +4608,33 @@ INSTRUKSI:
                     <td class="p-2 text-center">${delBtn}</td>
                 </tr>
             `;
-            window.syncAttendanceReasonHint(tb.lastElementChild);
+            const renderedRow = tb.lastElementChild;
+            window.syncAttendanceRowValidation(renderedRow);
+            window.syncAttendanceReasonHint(renderedRow);
+        };
+
+        // Status absensi utama: setiap personil wajib memilih tepat satu opsi.
+        // Kolom Case hanya penanda tambahan, bukan status absensi.
+        const ATTENDANCE_STATUS_OPTIONS = [
+            ['.chk-s1', 'Shift 1'],
+            ['.chk-s2', 'Shift 2'],
+            ['.chk-s3', 'Shift 3'],
+            ['.chk-do', 'DO'],
+            ['.chk-c', 'Cuti'],
+            ['.chk-i', 'Izin'],
+            ['.chk-s', 'Sakit'],
+            ['.chk-a', 'Alfa']
+        ];
+
+        window.syncAttendanceRowValidation = (row) => {
+            if (!row) return { missingStatus: false, missingName: false };
+            const hasStatus = ATTENDANCE_STATUS_OPTIONS.some(([selector]) => row.querySelector(selector)?.checked);
+            const isManual = (row.getAttribute('data-id') || '').startsWith('manual_');
+            const manualName = row.querySelector('.manual-name')?.value?.trim() || '';
+            const missingName = isManual && !manualName;
+            const missingStatus = !hasStatus;
+            row.classList.toggle('attendance-row-invalid', missingStatus || missingName);
+            return { missingStatus, missingName };
         };
 
         // Keterangan wajib untuk status non-shift mulai 18 November 2026.
@@ -4647,6 +4675,7 @@ INSTRUKSI:
                     if(box !== el && !box.classList.contains('chk-case')) box.checked = false;
                 });
             }
+            window.syncAttendanceRowValidation(tr);
             window.syncAttendanceReasonHint(tr);
         };
 
@@ -4659,6 +4688,54 @@ INSTRUKSI:
             const hub = currentUser.role === 'admin' ? document.getElementById('lap-hub-select').value : document.getElementById('lap-hub-text').value;
             
             if(!hub) return window.notify('Pilih HUB', 'warning');
+
+            // Wajib ada satu status untuk setiap personil di daftar absensi.
+            // Status Shift 1/2/3, DO, Cuti, Izin, Sakit, atau Alfa diterima.
+            // Checkbox Case tidak dihitung sebagai status absensi.
+            const attendanceRows = Array.from(document.querySelectorAll('#attendance-tbody tr[data-id]'));
+            const incompleteAttendance = [];
+            attendanceRows.forEach(row => {
+                const validation = window.syncAttendanceRowValidation(row);
+                if (!validation.missingStatus && !validation.missingName) return;
+
+                const userId = row.getAttribute('data-id') || '';
+                const manualName = row.querySelector('.manual-name')?.value?.trim() || '';
+                const user = userId.startsWith('manual_')
+                    ? null
+                    : appData.users.find(item => String(item.id) === String(userId));
+                const personName = manualName || user?.nama || 'DW Manual (nama belum diisi)';
+                const issues = [];
+                if (validation.missingName) issues.push('nama belum diisi');
+                if (validation.missingStatus) issues.push('status belum dipilih');
+                incompleteAttendance.push({ name: personName, issues: issues.join(' dan '), row });
+            });
+
+            if (incompleteAttendance.length) {
+                const details = incompleteAttendance.slice(0, 10)
+                    .map(item => `• ${item.name} — ${item.issues}`)
+                    .join('\n');
+                const remaining = incompleteAttendance.length > 10
+                    ? `\n...dan ${incompleteAttendance.length - 10} personil lainnya.`
+                    : '';
+                await window.Swal.fire({
+                    title: 'Absensi Belum Lengkap',
+                    text: `Semua personil wajib memilih satu status absensi.\n\n${details}${remaining}\n\nPilih salah satu: Shift 1, Shift 2, Shift 3, DO, Cuti, Izin, Sakit, atau Alfa.`,
+                    icon: 'warning',
+                    confirmButtonText: 'Periksa Kembali',
+                    customClass: {
+                        popup: 'rounded-[2rem] border border-amber-100 shadow-2xl p-6 font-sans',
+                        confirmButton: 'bg-amber-500 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg hover:bg-amber-600 transition'
+                    },
+                    buttonsStyling: false
+                });
+                const firstInvalidRow = incompleteAttendance[0].row;
+                firstInvalidRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const firstStatusInput = ATTENDANCE_STATUS_OPTIONS
+                    .map(([selector]) => firstInvalidRow.querySelector(selector))
+                    .find(Boolean);
+                firstStatusInput?.focus({ preventScroll: true });
+                return;
+            }
 
             const totPkt = parseInt(document.getElementById('val-total-paket').value) || 0;
             const totMpp = parseInt(document.getElementById('disp-total-mpp').innerText) || 0;
